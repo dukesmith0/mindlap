@@ -1,0 +1,77 @@
+# Decisions
+
+## Technical Decisions
+- Stack: Next.js 16 App Router + Supabase + Vercel + TypeScript. Server Components default, Server Actions for mutations. (2026-04-28)
+- Keep all 7 mindgames, port to TS modules. Math, Digit Span, N-Back, Stroop = ★ core cognitive metrics. Reaction, Minesweeper, Word Recall secondary. (2026-04-28)
+- Auth: Supabase Auth (email/pw + Google), identity linking on shared verified email. `handle_new_user` trigger creates profile row with derived username. (2026-04-28)
+- Email service: Resend via Supabase Auth's SMTP hook. Verification, password reset, group invites all flow through Resend. Branded transactional templates. (2026-04-28)
+- Account deletion: hard delete with cascade. All submissions/aggregates/ratings/friendships/group_memberships/badges/xp/pins removed. Group ownership transfers to oldest admin or group dissolves. Avatar removed from Storage. No tombstones. (2026-04-28)
+- Profile privacy: single `is_public` switch on profiles. Default public. Private = `/profile/[username]` shows sparse private view; submitted scores still appear on leaderboards with username, but profile link routes to private view. Friends see full profile. (2026-04-28)
+- Open-ended play, no daily seed. Users can play any game any number of times any day. Statistical fairness from each game's random distribution (zetamac model). Submit-vs-retry flow on each play (mindgames model). Leaderboards slice submitted scores into time windows: Today / 7-day / All-time. (2026-04-28)
+- Storage cap: 20 submissions per (user, game, UTC day) FIFO. Detail rows older than 90 days deleted by nightly cron. `daily_aggregates` kept forever. (2026-04-28)
+- Daily Double-XP: 2 of 7 games per UTC day, deterministic rotation via stable hash of date. Calendar widget shows next 14 days. `[2x]` bracket-pill on affected game cards on `/today`. (2026-04-28)
+- User game pins: per-user pinned games via `user_game_pins`. Sort to top of `/today`. Drag-reorder in `/settings`. Visual: `>` glyph (Zetamac Pure idiom). (2026-04-28)
+- Globally-starred core metrics use ★, user pins use `>`. Both can show on the same card. Independent. (2026-04-28)
+- Improvement tracking is the v1 headline UX. Profile foregrounds streak (pulsing ribbon), per-game PB + date + worst + 7-day median + 30-day sparkline + plays + heatmap. Daily history table at `/profile/me/history`, line charts at `/profile/me/graphs` with All-plays vs Daily-average toggle. Improvement framed in copy not just numbers. (2026-04-28)
+- Settings hub at `/settings`: sectioned (Profile / Account / Preferences / Notifications). Theme toggle, pinned-games drag-reorder, tutorial replay, master skip-tutorials toggle. Linked from sidebar nav and topbar avatar dropdown. (2026-04-28)
+- Onboarding flow: username confirm > theme choice (light/dark with live swatches) > optional avatar > land on `/today`. (2026-04-28)
+- Ranking: Glicko-2 vs population + Personal Improvement layer. Per-game Glicko-2 against virtual opponent at 30-day population median. RD-weighted composite Mind-elo. Multiplayer-ready. (2026-04-28)
+- Glicko-2 SIDELINED in v1 (silent plumbing). Ratings persist on every submitted score, UI gated by `ELO_VISIBLE=false`. Threshold for flip: ≥25 users × ≥10 submissions/game. (2026-04-28)
+- v1 reward loop: streak + PB + badges + raw-score leaderboards + double-XP days. Elo is post-launch flip. (2026-04-28)
+- XP sources: participation (capped 5/game/day), score-scaled (only on a new daily PB), streak bonus. 2x on the day's double-XP games. Level = `floor(sqrt(xp/100))`. Cosmetic only, no gameplay effect. (2026-04-28)
+- Badges 4 categories: streak (3/7/30/100), PB (first-PB per game, all-7-PBs, all-7-today), elo-tier (defined, inert until elo flip), achievement (perfect N-back day, sub-300ms reaction, etc.). (2026-04-28)
+- Friends: mutual-accept, friend filter on leaderboards. (2026-04-28)
+- Groups: private invite-only with group leaderboards. Invite by username (in-app) or email-link token via Resend. Public discoverable groups deferred. (2026-04-28)
+- Tutorials: per-game step configs in `lib/tutorials/<game>.ts`, cutout-mask overlay. First-play auto + "How to play" replay. Tracked via `profiles.tutorials_seen`. Master skip in `/settings`. (2026-04-28)
+- Anti-cheat baseline: RLS + score range checks only. Replay-token system deferred. Risk #R1. (2026-04-28)
+- UX: desktop-first responsive. Mobile must work, not optimized first. (2026-04-28)
+- Testing: vitest (unit) + Playwright (e2e). Port mindgames vitest cases. (2026-04-28)
+- Public-read / gated-action policy. Anonymous browses `/`, `/today` (preview), `/leaderboards` (top 10), public `/profile/[username]`. Playing, "see more" leaderboards, friending, group ops, all submissions require auth. (2026-04-28)
+- Visual style: Zetamac Pure (locked). Courier Prime via `next/font/google`. Tokens in CSS variables. Pure CSS variables + minimal Tailwind utilities approach. White bg light, dark bg dark, single accent #0066cc (light) / #5aa3ff (dark). Square corners, no shadows, 1px borders only. One signature animation: streak ribbon opacity pulse 2s. (2026-04-28)
+- Single Postgres function `process_submission()`: writes submission, updates aggregate, updates Glicko, awards XP (with double-XP day bonus), evaluates badges transactionally. (2026-04-28)
+- Build: v1 = phases 0-8 + 11. Phase 10 (Glicko silent) integrated from phase 2 onward. Phase 12 flip is post-launch. (2026-04-28)
+- Storage cap: NO per-day cap (raised from 20 FIFO). Every submitted play stored in `submissions` for 90 days, then deleted. `daily_aggregates` kept forever. Decision: 20 FIFO would evict legitimate enthusiasts. (2026-04-28)
+- Streak: any submission per UTC day maintains streak. Lowest friction, drives daily habit. Breadth incentivized via badges (all-7-today). (2026-04-28)
+- Anonymous play: must sign in (no try-before-signup play). Public-read on `/`, `/today` (preview), `/leaderboards` (top 10), public profiles. Trade-off accepted: lose try-now hook for cleaner data. (2026-04-28)
+- Group privacy: per-group toggle (public/private) at create time, owner-flippable. Public groups show in `/groups` directory, instant 1-click join. Private groups need invite/code. (2026-04-28)
+- Group roles: owner (rename, settings, promote/demote, kick, transfer, delete, regenerate join_code), admin (invite, kick non-owners, revoke invites), member (leave, invite only if `allow_member_invite=true`). (2026-04-28)
+- 8-char join codes for groups + friend codes for friend connections. Excludes ambiguous chars (0/O/1/I/l). Friend codes regenerable from settings, group join_codes regenerable by owner. (2026-04-28)
+- Shareable code links: `/f/<friend_code>` and `/g/<join_code>`. Anon click stashes code in signed cookie, signup auto-completes the friend request or group join. Authed click 1-tap accept. OG images render inviter/group name. (2026-04-28)
+- Username uniqueness via citext UNIQUE. 6-month rotation: profiles inactive >= 6 months get `<name>_<id6>` appended, original freed. Warning email at 5.5 months. On next login, user picks new username. Profanity filter: `naughty-words-js` + reserved list (admin/api/login/etc). Rate-limited to 1 username change per 30 days. (2026-04-28)
+- Default avatar: 28px circle with `--ink` fill, first letter of display_name (or username) in white. No external avatar service. (2026-04-28)
+- Custom profile picture features (frames, level-locked styles, animated avatars) deferred. v1 = basic upload + default initial. (2026-04-28)
+- In-game type scale (legibility-first, overrides body 15px): Speed Math problem 56px, Digit Span sequence 80px, N-Back letter 96px, Stroop word 56px, Reaction instructions 28px, Minesweeper cell 22px, Word Recall words 28px. All Courier Prime. (2026-04-28)
+- Profile is the v1 main goal. Improvement-tracking visualizations are the headline UX: per-game cards with PB+date+worst+7-day median+30-day sparkline+plays+improvement copy, 90-day heatmap, daily history table, SVG line graphs (all-plays vs daily-average toggle, mindgames parity). (2026-04-28)
+- xp_events.source enum: `submission`, `daily_pb`, `streak`, `double_xp_bonus`, `daily_complete`, `level_up`. multiplier column captures 2x bonuses. (2026-04-28)
+- Daily boundary: America/Los_Angeles (Pacific Time), NOT UTC. Streak boundary, daily_aggregates date, daily_bonus rotation, daily participation cap, all anchor on PT day. `played_pt_date date GENERATED ALWAYS AS ((played_at AT TIME ZONE 'America/Los_Angeles')::date)`. (2026-04-28)
+- Streak bonus formula: `multiplier = min(1.0 + 0.1 * (streak_current - 1), 2.5)`. Day 1 = 1.0x, day 2 = 1.1x, day 16 = 2.5x, plateau thereafter. Applied to score-scaled XP. (2026-04-28)
+- Score-scaled XP: on a new daily PB, award `floor(z * 50)` XP where z = standardized score against population (clamped 0-200). Rewards real improvement, not raw score. (2026-04-28)
+- No streak grace period. Miss a PT day, streak resets to 0. (2026-04-28)
+- XP earned once per submitted play (not per unsubmitted attempt). Submissions are the only scores recorded. (2026-04-28)
+- Track total plays AND total recorded per user per game AND globally per user. `daily_aggregates.plays_total` (every finished play) + `plays_submitted` (subset that was submitted). Profile counters `total_plays` and `total_submitted` (lifetime). Server Action `record_play_event(game_key)` increments plays_total on game finish; submission insert trigger increments plays_submitted. (2026-04-28)
+- Today's leaderboards fully public-readable. Drop the top-10 anonymous cap. Anonymous and authed users both see the entire leaderboard for any tab. Authed users see a "your rank" highlight row in their position (sticky-pinned to viewport if scrolled past). Discovery + SEO + leaderboard-as-marketing. Action gates remain (no play / no friend / no group as anon). (2026-04-28)
+- Group member cap: default 100, max 1000 (hard ceiling). Owner can raise within range from group settings. (2026-04-28)
+- Public group join: instant 1-click join. Owner can flip to request-approval (deferred to v2). (2026-04-28)
+- Friend request rate limit: 30 outgoing per hour per user. (2026-04-28)
+- Password requirements: 8 char minimum, at least 1 number or symbol. Tighter than Supabase default. (2026-04-28)
+- Cookie consent banner: shown to all visitors, one-time dismiss. Geo-targeting deferred. (2026-04-28)
+- Bug feedback channel: GitHub issues link + email alias `feedback@<domain>` (mailto in footer). (2026-04-28)
+- Tier thresholds (post elo flip): percentile-based. Top 1% diamond, top 5% platinum, top 15% gold, top 35% silver, rest bronze. Recomputed weekly. (2026-04-28)
+- Tutorial first-play: auto-trigger overlay with prominent Skip button. Master "skip all tutorials" toggle in settings. (2026-04-28)
+- Achievement progress visible on locked badges: "X of Y plays", "Y days remaining", or threshold target. (2026-04-28)
+- First-launch empty leaderboards: copy "Be the first to set a score on Speed Math today!" with prominent Play CTA. (2026-04-28)
+- Anonymous on `/today`: real top-5 leaderboard scores visible, not blurred. Drives "high score to beat" curiosity. (2026-04-28)
+
+## Assumptions
+- User has Supabase account, will create new project, provide URL + anon key.
+- User has Vercel account, will link this repo.
+- Google OAuth client provisioned in Supabase Auth, identity linking enabled.
+- Resend account created, API key in Supabase Auth SMTP config.
+- Initial player base small. Elo cold-start mitigated by silent accumulation (#R2).
+
+## Learned Lessons
+- Avoid em dashes in all written output. (2026-04-28)
+- Keep .vibe files concise. (2026-04-28)
+- Default to user-friendly defaults: when user opted for "lightest" anti-cheat but elsewhere said they want anti-cheat, ship middle path with explicit risk acknowledgment rather than blocking on contradiction. (2026-04-28)
+
+## Plan Archive
