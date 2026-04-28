@@ -64,6 +64,16 @@
 - Courier Prime loaded via `next/font/local` from `app/fonts/` (.ttf files for Regular/Bold/Italic/BoldItalic), NOT `next/font/google`. Local fonts are GDPR-clean (no external CDN) and remove the Google Fonts request. Earlier plan note about `next/font/google` superseded. (2026-04-28)
 - Proxy auth gate: `proxy.ts` (Next 16 convention) replaces `middleware.ts`. Uses an `isPublicPath()` function rather than flat prefix allowlists so `/profile/me/*` can be excluded while `/profile/<username>` remains public. Matcher excludes `/api/*` so route handlers manage their own auth. Session cookies refreshed during `getUser()` are carried onto redirect responses. (2026-04-28)
 - Vercel Speed Insights wired in `app/layout.tsx` via `@vercel/speed-insights/next`. Tracks Core Web Vitals once deployed. (2026-04-28)
+- HTTP security headers (CSP, HSTS, X-Frame-Options=DENY, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, COOP=same-origin) set in `next.config.ts` `headers()` block. CSP allows Supabase REST + websocket and Vercel Speed Insights only. (2026-04-28)
+- Password policy bumped from 8 to 10 chars + 1 number/symbol per OWASP ASVS L1. Common-passwords list deferred to Phase 11. (2026-04-28)
+- friend_code moved off `profiles` (publicly SELECT-able) onto `profile_secrets` (owner-only SELECT) in migration 0004. RPC `find_user_by_friend_code(text)` performs lookups without exposing the codes themselves. RPC `regenerate_friend_code()` rotates per-owner. Closes mass-enumeration of friend codes via the public profiles table. (2026-04-28)
+- `requestPasswordResetAction` always returns `ok:true`; signup treats "already registered" as success. Both close account-enumeration via auth UX. (2026-04-28)
+- `signOutAction` pinned to `scope: 'global'` so all refresh tokens revoke server-side. (2026-04-28)
+- Theme cookie is httpOnly + secure-in-prod. Server-only consumption (root layout reads via `cookies()`). (2026-04-28)
+- `actions/auth.ts` and `actions/profile.ts` declare `import "server-only"` to fence service-role and admin paths from any accidental client bundling. (2026-04-28)
+- `touch_last_signin` trigger wired in 0004; previously declared but unattached, so `last_signin_at` would have been frozen at signup. Drives the 6-month username rotation cron in Phase 11. (2026-04-28)
+- Rate limiting on signup/signin/reset deferred to Phase 11 launch readiness with a Vercel KV / Upstash bucket. v1 dev-deploy relies on Supabase Auth's per-IP throttling (default 30 attempts / 5min / IP, 3 emails / hr / address). NOT acceptable for public launch; document in risks. (2026-04-28)
+- npm audit flagged 3 moderate CVEs in PostCSS via Next 16. None exploitable in our usage (PostCSS only runs at build time on developer-controlled CSS). Acknowledged and waived; revisit when Next bumps the dep. (2026-04-28)
 
 ## Assumptions
 - User has Supabase account, will create new project, provide URL + anon key.

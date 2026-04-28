@@ -1,0 +1,357 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+import { Avatar } from "@/components/ui/Avatar";
+import { AvatarColorPicker } from "@/components/ui/AvatarColorPicker";
+import {
+  changeUsernameAction,
+  deleteAccountAction,
+  setAvatarColorAction,
+  setProfilePrivacyAction,
+  setSkipTutorialsAction,
+  setThemeAction,
+  updateProfileBasicsAction,
+} from "@/actions/profile";
+import { signOutAction } from "@/actions/auth";
+import type { ThemePref } from "@/lib/theme/cookie";
+
+type Props = {
+  email: string;
+  username: string;
+  usernameChangedAt: string | null;
+  displayName: string;
+  bio: string;
+  avatarColor: string;
+  themePref: ThemePref;
+  isPublic: boolean;
+  skipTutorials: boolean;
+  friendCode: string;
+};
+
+export function SettingsClient(p: Props) {
+  return (
+    <>
+      <ProfileSection {...p} />
+      <hr />
+      <PreferencesSection
+        themePref={p.themePref}
+        skipTutorials={p.skipTutorials}
+        avatarColor={p.avatarColor}
+      />
+      <hr />
+      <AccountSection
+        email={p.email}
+        username={p.username}
+        usernameChangedAt={p.usernameChangedAt}
+        friendCode={p.friendCode}
+        isPublic={p.isPublic}
+      />
+      <hr />
+      <DangerZone username={p.username} />
+    </>
+  );
+}
+
+// ----------------------------------------------------------------------------
+function ProfileSection({
+  displayName,
+  bio,
+  avatarColor,
+  username,
+}: {
+  displayName: string;
+  bio: string;
+  avatarColor: string;
+  username: string;
+}) {
+  const [name, setName] = useState(displayName);
+  const [bioVal, setBio] = useState(bio);
+  const [info, setInfo] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  function save() {
+    setError(null);
+    setInfo(null);
+    const form = new FormData();
+    form.set("display_name", name);
+    form.set("bio", bioVal);
+    startTransition(async () => {
+      const r = await updateProfileBasicsAction(form);
+      if (r.ok) setInfo("Saved.");
+      else setError(r.error);
+    });
+  }
+
+  return (
+    <section>
+      <h2>profile</h2>
+      <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
+        <Avatar color={avatarColor} name={name || username} size={48} />
+        <span style={{ color: "var(--muted)", fontSize: 13 }}>
+          {name || username}
+        </span>
+      </div>
+      <label style={{ display: "block", marginBottom: 12 }}>
+        <span style={{ display: "block", fontSize: 12, color: "var(--muted)", marginBottom: 4 }}>
+          display name (optional, max 40)
+        </span>
+        <input
+          type="text"
+          value={name}
+          maxLength={40}
+          onChange={(e) => setName(e.target.value)}
+          style={{ width: "100%" }}
+        />
+      </label>
+      <label style={{ display: "block", marginBottom: 12 }}>
+        <span style={{ display: "block", fontSize: 12, color: "var(--muted)", marginBottom: 4 }}>
+          bio (optional, max 280)
+        </span>
+        <textarea
+          value={bioVal}
+          maxLength={280}
+          rows={3}
+          onChange={(e) => setBio(e.target.value)}
+          style={{ width: "100%" }}
+        />
+      </label>
+      <button onClick={save} disabled={pending}>
+        save profile
+      </button>
+      {info && <p style={{ color: "var(--muted)", fontSize: 13, marginTop: 8 }}>[{info}]</p>}
+      {error && <p style={{ color: "var(--accent)", fontSize: 13, marginTop: 8 }}>[{error}]</p>}
+    </section>
+  );
+}
+
+// ----------------------------------------------------------------------------
+function PreferencesSection({
+  themePref,
+  skipTutorials,
+  avatarColor,
+}: {
+  themePref: ThemePref;
+  skipTutorials: boolean;
+  avatarColor: string;
+}) {
+  const router = useRouter();
+  const [theme, setThemeState] = useState<ThemePref>(themePref);
+  const [skip, setSkip] = useState(skipTutorials);
+  const [pending, startTransition] = useTransition();
+
+  function changeTheme(next: ThemePref) {
+    setThemeState(next);
+    const form = new FormData();
+    form.set("theme", next);
+    startTransition(async () => {
+      await setThemeAction(form);
+      // router.refresh() re-runs the server layout so the new data-theme attribute applies.
+      router.refresh();
+    });
+  }
+
+  function toggleSkip() {
+    const next = !skip;
+    setSkip(next);
+    startTransition(() => {
+      void setSkipTutorialsAction(next);
+    });
+  }
+
+  return (
+    <section>
+      <h2>preferences</h2>
+
+      <div style={{ marginBottom: 24 }}>
+        <p style={{ fontSize: 12, color: "var(--muted)", marginBottom: 8 }}>theme</p>
+        <div style={{ display: "flex", gap: 16 }}>
+          {(["light", "dark", "system"] as ThemePref[]).map((t) => (
+            <label key={t} style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+              <input
+                type="radio"
+                name="theme"
+                checked={theme === t}
+                onChange={() => changeTheme(t)}
+                disabled={pending}
+              />
+              {t}
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ marginBottom: 24 }}>
+        <p style={{ fontSize: 12, color: "var(--muted)", marginBottom: 8 }}>avatar color</p>
+        <AvatarColorPicker
+          initialColor={avatarColor}
+          onSave={(color) => setAvatarColorAction(color)}
+        />
+      </div>
+
+      <label style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
+        <input type="checkbox" checked={skip} onChange={toggleSkip} disabled={pending} />
+        <span>skip tutorials globally</span>
+      </label>
+    </section>
+  );
+}
+
+// ----------------------------------------------------------------------------
+function AccountSection({
+  email,
+  username,
+  usernameChangedAt,
+  friendCode,
+  isPublic,
+}: {
+  email: string;
+  username: string;
+  usernameChangedAt: string | null;
+  friendCode: string;
+  isPublic: boolean;
+}) {
+  const [u, setU] = useState(username);
+  const [pub, setPub] = useState(isPublic);
+  const [info, setInfo] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  const lastChange = usernameChangedAt ? new Date(usernameChangedAt) : null;
+  const nextAllowed = lastChange ? new Date(lastChange.getTime() + 30 * 86400000) : null;
+  // Stable enough across re-renders for the form-session check; the server
+  // re-validates on submit. useState ensures we read the boundary once.
+  const [boundaryNow] = useState(() => Date.now());
+  const canChangeUsername = !nextAllowed || nextAllowed.getTime() <= boundaryNow;
+
+  function saveUsername() {
+    setError(null);
+    setInfo(null);
+    const form = new FormData();
+    form.set("username", u);
+    startTransition(async () => {
+      const r = await changeUsernameAction(form);
+      if (r.ok) setInfo("Username saved.");
+      else setError(r.error);
+    });
+  }
+
+  function togglePublic() {
+    const next = !pub;
+    setPub(next);
+    startTransition(() => {
+      void setProfilePrivacyAction(next);
+    });
+  }
+
+  function copyFriendCode() {
+    if (typeof navigator === "undefined" || !navigator.clipboard) return;
+    navigator.clipboard.writeText(friendCode).catch(() => {});
+  }
+
+  return (
+    <section>
+      <h2>account</h2>
+      <p style={{ fontSize: 13, marginBottom: 12 }}>
+        email: <span style={{ color: "var(--muted)" }}>{email}</span>
+      </p>
+
+      <label style={{ display: "block", marginBottom: 12 }}>
+        <span style={{ display: "block", fontSize: 12, color: "var(--muted)", marginBottom: 4 }}>
+          username (changes allowed once per 30 days)
+        </span>
+        <input
+          type="text"
+          value={u}
+          maxLength={24}
+          onChange={(e) => setU(e.target.value)}
+          disabled={!canChangeUsername || pending}
+          style={{ width: "100%" }}
+        />
+      </label>
+      <button onClick={saveUsername} disabled={!canChangeUsername || pending || u === username}>
+        save username
+      </button>
+      {!canChangeUsername && nextAllowed && (
+        <p style={{ color: "var(--muted)", fontSize: 12, marginTop: 6 }}>
+          [next change allowed: {nextAllowed.toLocaleDateString()}]
+        </p>
+      )}
+
+      <p style={{ fontSize: 13, marginTop: 24 }}>
+        friend code:{" "}
+        <span style={{ color: "var(--accent)", letterSpacing: 1 }}>{friendCode}</span>{" "}
+        <button onClick={copyFriendCode} style={{ marginLeft: 8 }}>
+          copy
+        </button>
+      </p>
+
+      <label style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 8, marginTop: 16 }}>
+        <input type="checkbox" checked={pub} onChange={togglePublic} disabled={pending} />
+        <span>public profile</span>
+        <span style={{ color: "var(--muted)", fontSize: 12 }}>
+          [{pub ? "your profile page is visible" : "profile is hidden, scores still appear on leaderboards"}]
+        </span>
+      </label>
+
+      {info && <p style={{ color: "var(--muted)", fontSize: 13, marginTop: 8 }}>[{info}]</p>}
+      {error && <p style={{ color: "var(--accent)", fontSize: 13, marginTop: 8 }}>[{error}]</p>}
+
+      <p style={{ marginTop: 24 }}>
+        <button onClick={() => signOutAction()}>sign out</button>
+      </p>
+    </section>
+  );
+}
+
+// ----------------------------------------------------------------------------
+function DangerZone({ username }: { username: string }) {
+  const [confirm, setConfirm] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  function del() {
+    setError(null);
+    if (confirm.trim().toLowerCase() !== username.toLowerCase()) {
+      setError("Type your username exactly to confirm.");
+      return;
+    }
+    if (typeof window !== "undefined") {
+      const ok = window.confirm(
+        "Permanently delete your mindlap account? All scores and history will be removed."
+      );
+      if (!ok) return;
+    }
+    const form = new FormData();
+    form.set("confirm_username", confirm);
+    startTransition(async () => {
+      const r = await deleteAccountAction(form);
+      if (r && !r.ok) setError(r.error);
+    });
+  }
+
+  return (
+    <section>
+      <h2>delete account</h2>
+      <p style={{ fontSize: 13, color: "var(--muted)", marginBottom: 12 }}>
+        Permanent. Cascades through every score, badge, friendship, group membership. There is no undo.
+      </p>
+      <label style={{ display: "block", marginBottom: 12 }}>
+        <span style={{ display: "block", fontSize: 12, color: "var(--muted)", marginBottom: 4 }}>
+          type your username (<b style={{ color: "var(--ink)", fontWeight: 400 }}>{username}</b>) to confirm
+        </span>
+        <input
+          type="text"
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+          style={{ width: "100%" }}
+        />
+      </label>
+      <button onClick={del} disabled={pending || !confirm}>
+        {pending ? "..." : "delete my account"}
+      </button>
+      {error && <p style={{ color: "var(--accent)", fontSize: 13, marginTop: 8 }}>[{error}]</p>}
+    </section>
+  );
+}

@@ -1,47 +1,40 @@
 # Current
 
-Active: mindlap v1, Phase 0 cleanup COMPLETE. Ready for Phase 1.
+Active: mindlap v1, Phase 1 COMPLETE. Awaiting user to apply migrations + test deployed app.
 
 ## Progress
-- [x] Plan approved 2026-04-28; amended same day
-- [x] git init + remote `github.com/dukesmith0/mindlap` (public)
-- [x] `.vibe/` scaffolded; mindgames reference at `.vibe/docs/mindgames/`
-- [x] Courier Prime fonts in `app/fonts/` (Regular/Bold/Italic/BoldItalic .ttf)
-- [x] Phase 0 scaffold: Next.js 16 + Tailwind (Zetamac Pure overrides) + Courier Prime via next/font/local
-- [x] Phase 0 utilities: lib/supabase/{client,server,proxy}.ts + proxy.ts root
-- [x] Phase 0 deps: @supabase/ssr, zod, @vercel/speed-insights, eslint-config-next 16, vitest 4
-- [x] Phase 0 review: 3 HIGH + 8 MEDIUM findings, all addressed
-  - HIGH#1 (#R4 #1): proxy now copies refreshed cookies onto redirect
-  - HIGH#2 (#R5 #2): /profile/me/* gated; /profile/<username> still public
-  - HIGH#3 (#R6): /api/* + robots.txt + sitemap.xml + manifest.webmanifest excluded from matcher
-  - MEDIUM: eslint-config-next bumped to ^16; supabase moved to devDeps; Tailwind font-family in array form; .gitignore dedup; tsconfig stale path removed; PUBLIC_PREFIXES tightened
-  - SpeedInsights wired in app/layout.tsx
-  - Lint, typecheck, dev all clean (Ready in 775ms; GET / 200; gated routes redirect)
-- [ ] External setup (your action): Supabase project creation, Vercel link, Resend SMTP. See setup guide.
-- [ ] Phase 1: auth + profiles + onboarding + preferences hub
-- [ ] Phase 2: game shell + core 4
-- [ ] Phase 3-12 per plan
+- [x] Phase 0 commit (c7467d9)
+- [x] Phase 1 schema: `supabase/migrations/0001_init.sql` (15 tables, indexes, CHECK constraints)
+- [x] Phase 1 trigger: `supabase/migrations/0002_handle_new_user.sql` (username + friend_code generators, gen_random_bytes for codes)
+- [x] Phase 1 RLS: `supabase/migrations/0003_rls_policies.sql` (privacy-aware aggregates/submissions, group write policies)
+- [x] Phase 1 seed: `supabase/seed.sql` (7 games + initial badge catalog)
+- [x] Helpers: lib/auth/{username,friend-code,avatar-palette}.ts + lib/theme/cookie.ts
+- [x] Tests: 25/25 passing in `debug/auth/`
+- [x] UI components: Avatar, AvatarColorPicker, StreakRibbon, BracketPill
+- [x] Server Actions: actions/auth.ts (signin/signup/google/reset/signout) + actions/profile.ts (theme/avatar/username/basics/privacy/skip-tutorials/onboarding/delete)
+- [x] Auth pages: /(auth)/login, /(auth)/signup, /(auth)/callback
+- [x] Onboarding flow: /(authed)/onboarding (2-step: username + theme; no avatar step)
+- [x] Settings hub: /(authed)/settings (Profile / Preferences / Account / DangerZone)
+- [x] Today preview: /(authed)/today (public-readable; signed-in shows streak+level+avatar)
+- [x] Layout: SSR theme via cookie, Courier Prime via next/font/local, SpeedInsights wired
+- [x] Proxy: onboarding gate, null-profile fallthrough fix, open-redirect guard
+- [x] Phase 1 review: 4 HIGH + 6 MEDIUM findings, all addressed
+- [x] Re-verify: lint clean, typecheck clean, 25/25 tests, dev Ready in 733ms
 
-## Verification (Phase 0)
-- `npm run typecheck` -> clean
-- `npm run lint` -> clean (0 errors, 0 warnings)
-- `npm run dev` -> Ready in 775ms, no deprecation warnings
-- `GET /` -> 200
-- `GET /settings` -> 307 -> /login?next=/settings (gated correctly)
-- `GET /profile/me/history` -> 307 -> /login?next=/profile/me/history (gated correctly, previously was leaking)
-- `GET /profile/someuser` -> 404 (page doesn't exist yet, but anonymous reaches it = correct allowlist behavior)
+## Outstanding (your action items before manual testing)
+1. Apply migrations to Supabase: from project root, run `supabase db push` (or paste each .sql file into the Supabase SQL editor in order: 0001 -> 0002 -> 0003 -> seed.sql).
+2. Confirm Vercel deployment built green after the next git push.
+3. Visit production URL, sign up with email/password (verification link comes from Resend), complete onboarding, explore /settings.
 
-## Outstanding (before Phase 1)
-- User must complete external setup (Supabase project creation, Vercel link, Resend SMTP, MCP tokens). See setup guide.
-- Optional: `git commit -am "phase 0 scaffold + cleanup"` before starting Phase 1.
-
-## Next action
-Phase 1: auth + profiles + onboarding + preferences hub. Includes:
-- Supabase Auth: email/password + Google with identity linking
-- Resend wired as Supabase Auth's SMTP provider
-- Migration `supabase/migrations/0001_init.sql` (profiles, user_game_pins, daily_bonus, submissions, daily_aggregates, ratings, mind_elo, friendships, groups, group_members, group_invites, badges, user_badges, xp_events)
-- `handle_new_user` trigger
-- Onboarding flow (username, theme choice, optional avatar)
-- Settings hub (Profile / Account / Preferences / Notifications)
-- Avatar upload to Supabase Storage
-- Privacy toggle, hard-delete cascade with username confirmation
+## Next phases
+- [ ] Phase 2: game shell + core 4 (Math, Digit Span, N-Back, Stroop)
+- [ ] Phase 3: remaining 3 games
+- [ ] Phase 4: today's hub + leaderboards + double-XP rotation + pins
+- [ ] Phase 5: profile + improvement UX (the v1 headline)
+- [ ] Phase 6: XP + badges
+- [ ] Phase 7: friends
+- [ ] Phase 8: groups
+- [ ] Phase 9: tutorials
+- [ ] Phase 10: Glicko-2 plumbing (silent)
+- [ ] Phase 11: launch readiness
+- [ ] Phase 12 (post-launch): flip elo
