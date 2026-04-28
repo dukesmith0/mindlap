@@ -61,6 +61,9 @@
 - Achievement progress visible on locked badges: "X of Y plays", "Y days remaining", or threshold target. (2026-04-28)
 - First-launch empty leaderboards: copy "Be the first to set a score on Speed Math today!" with prominent Play CTA. (2026-04-28)
 - Anonymous on `/today`: real top-5 leaderboard scores visible, not blurred. Drives "high score to beat" curiosity. (2026-04-28)
+- Courier Prime loaded via `next/font/local` from `app/fonts/` (.ttf files for Regular/Bold/Italic/BoldItalic), NOT `next/font/google`. Local fonts are GDPR-clean (no external CDN) and remove the Google Fonts request. Earlier plan note about `next/font/google` superseded. (2026-04-28)
+- Proxy auth gate: `proxy.ts` (Next 16 convention) replaces `middleware.ts`. Uses an `isPublicPath()` function rather than flat prefix allowlists so `/profile/me/*` can be excluded while `/profile/<username>` remains public. Matcher excludes `/api/*` so route handlers manage their own auth. Session cookies refreshed during `getUser()` are carried onto redirect responses. (2026-04-28)
+- Vercel Speed Insights wired in `app/layout.tsx` via `@vercel/speed-insights/next`. Tracks Core Web Vitals once deployed. (2026-04-28)
 
 ## Assumptions
 - User has Supabase account, will create new project, provide URL + anon key.

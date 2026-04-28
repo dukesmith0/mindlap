@@ -13,7 +13,9 @@ const config: Config = {
     // Empty theme overrides remove the default token sets; extend below adds only what we need.
     boxShadow: { none: "none" },
     borderRadius: { none: "0" },
-    fontFamily: { mono: "var(--font-mono)" },
+    fontFamily: {
+      mono: ["var(--font-mono)", "ui-monospace", "Courier New", "Courier", "monospace"],
+    },
     blur: {},
     ringWidth: { 0: "0" },
     extend: {

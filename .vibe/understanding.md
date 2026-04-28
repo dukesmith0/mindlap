@@ -7,7 +7,8 @@ Last: 2026-04-28 | pre-scaffold | TypeScript target
 - Supabase: Auth (email + Google, identity linking), Postgres (RLS), Storage (avatars), pg_cron / edge functions
 - Resend (via Supabase Auth SMTP hook) for verification, password reset, group invites
 - Tailwind CSS (most utilities disabled) + CSS variables in `app/globals.css` for Zetamac Pure tokens
-- Courier Prime via `next/font/google` (only typeface in the app)
+- Courier Prime via `next/font/local` from `app/fonts/` (only typeface in the app, GDPR-clean, no external CDN)
+- Vercel Speed Insights via `@vercel/speed-insights/next` for Core Web Vitals tracking
 - Zod for Server Action input validation
 - Vitest (unit), Playwright (e2e)
 - Vercel hosting

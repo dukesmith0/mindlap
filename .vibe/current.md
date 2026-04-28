@@ -1,33 +1,47 @@
 # Current
 
-Active: mindlap v1, Phase 0 scaffold (running now).
+Active: mindlap v1, Phase 0 cleanup COMPLETE. Ready for Phase 1.
 
 ## Progress
-- [x] Plan approved 2026-04-28; amended same day with style lock + open-play + Resend + hard-delete + double-XP + pins + privacy + PT timezone + monetization-future
+- [x] Plan approved 2026-04-28; amended same day
 - [x] git init + remote `github.com/dukesmith0/mindlap` (public)
 - [x] `.vibe/` scaffolded; mindgames reference at `.vibe/docs/mindgames/`
-- [x] Courier Prime fonts in `./Courier_Prime/` (Regular/Bold/Italic/BoldItalic .ttf)
-- [ ] Phase 0 scaffold: Next.js + Tailwind + Zetamac Pure tokens + font wired
-- [ ] Phase 0 external setup: Supabase project, Vercel link, Resend SMTP, MCPs
+- [x] Courier Prime fonts in `app/fonts/` (Regular/Bold/Italic/BoldItalic .ttf)
+- [x] Phase 0 scaffold: Next.js 16 + Tailwind (Zetamac Pure overrides) + Courier Prime via next/font/local
+- [x] Phase 0 utilities: lib/supabase/{client,server,proxy}.ts + proxy.ts root
+- [x] Phase 0 deps: @supabase/ssr, zod, @vercel/speed-insights, eslint-config-next 16, vitest 4
+- [x] Phase 0 review: 3 HIGH + 8 MEDIUM findings, all addressed
+  - HIGH#1 (#R4 #1): proxy now copies refreshed cookies onto redirect
+  - HIGH#2 (#R5 #2): /profile/me/* gated; /profile/<username> still public
+  - HIGH#3 (#R6): /api/* + robots.txt + sitemap.xml + manifest.webmanifest excluded from matcher
+  - MEDIUM: eslint-config-next bumped to ^16; supabase moved to devDeps; Tailwind font-family in array form; .gitignore dedup; tsconfig stale path removed; PUBLIC_PREFIXES tightened
+  - SpeedInsights wired in app/layout.tsx
+  - Lint, typecheck, dev all clean (Ready in 775ms; GET / 200; gated routes redirect)
+- [ ] External setup (your action): Supabase project creation, Vercel link, Resend SMTP. See setup guide.
 - [ ] Phase 1: auth + profiles + onboarding + preferences hub
-- [ ] Phase 2: game shell + core 4 + open-ended play + record_play_event + submit
-- [ ] Phase 3: remaining 3 games
-- [ ] Phase 4: today's hub + leaderboards (full public visibility) + double-XP + pins
-- [ ] Phase 5: profile + improvement UX (streak ribbon, per-game cards, heatmap, history, graphs)
-- [ ] Phase 6: XP + badges (streak bonus 1.0x to 2.5x scaling)
-- [ ] Phase 7: friends (mutual-accept, friend codes, shareable links)
-- [ ] Phase 8: groups (public/private toggle, roles, join codes)
-- [ ] Phase 9: tutorials
-- [ ] Phase 10: Glicko-2 plumbing (silent)
-- [ ] Phase 11: launch readiness
-- [ ] Phase 12 (post-launch): flip elo + monetization (Stripe, 2/day free, $5/mo unlimited)
+- [ ] Phase 2: game shell + core 4
+- [ ] Phase 3-12 per plan
 
-## Active scaffolding work
-1. `npx create-next-app@latest .` (TypeScript, Tailwind, App Router, no src dir)
-2. Tailwind config: disable shadow/radius/font-family/blur/ring utilities
-3. Move Courier Prime to `public/fonts/` and wire via `next/font/local`
-4. Create `app/globals.css` with Zetamac Pure tokens (light + dark variants)
-5. Create base layout with theme attribute on `<html>`
-6. Stub pages: landing, login/signup, today, settings, profile
-7. Supabase client utilities (`lib/supabase/client.ts`, `server.ts`, `middleware.ts`)
-8. `.env.local.example` with required env vars
+## Verification (Phase 0)
+- `npm run typecheck` -> clean
+- `npm run lint` -> clean (0 errors, 0 warnings)
+- `npm run dev` -> Ready in 775ms, no deprecation warnings
+- `GET /` -> 200
+- `GET /settings` -> 307 -> /login?next=/settings (gated correctly)
+- `GET /profile/me/history` -> 307 -> /login?next=/profile/me/history (gated correctly, previously was leaking)
+- `GET /profile/someuser` -> 404 (page doesn't exist yet, but anonymous reaches it = correct allowlist behavior)
+
+## Outstanding (before Phase 1)
+- User must complete external setup (Supabase project creation, Vercel link, Resend SMTP, MCP tokens). See setup guide.
+- Optional: `git commit -am "phase 0 scaffold + cleanup"` before starting Phase 1.
+
+## Next action
+Phase 1: auth + profiles + onboarding + preferences hub. Includes:
+- Supabase Auth: email/password + Google with identity linking
+- Resend wired as Supabase Auth's SMTP provider
+- Migration `supabase/migrations/0001_init.sql` (profiles, user_game_pins, daily_bonus, submissions, daily_aggregates, ratings, mind_elo, friendships, groups, group_members, group_invites, badges, user_badges, xp_events)
+- `handle_new_user` trigger
+- Onboarding flow (username, theme choice, optional avatar)
+- Settings hub (Profile / Account / Preferences / Notifications)
+- Avatar upload to Supabase Storage
+- Privacy toggle, hard-delete cascade with username confirmation
