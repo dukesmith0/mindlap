@@ -1,0 +1,259 @@
+<!-- Signature animation: streak ribbon pulses (opacity) every 2s -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>mindlap-style-1: Zetamac Pure</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --ink: #111111;
+    --muted: #666666;
+    --line: #e5e5e5;
+    --accent: #0066cc;
+    --mono: "Courier New", Courier, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--mono);
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  .meta-strip {
+    border-bottom: 1px solid var(--line);
+    padding: 8px 24px;
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .meta-strip b { color: var(--ink); font-weight: normal; }
+  .meta-strip span::before { content: "// "; color: var(--muted); }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 32px;
+    border-bottom: 1px solid var(--line);
+  }
+  .logo { font-size: 18px; letter-spacing: -0.5px; }
+  .logo a { color: var(--ink); text-decoration: none; }
+  .logo a:hover { color: var(--accent); }
+  .topright { display: flex; align-items: center; gap: 24px; }
+  .streak {
+    color: var(--accent);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+  }
+  .level { color: var(--muted); }
+  .avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    min-height: calc(100vh - 110px);
+  }
+  .sidebar {
+    border-right: 1px solid var(--line);
+    padding: 32px 24px;
+  }
+  .sidebar ul { list-style: none; padding: 0; margin: 0; }
+  .sidebar li { margin-bottom: 14px; }
+  .sidebar a {
+    color: var(--muted);
+    text-decoration: none;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .sidebar a:hover { color: var(--accent); }
+  .sidebar a.active { color: var(--ink); }
+  .sidebar a.active::before {
+    content: ">";
+    color: var(--accent);
+    margin-right: -4px;
+  }
+  .sidebar svg { opacity: 0.7; }
+
+  .main { padding: 48px 64px; max-width: 720px; }
+  h1 { font-size: 22px; font-weight: normal; margin: 0 0 4px; letter-spacing: -0.3px; }
+  .subtitle { color: var(--muted); font-size: 13px; margin-bottom: 40px; }
+
+  .game-card {
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    padding: 24px 0;
+    margin-bottom: 48px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 24px;
+  }
+  .gc-title { display: flex; align-items: center; gap: 10px; font-size: 17px; }
+  .star { color: var(--accent); }
+  .gc-meta { color: var(--muted); font-size: 13px; margin-top: 6px; }
+  .gc-meta b { color: var(--ink); font-weight: normal; }
+  .gc-pill {
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 6px;
+  }
+  .gc-pill::before { content: "["; }
+  .gc-pill::after { content: "]"; }
+
+  .play-btn {
+    background: none;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 8px 24px;
+    font-family: var(--mono);
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 0;
+  }
+  .play-btn:hover { background: var(--accent); color: white; }
+
+  h2 { font-size: 14px; font-weight: normal; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin: 0 0 16px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  th, td {
+    text-align: left;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  th { color: var(--muted); font-weight: normal; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  td.score { text-align: right; }
+  .lb-avatar {
+    display: inline-block;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--line);
+    margin-right: 10px;
+    vertical-align: middle;
+  }
+  .tier { color: var(--muted); font-size: 12px; }
+  .tier.diamond { color: #4a90e2; }
+  .tier.platinum { color: #6b7280; }
+  .tier.gold { color: #b8860b; }
+  .tier.silver { color: #888; }
+  .tier.bronze { color: #a0522d; }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 24px 64px;
+    margin-top: 48px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .badges { display: flex; gap: 24px; align-items: center; }
+  .badge { display: flex; align-items: center; gap: 8px; }
+  .badge-dot {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  .badge.locked .badge-dot { background: var(--line); }
+  .badge.locked { opacity: 0.5; }
+</style>
+</head>
+<body>
+
+<div class="meta-strip">
+  <span><b>Style:</b> Zetamac Pure</span>
+  <span><b>Accent:</b> #0066cc</span>
+  <span><b>Type:</b> Courier New mono throughout</span>
+  <span><b>Feel:</b> spartan, fast, no nonsense</span>
+</div>
+
+<header class="topbar">
+  <div class="logo"><a href="#">mindlap</a></div>
+  <div class="topright">
+    <span class="streak">12 day streak</span>
+    <span class="level">Lv 7</span>
+    <div class="avatar">D</div>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <ul>
+      <li><a href="#" class="active">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
+        Today</a></li>
+      <li><a href="#">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="6 4 20 12 6 20"/></svg>
+        Play</a></li>
+      <li><a href="#">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h4V10H4zM10 20h4V4h-4zM16 20h4v-7h-4z"/></svg>
+        Leaderboards</a></li>
+      <li><a href="#">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+        Profile</a></li>
+      <li><a href="#">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3 3-5 6-5s6 2 6 5"/></svg>
+        Friends</a></li>
+      <li><a href="#">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/></svg>
+        Groups</a></li>
+      <li><a href="#">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3m10-10h-3M5 12H2"/></svg>
+        Settings</a></li>
+    </ul>
+  </aside>
+
+  <main class="main">
+    <h1>Today's Games</h1>
+    <div class="subtitle">Tuesday, April 28</div>
+
+    <div class="game-card">
+      <div>
+        <div class="gc-title">Speed Math <span class="star">*</span></div>
+        <div class="gc-meta">Best today: <b>47</b></div>
+        <div class="gc-pill">Not started</div>
+      </div>
+      <button class="play-btn">play -&gt;</button>
+    </div>
+
+    <h2>Leaderboard preview</h2>
+    <table>
+      <thead><tr><th>#</th><th>player</th><th>tier</th><th class="score">score</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><span class="lb-avatar"></span>neuralnomad</td><td><span class="tier diamond">diamond</span></td><td class="score">8421</td></tr>
+        <tr><td>2</td><td><span class="lb-avatar"></span>axonflux</td><td><span class="tier platinum">platinum</span></td><td class="score">7892</td></tr>
+        <tr><td>3</td><td><span class="lb-avatar"></span>synaptik</td><td><span class="tier gold">gold</span></td><td class="score">7104</td></tr>
+        <tr><td>4</td><td><span class="lb-avatar"></span>cortexcat</td><td><span class="tier silver">silver</span></td><td class="score">6580</td></tr>
+        <tr><td>5</td><td><span class="lb-avatar"></span>dendrite42</td><td><span class="tier bronze">bronze</span></td><td class="score">6122</td></tr>
+      </tbody>
+    </table>
+  </main>
+</div>
+
+<footer>
+  <div class="badges">
+    <span>badges:</span>
+    <div class="badge"><span class="badge-dot"></span>first-100</div>
+    <div class="badge"><span class="badge-dot"></span>week-streak</div>
+    <div class="badge"><span class="badge-dot"></span>top-1000</div>
+    <div class="badge locked"><span class="badge-dot"></span>perfect-day</div>
+  </div>
+</footer>
+
+</body>
+</html>

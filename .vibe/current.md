@@ -1,27 +1,35 @@
 # Current
 
-Active: mindlap v1, Phase 1 COMPLETE + LIVE. Migrations applied to Supabase project `nookxuvlvwtppitqguxf`. Signup verified working after fixing #6.
+Active: mindlap v1, Phase 1 COMPLETE + LIVE on Vercel. Awaiting manual signup retest then Phase 2 kickoff.
 
-## Recent
-- Phase 0 commit c7467d9, Phase 1 commit b01656a (pushed to dukesmith0/mindlap:main).
-- Migrations 0001-0005 applied via `scripts/apply-migrations.mjs` (Supabase Management API). Schema verified: 16 tables, 33 RLS policies, 7 games, 13 badges, auth trigger, friend-code RPC.
-- Bug #6 fixed: signup hit "Database error saving new user" because `generate_friend_code()` (0002) referenced the dropped `profiles.friend_code` column and lacked `extensions` on its search_path (pgcrypto's home). Migration 0005 fixed both.
-- MCP servers: Vercel HTTP MCP authed via OAuth (limited team access on personal scope). Supabase npx MCP wired with `--access-token` + `--project-ref` flags.
+## Last commits
+- `8bb869b` fix: signup callback 404 + friend_code trigger crash. Moved `/auth/callback` out of route group, applied 0005 to fix `generate_friend_code` (column rebind + extensions search_path), 0003 group_members policy syntax fix, .vibe condensed.
+- `b01656a` Phase 1: auth, profiles, onboarding, settings + security hardening.
+- `c7467d9` Phase 0 cleanup: speed-insights, proxy auth, eslint flat config.
+- `38c8726` Phase 0 scaffold.
 
-## Outstanding
-1. Manual signup retry on Vercel deployment.
-2. Configure Supabase Auth Site URL + redirect allowlist so Resend confirmation emails point to the deployed URL, not localhost (Resend templates inherit Supabase's Site URL).
-3. Re-add Google OAuth client redirect URI `https://nookxuvlvwtppitqguxf.supabase.co/auth/v1/callback` in Google Cloud Console (the redirect_uri_mismatch issue from earlier).
+## Live state
+- Supabase project `nookxuvlvwtppitqguxf`: migrations 0001-0005 applied. 16 tables, 33 RLS policies, 7 games, 13 badges, auth trigger, friend-code RPC. Verified via `scripts/verify-migrations.mjs`.
+- Vercel deployment: auto-deploys from `dukesmith0/mindlap:main`. Latest deploy = commit 8bb869b.
+- MCP servers: Supabase npx MCP (read-only) wired with `--access-token` + `--project-ref`. Vercel HTTP MCP authed via OAuth (personal scope, limited team access).
+
+## Outstanding before Phase 2
+1. Manual signup retest on Vercel deployment (email/pw). Email link should now resolve to `/auth/callback`, exchange code, land on `/onboarding`.
+2. Manual Google OAuth signin retest (after redirect URI was added in Google Cloud Console).
+3. Confirm Supabase Auth Site URL = `https://mindlap.vercel.app` and Redirect URLs allowlist includes `http://localhost:3000/auth/callback`, `https://mindlap.vercel.app/auth/callback`, and the wildcard preview pattern.
+
+## New session ramp-up
+For a fresh session resumption, read in order: `.vibe/current.md` (this), `.vibe/understanding.md`, `.vibe/decisions.md`, `.vibe/plans.md`, `.vibe/risks.md`, `.vibe/bugs.md`. Visual reference: open `.vibe/docs/style-reference/zetamac-pure.html` in browser. Game logic source: `.vibe/docs/mindgames/`.
 
 ## Next phases
-- [ ] Phase 2: game shell + core 4 (Math, Digit Span, N-Back, Stroop)
-- [ ] Phase 3: remaining 3 games
-- [ ] Phase 4: today's hub + leaderboards + double-XP + pins
-- [ ] Phase 5: profile + improvement UX
+- [ ] Phase 2: game shell + core 4 (Math, Digit Span, N-Back, Stroop). Port mindgames vitest cases (~129 tests / 10 files). Submit-vs-retry result screen. Server Action `submitScore()` with Zod validation.
+- [ ] Phase 3: remaining 3 games (Reaction, Minesweeper, Word Recall)
+- [ ] Phase 4: today's hub + leaderboards + double-XP rotation + pins + public-read gating
+- [ ] Phase 5: profile + improvement UX (streak ribbon, per-game cards, heatmap, history table, graphs)
 - [ ] Phase 6: XP + badges
 - [ ] Phase 7: friends
 - [ ] Phase 8: groups
 - [ ] Phase 9: tutorials
 - [ ] Phase 10: Glicko-2 silent
-- [ ] Phase 11: launch readiness (incl. rate limiting)
-- [ ] Phase 12: flip elo (post-launch)
+- [ ] Phase 11: launch readiness (incl. rate limiting per Risk #R13)
+- [ ] Phase 12 (post-launch): flip elo at threshold

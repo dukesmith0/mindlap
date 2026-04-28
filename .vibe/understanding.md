@@ -89,6 +89,7 @@ Vitest (`debug/**/*.test.ts`), Playwright (`tests/e2e/*.spec.ts`). Run: `npm tes
 
 ## Docs
 - [docs/mindgames/](docs/mindgames/): full reference copy of source mindgames `.vibe/`
+- [docs/style-reference/zetamac-pure.html](docs/style-reference/zetamac-pure.html): locked visual mock for `/today` (open in browser). Companion `.md` notes what to lift verbatim and what to swap (font family > Courier Prime, dark mode tokens, tier colors).
 
 ## Reference
 mindgames (private) `C:\Users\craigs\OneDrive\Desktop\Projects\mindgames`. GitHub: dukesmith0/mindgames (private), dukesmith0/mindlap (public).
