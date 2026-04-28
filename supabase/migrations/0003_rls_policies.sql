@@ -132,19 +132,19 @@ create policy "owner can delete group"
 
 -- ============================================================================
 -- group_members
--- Column-shadowing fix: alias the table as `gm_outer` and qualify the
--- correlated subqueries against `gm_outer.group_id`.
+-- Column-shadowing fix: qualify the outer row's group_id with the full
+-- table name (CREATE POLICY does not support a table alias).
 -- ============================================================================
 alter table public.group_members enable row level security;
 
 create policy "group_members visible to fellow members or public-group viewers"
-  on public.group_members as gm_outer for select
+  on public.group_members for select
   using (
     exists (select 1 from public.group_members gm_inner
-            where gm_inner.group_id = gm_outer.group_id
+            where gm_inner.group_id = public.group_members.group_id
               and gm_inner.user_id = auth.uid())
     or exists (select 1 from public.groups g
-               where g.id = gm_outer.group_id and g.is_public)
+               where g.id = public.group_members.group_id and g.is_public)
   );
 
 -- Insert paths:

@@ -1,90 +1,104 @@
 # Decisions
+All dated 2026-04-28 unless noted.
 
-## Technical Decisions
-- Stack: Next.js 16 App Router + Supabase + Vercel + TypeScript. Server Components default, Server Actions for mutations. (2026-04-28)
-- Keep all 7 mindgames, port to TS modules. Math, Digit Span, N-Back, Stroop = ★ core cognitive metrics. Reaction, Minesweeper, Word Recall secondary. (2026-04-28)
-- Auth: Supabase Auth (email/pw + Google), identity linking on shared verified email. `handle_new_user` trigger creates profile row with derived username. (2026-04-28)
-- Email service: Resend via Supabase Auth's SMTP hook. Verification, password reset, group invites all flow through Resend. Branded transactional templates. (2026-04-28)
-- Account deletion: hard delete with cascade. All submissions/aggregates/ratings/friendships/group_memberships/badges/xp/pins removed. Group ownership transfers to oldest admin or group dissolves. Avatar removed from Storage. No tombstones. (2026-04-28)
-- Profile privacy: single `is_public` switch on profiles. Default public. Private = `/profile/[username]` shows sparse private view; submitted scores still appear on leaderboards with username, but profile link routes to private view. Friends see full profile. (2026-04-28)
-- Open-ended play, no daily seed. Users can play any game any number of times any day. Statistical fairness from each game's random distribution (zetamac model). Submit-vs-retry flow on each play (mindgames model). Leaderboards slice submitted scores into time windows: Today / 7-day / All-time. (2026-04-28)
-- Storage cap: 20 submissions per (user, game, UTC day) FIFO. Detail rows older than 90 days deleted by nightly cron. `daily_aggregates` kept forever. (2026-04-28)
-- Daily Double-XP: 2 of 7 games per UTC day, deterministic rotation via stable hash of date. Calendar widget shows next 14 days. `[2x]` bracket-pill on affected game cards on `/today`. (2026-04-28)
-- User game pins: per-user pinned games via `user_game_pins`. Sort to top of `/today`. Drag-reorder in `/settings`. Visual: `>` glyph (Zetamac Pure idiom). (2026-04-28)
-- Globally-starred core metrics use ★, user pins use `>`. Both can show on the same card. Independent. (2026-04-28)
-- Improvement tracking is the v1 headline UX. Profile foregrounds streak (pulsing ribbon), per-game PB + date + worst + 7-day median + 30-day sparkline + plays + heatmap. Daily history table at `/profile/me/history`, line charts at `/profile/me/graphs` with All-plays vs Daily-average toggle. Improvement framed in copy not just numbers. (2026-04-28)
-- Settings hub at `/settings`: sectioned (Profile / Account / Preferences / Notifications). Theme toggle, pinned-games drag-reorder, tutorial replay, master skip-tutorials toggle. Linked from sidebar nav and topbar avatar dropdown. (2026-04-28)
-- Onboarding flow: username confirm > theme choice (light/dark with live swatches) > optional avatar > land on `/today`. (2026-04-28)
-- Ranking: Glicko-2 vs population + Personal Improvement layer. Per-game Glicko-2 against virtual opponent at 30-day population median. RD-weighted composite Mind-elo. Multiplayer-ready. (2026-04-28)
-- Glicko-2 SIDELINED in v1 (silent plumbing). Ratings persist on every submitted score, UI gated by `ELO_VISIBLE=false`. Threshold for flip: ≥25 users × ≥10 submissions/game. (2026-04-28)
-- v1 reward loop: streak + PB + badges + raw-score leaderboards + double-XP days. Elo is post-launch flip. (2026-04-28)
-- XP sources: participation (capped 5/game/day), score-scaled (only on a new daily PB), streak bonus. 2x on the day's double-XP games. Level = `floor(sqrt(xp/100))`. Cosmetic only, no gameplay effect. (2026-04-28)
-- Badges 4 categories: streak (3/7/30/100), PB (first-PB per game, all-7-PBs, all-7-today), elo-tier (defined, inert until elo flip), achievement (perfect N-back day, sub-300ms reaction, etc.). (2026-04-28)
-- Friends: mutual-accept, friend filter on leaderboards. (2026-04-28)
-- Groups: private invite-only with group leaderboards. Invite by username (in-app) or email-link token via Resend. Public discoverable groups deferred. (2026-04-28)
-- Tutorials: per-game step configs in `lib/tutorials/<game>.ts`, cutout-mask overlay. First-play auto + "How to play" replay. Tracked via `profiles.tutorials_seen`. Master skip in `/settings`. (2026-04-28)
-- Anti-cheat baseline: RLS + score range checks only. Replay-token system deferred. Risk #R1. (2026-04-28)
-- UX: desktop-first responsive. Mobile must work, not optimized first. (2026-04-28)
-- Testing: vitest (unit) + Playwright (e2e). Port mindgames vitest cases. (2026-04-28)
-- Public-read / gated-action policy. Anonymous browses `/`, `/today` (preview), `/leaderboards` (top 10), public `/profile/[username]`. Playing, "see more" leaderboards, friending, group ops, all submissions require auth. (2026-04-28)
-- Visual style: Zetamac Pure (locked). Courier Prime via `next/font/google`. Tokens in CSS variables. Pure CSS variables + minimal Tailwind utilities approach. White bg light, dark bg dark, single accent #0066cc (light) / #5aa3ff (dark). Square corners, no shadows, 1px borders only. One signature animation: streak ribbon opacity pulse 2s. (2026-04-28)
-- Single Postgres function `process_submission()`: writes submission, updates aggregate, updates Glicko, awards XP (with double-XP day bonus), evaluates badges transactionally. (2026-04-28)
-- Build: v1 = phases 0-8 + 11. Phase 10 (Glicko silent) integrated from phase 2 onward. Phase 12 flip is post-launch. (2026-04-28)
-- Storage cap: NO per-day cap (raised from 20 FIFO). Every submitted play stored in `submissions` for 90 days, then deleted. `daily_aggregates` kept forever. Decision: 20 FIFO would evict legitimate enthusiasts. (2026-04-28)
-- Streak: any submission per UTC day maintains streak. Lowest friction, drives daily habit. Breadth incentivized via badges (all-7-today). (2026-04-28)
-- Anonymous play: must sign in (no try-before-signup play). Public-read on `/`, `/today` (preview), `/leaderboards` (top 10), public profiles. Trade-off accepted: lose try-now hook for cleaner data. (2026-04-28)
-- Group privacy: per-group toggle (public/private) at create time, owner-flippable. Public groups show in `/groups` directory, instant 1-click join. Private groups need invite/code. (2026-04-28)
-- Group roles: owner (rename, settings, promote/demote, kick, transfer, delete, regenerate join_code), admin (invite, kick non-owners, revoke invites), member (leave, invite only if `allow_member_invite=true`). (2026-04-28)
-- 8-char join codes for groups + friend codes for friend connections. Excludes ambiguous chars (0/O/1/I/l). Friend codes regenerable from settings, group join_codes regenerable by owner. (2026-04-28)
-- Shareable code links: `/f/<friend_code>` and `/g/<join_code>`. Anon click stashes code in signed cookie, signup auto-completes the friend request or group join. Authed click 1-tap accept. OG images render inviter/group name. (2026-04-28)
-- Username uniqueness via citext UNIQUE. 6-month rotation: profiles inactive >= 6 months get `<name>_<id6>` appended, original freed. Warning email at 5.5 months. On next login, user picks new username. Profanity filter: `naughty-words-js` + reserved list (admin/api/login/etc). Rate-limited to 1 username change per 30 days. (2026-04-28)
-- Default avatar: 28px circle with `--ink` fill, first letter of display_name (or username) in white. No external avatar service. (2026-04-28)
-- Custom profile picture features (frames, level-locked styles, animated avatars) deferred. v1 = basic upload + default initial. (2026-04-28)
-- In-game type scale (legibility-first, overrides body 15px): Speed Math problem 56px, Digit Span sequence 80px, N-Back letter 96px, Stroop word 56px, Reaction instructions 28px, Minesweeper cell 22px, Word Recall words 28px. All Courier Prime. (2026-04-28)
-- Profile is the v1 main goal. Improvement-tracking visualizations are the headline UX: per-game cards with PB+date+worst+7-day median+30-day sparkline+plays+improvement copy, 90-day heatmap, daily history table, SVG line graphs (all-plays vs daily-average toggle, mindgames parity). (2026-04-28)
-- xp_events.source enum: `submission`, `daily_pb`, `streak`, `double_xp_bonus`, `daily_complete`, `level_up`. multiplier column captures 2x bonuses. (2026-04-28)
-- Daily boundary: America/Los_Angeles (Pacific Time), NOT UTC. Streak boundary, daily_aggregates date, daily_bonus rotation, daily participation cap, all anchor on PT day. `played_pt_date date GENERATED ALWAYS AS ((played_at AT TIME ZONE 'America/Los_Angeles')::date)`. (2026-04-28)
-- Streak bonus formula: `multiplier = min(1.0 + 0.1 * (streak_current - 1), 2.5)`. Day 1 = 1.0x, day 2 = 1.1x, day 16 = 2.5x, plateau thereafter. Applied to score-scaled XP. (2026-04-28)
-- Score-scaled XP: on a new daily PB, award `floor(z * 50)` XP where z = standardized score against population (clamped 0-200). Rewards real improvement, not raw score. (2026-04-28)
-- No streak grace period. Miss a PT day, streak resets to 0. (2026-04-28)
-- XP earned once per submitted play (not per unsubmitted attempt). Submissions are the only scores recorded. (2026-04-28)
-- Track total plays AND total recorded per user per game AND globally per user. `daily_aggregates.plays_total` (every finished play) + `plays_submitted` (subset that was submitted). Profile counters `total_plays` and `total_submitted` (lifetime). Server Action `record_play_event(game_key)` increments plays_total on game finish; submission insert trigger increments plays_submitted. (2026-04-28)
-- Today's leaderboards fully public-readable. Drop the top-10 anonymous cap. Anonymous and authed users both see the entire leaderboard for any tab. Authed users see a "your rank" highlight row in their position (sticky-pinned to viewport if scrolled past). Discovery + SEO + leaderboard-as-marketing. Action gates remain (no play / no friend / no group as anon). (2026-04-28)
-- Group member cap: default 100, max 1000 (hard ceiling). Owner can raise within range from group settings. (2026-04-28)
-- Public group join: instant 1-click join. Owner can flip to request-approval (deferred to v2). (2026-04-28)
-- Friend request rate limit: 30 outgoing per hour per user. (2026-04-28)
-- Password requirements: 8 char minimum, at least 1 number or symbol. Tighter than Supabase default. (2026-04-28)
-- Cookie consent banner: shown to all visitors, one-time dismiss. Geo-targeting deferred. (2026-04-28)
-- Bug feedback channel: GitHub issues link + email alias `feedback@<domain>` (mailto in footer). (2026-04-28)
-- Tier thresholds (post elo flip): percentile-based. Top 1% diamond, top 5% platinum, top 15% gold, top 35% silver, rest bronze. Recomputed weekly. (2026-04-28)
-- Tutorial first-play: auto-trigger overlay with prominent Skip button. Master "skip all tutorials" toggle in settings. (2026-04-28)
-- Achievement progress visible on locked badges: "X of Y plays", "Y days remaining", or threshold target. (2026-04-28)
-- First-launch empty leaderboards: copy "Be the first to set a score on Speed Math today!" with prominent Play CTA. (2026-04-28)
-- Anonymous on `/today`: real top-5 leaderboard scores visible, not blurred. Drives "high score to beat" curiosity. (2026-04-28)
-- Courier Prime loaded via `next/font/local` from `app/fonts/` (.ttf files for Regular/Bold/Italic/BoldItalic), NOT `next/font/google`. Local fonts are GDPR-clean (no external CDN) and remove the Google Fonts request. Earlier plan note about `next/font/google` superseded. (2026-04-28)
-- Proxy auth gate: `proxy.ts` (Next 16 convention) replaces `middleware.ts`. Uses an `isPublicPath()` function rather than flat prefix allowlists so `/profile/me/*` can be excluded while `/profile/<username>` remains public. Matcher excludes `/api/*` so route handlers manage their own auth. Session cookies refreshed during `getUser()` are carried onto redirect responses. (2026-04-28)
-- Vercel Speed Insights wired in `app/layout.tsx` via `@vercel/speed-insights/next`. Tracks Core Web Vitals once deployed. (2026-04-28)
-- HTTP security headers (CSP, HSTS, X-Frame-Options=DENY, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, COOP=same-origin) set in `next.config.ts` `headers()` block. CSP allows Supabase REST + websocket and Vercel Speed Insights only. (2026-04-28)
-- Password policy bumped from 8 to 10 chars + 1 number/symbol per OWASP ASVS L1. Common-passwords list deferred to Phase 11. (2026-04-28)
-- friend_code moved off `profiles` (publicly SELECT-able) onto `profile_secrets` (owner-only SELECT) in migration 0004. RPC `find_user_by_friend_code(text)` performs lookups without exposing the codes themselves. RPC `regenerate_friend_code()` rotates per-owner. Closes mass-enumeration of friend codes via the public profiles table. (2026-04-28)
-- `requestPasswordResetAction` always returns `ok:true`; signup treats "already registered" as success. Both close account-enumeration via auth UX. (2026-04-28)
-- `signOutAction` pinned to `scope: 'global'` so all refresh tokens revoke server-side. (2026-04-28)
-- Theme cookie is httpOnly + secure-in-prod. Server-only consumption (root layout reads via `cookies()`). (2026-04-28)
-- `actions/auth.ts` and `actions/profile.ts` declare `import "server-only"` to fence service-role and admin paths from any accidental client bundling. (2026-04-28)
-- `touch_last_signin` trigger wired in 0004; previously declared but unattached, so `last_signin_at` would have been frozen at signup. Drives the 6-month username rotation cron in Phase 11. (2026-04-28)
-- Rate limiting on signup/signin/reset deferred to Phase 11 launch readiness with a Vercel KV / Upstash bucket. v1 dev-deploy relies on Supabase Auth's per-IP throttling (default 30 attempts / 5min / IP, 3 emails / hr / address). NOT acceptable for public launch; document in risks. (2026-04-28)
-- npm audit flagged 3 moderate CVEs in PostCSS via Next 16. None exploitable in our usage (PostCSS only runs at build time on developer-controlled CSS). Acknowledged and waived; revisit when Next bumps the dep. (2026-04-28)
+## Stack & infra
+- Next.js 16 App Router + Supabase + Vercel + TS strict. RSC default, Server Actions for mutations.
+- Auth: Supabase email/pw + Google with identity linking on shared verified email. `handle_new_user` trigger creates `profiles` + `profile_secrets` rows.
+- Email: Resend via Supabase Auth SMTP hook. Verification, reset, group invites.
+- Vercel Speed Insights via `@vercel/speed-insights/next` in root layout.
+- HTTP security headers (CSP, HSTS, X-Frame-Options=DENY, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, COOP=same-origin) in `next.config.ts`. CSP allows Supabase REST+ws and Speed Insights only.
+- Proxy auth gate at `proxy.ts` (Next 16 convention, not `middleware.ts`). `isPublicPath()` excludes `/profile/me*` while allowing `/profile/<username>`. Matcher excludes `/api/*`. Refreshed cookies copied onto redirects.
+- npm audit: 3 moderate PostCSS CVEs via Next 16, build-time only on dev-controlled CSS, waived. Revisit when Next bumps.
+
+## Games & play
+- Keep all 7 mindgames, port to TS. Math/Digit Span/N-Back/Stroop = ★ core; Reaction/Minesweeper/Word Recall secondary.
+- Open-ended play, no daily seed. Each game uses its own random distribution (zetamac model).
+- Submit-vs-retry on each play (mindgames model). Retry replays without saving; submit writes.
+- Storage: NO per-day cap. Every submitted play stored. Detail rows deleted at 90 days; `daily_aggregates` kept forever. (Was 20 FIFO, raised to remove evict-the-enthusiast risk.)
+- Daily boundary: America/Los_Angeles (PT), not UTC. `played_pt_date` GENERATED column on submissions. Streak boundary, daily_aggregates date, double-XP rotation, all PT-anchored.
+- Streak: any submission per PT day maintains. No grace period. Resets to 0 on missed day.
+- Track `daily_aggregates.plays_total` (every finished play) + `plays_submitted` (subset). Profile counters `total_plays` + `total_submitted`. `record_play_event(game_key)` increments plays_total on game finish; submission trigger increments plays_submitted.
+- Anti-cheat: RLS + DB CHECK + auth.uid()-tied insert only. Replay-token system deferred (Risk #R1).
+
+## Style
+- Zetamac Pure (locked). Courier Prime via `next/font/local` from `app/fonts/` (.ttf for Reg/Bold/Italic/BoldItalic), GDPR-clean (NOT `next/font/google`).
+- Pure CSS variables in `app/globals.css` + minimal Tailwind utilities (most disabled).
+- Tokens: light bg #fff/ink #111/muted #666/line #e5e5e5/accent #0066cc; dark equivalents #0f0f0f/#f0f0f0/#888/#2a2a2a/#5aa3ff.
+- Square corners, no shadows, 1px borders only. One animation: streak ribbon opacity pulse 2s.
+- In-game type scale (overrides body 15px): Math 56, Digit Span 80, N-Back 96, Stroop 56, Reaction 28, Mine 22, Word Recall 28.
+
+## Reward loop & XP
+- v1 reward loop: streak + PB + badges + raw-score leaderboards + double-XP days. Elo is post-launch flip.
+- XP sources: participation (capped 5/game/day), score-scaled `floor(z * 50)` on new daily PB only (z = pop-standardized, clamped 0-200), streak bonus.
+- Streak bonus: `multiplier = min(1.0 + 0.1 * (streak_current - 1), 2.5)`. Day 1 = 1.0x, Day 16 = 2.5x plateau. Applied to score-scaled XP.
+- Daily Double-XP: 2 of 7 games per PT day, deterministic date-hash rotation. `[2x]` pill on `/today`. Calendar 14 days ahead.
+- Level = `floor(sqrt(xp/100))`. Cosmetic only. XP per submitted play (not per unsubmitted attempt).
+- `xp_events.source` enum: submission, daily_pb, streak, double_xp_bonus, daily_complete, level_up. `multiplier` column captures 2x.
+
+## Glicko-2
+- Per-game rating vs virtual opponent at 30-day population median. RD-weighted composite Mind-elo. Multiplayer-ready.
+- SIDELINED in v1: ratings persist on every submitted score, UI gated by `ELO_VISIBLE=false`. Threshold to flip: ≥25 users × ≥10 submissions/game.
+- Single PG function `process_submission()` writes submission + aggregate + Glicko + XP (with 2x bonus) + badge eval, all transactional.
+
+## Profile & UX
+- Improvement-tracking is the v1 headline. Profile shows: streak ribbon (pulsing), level chip, total plays, all-time PB count + per-game cards (PB+date, lifetime worst, 7-day median, 30-day sparkline, plays count) + 90-day heatmap + history table + graphs page (All-plays vs Daily-average toggle, mindgames parity) + badge wall.
+- `/settings` hub: Profile / Account / Preferences / Notifications. Theme, pin reorder, tutorial replay, master skip.
+- Onboarding: username confirm > theme choice (live swatches) > optional avatar > `/today`.
+- Default avatar: 28px circle `--ink` fill, first letter of display_name (or username) in white. No external service. Custom avatar features (frames, animated, level-locked) deferred.
+- Globally-starred core uses ★, user pins use `>`. Both can show on same card. Independent.
+
+## Privacy & accounts
+- `profiles.is_public` (default true). False = sparse `/profile/[username]`; submissions still on leaderboards with username; private view on click. Friends see full.
+- `profile_secrets` table holds `friend_code` (owner-only RLS). RPCs `find_user_by_friend_code(text)` and `regenerate_friend_code()` are SECURITY DEFINER. Migration 0004 moved off `profiles` to close mass-enumeration.
+- Username: citext UNIQUE. 6-month rotation cron renames inactive accounts to `<name>_<id6>` and frees the original. Warning email at 5.5mo. User picks new on next login. Profanity filter (`naughty-words-js`) + reserved list (admin/api/login/etc). Rate limit 1 change / 30 days.
+- Hard delete with cascade. auth.users row + all data removed. Group ownership transfers to oldest admin or dissolves. No tombstones.
+- `requestPasswordResetAction` always returns ok; signup treats "already registered" as success. Closes account-enumeration via auth UX.
+- `signOutAction` pinned to `scope: 'global'` so all refresh tokens revoke server-side.
+- Theme cookie httpOnly + secure-in-prod. Server-only consumption (root layout reads via `cookies()`).
+- `actions/auth.ts` + `actions/profile.ts` declare `import "server-only"` to fence service-role/admin paths.
+- Password: 10+ chars, ≥1 number/symbol (OWASP ASVS L1, tightened from 8). Common-passwords list deferred to Phase 11.
+- App-level rate limiting (signup/signin/reset) deferred to Phase 11 with Vercel KV/Upstash bucket. v1 dev-deploy relies on Supabase Auth's per-IP throttling. Not acceptable for public launch (Risk #R13).
+
+## Friends & groups
+- Friends: mutual-accept; friend filter on leaderboards.
+- Groups: per-group public/private toggle (owner-flippable). Public in `/groups` directory, instant 1-click join. Private needs invite or join_code.
+- Group roles: owner (rename, settings, promote/demote, kick, transfer, delete, regen join_code) / admin (invite, kick non-owners, revoke invites) / member (leave, invite only if `allow_member_invite=true`).
+- Group cap: default 100, max 1000 (hard ceiling). Owner-raisable in settings.
+- Public-group request-approval flow deferred to v2.
+- 8-char codes (friend_code + group join_code), Crockford-ish alphabet (no 0/O/1/I/L). Friend codes regen-from-settings; join_codes regen-by-owner.
+- Shareable links: `/f/<friend_code>`, `/g/<join_code>`. Anon click stashes code in signed cookie; signup auto-completes friend request or group join. Authed click is 1-tap accept. OG images render inviter/group name.
+- Friend request rate limit: 30 outgoing/hour/user.
+
+## Public-read / gating
+- Anonymous browses `/`, `/today` (preview), `/leaderboards` (FULL no cap), public `/profile/[username]`. Anonymous play, "see more" leaderboards beyond preview, friending, group ops, all submissions require auth. Trade-off: lose try-now hook for cleaner data.
+- Anonymous `/today` shows real top-5 leaderboard scores (not blurred), drives "high score to beat" curiosity.
+- Authed users get sticky "your rank" highlight row on leaderboards.
+
+## Tier & badges (post-flip)
+- Tiers percentile-based: top 1% diamond, 5% platinum, 15% gold, 35% silver, rest bronze. Recomputed weekly.
+- Badge cats: streak (3/7/30/100), PB (first per game, all-7-PBs, all-7-today), elo-tier (defined, inert v1), achievement (perfect N-back day, sub-300ms reaction avg, etc.).
+- Achievement progress visible on locked badges ("X of Y plays", threshold target, etc.).
+
+## Tutorials
+- Per-game step configs in `lib/tutorials/<game>.ts`, cutout-mask overlay. First-play auto with prominent Skip. "How to play" replay button. Tracked in `profiles.tutorials_seen`. Master skip in settings.
+
+## Misc launch
+- Cookie consent: shown to all visitors, one-time dismiss. Geo-targeting deferred.
+- Bug feedback: GitHub issues + `feedback@<domain>` mailto in footer.
+- First-launch empty leaderboard copy: "Be the first to set a score on Speed Math today!" + Play CTA.
+- Build sequence: v1 = phases 0-8 + 11. Phase 10 (Glicko silent) integrated from Phase 2. Phase 12 flip is post-launch.
+- Testing: vitest unit + Playwright e2e. Port mindgames vitest cases (~129 tests / 10 files in Phase 2).
+- UX: desktop-first responsive. Mobile must work, not optimized first.
 
 ## Assumptions
-- User has Supabase account, will create new project, provide URL + anon key.
-- User has Vercel account, will link this repo.
-- Google OAuth client provisioned in Supabase Auth, identity linking enabled.
-- Resend account created, API key in Supabase Auth SMTP config.
-- Initial player base small. Elo cold-start mitigated by silent accumulation (#R2).
+- User has Supabase + Vercel accounts. Google OAuth client provisioned in Supabase Auth, identity linking enabled. Resend account, API key in Supabase SMTP config.
+- Initial player base small. Elo cold-start mitigated by silent accumulation (Risk #R2).
 
-## Learned Lessons
-- Avoid em dashes in all written output. (2026-04-28)
-- Keep .vibe files concise. (2026-04-28)
-- Default to user-friendly defaults: when user opted for "lightest" anti-cheat but elsewhere said they want anti-cheat, ship middle path with explicit risk acknowledgment rather than blocking on contradiction. (2026-04-28)
+## Learned lessons
+- No em dashes in any output.
+- Keep .vibe files concise and token-efficient.
+- Default to user-friendly defaults: when user opted "lightest" anti-cheat but elsewhere wanted anti-cheat, ship middle path with explicit risk note rather than block on contradiction.
+- Cross-migration consistency: when moving a column to a new table (e.g. friend_code -> profile_secrets in 0004), grep every plpgsql function that referenced it. `generate_friend_code` was missed and crashed signup until 0005.
+- On Supabase, plpgsql functions touching pgcrypto must `set search_path = public, extensions` (pgcrypto isn't in `public`).
 
-## Plan Archive
+## Plan archive

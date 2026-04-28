@@ -1,40 +1,27 @@
 # Current
 
-Active: mindlap v1, Phase 1 COMPLETE. Awaiting user to apply migrations + test deployed app.
+Active: mindlap v1, Phase 1 COMPLETE + LIVE. Migrations applied to Supabase project `nookxuvlvwtppitqguxf`. Signup verified working after fixing #6.
 
-## Progress
-- [x] Phase 0 commit (c7467d9)
-- [x] Phase 1 schema: `supabase/migrations/0001_init.sql` (15 tables, indexes, CHECK constraints)
-- [x] Phase 1 trigger: `supabase/migrations/0002_handle_new_user.sql` (username + friend_code generators, gen_random_bytes for codes)
-- [x] Phase 1 RLS: `supabase/migrations/0003_rls_policies.sql` (privacy-aware aggregates/submissions, group write policies)
-- [x] Phase 1 seed: `supabase/seed.sql` (7 games + initial badge catalog)
-- [x] Helpers: lib/auth/{username,friend-code,avatar-palette}.ts + lib/theme/cookie.ts
-- [x] Tests: 25/25 passing in `debug/auth/`
-- [x] UI components: Avatar, AvatarColorPicker, StreakRibbon, BracketPill
-- [x] Server Actions: actions/auth.ts (signin/signup/google/reset/signout) + actions/profile.ts (theme/avatar/username/basics/privacy/skip-tutorials/onboarding/delete)
-- [x] Auth pages: /(auth)/login, /(auth)/signup, /(auth)/callback
-- [x] Onboarding flow: /(authed)/onboarding (2-step: username + theme; no avatar step)
-- [x] Settings hub: /(authed)/settings (Profile / Preferences / Account / DangerZone)
-- [x] Today preview: /(authed)/today (public-readable; signed-in shows streak+level+avatar)
-- [x] Layout: SSR theme via cookie, Courier Prime via next/font/local, SpeedInsights wired
-- [x] Proxy: onboarding gate, null-profile fallthrough fix, open-redirect guard
-- [x] Phase 1 review: 4 HIGH + 6 MEDIUM findings, all addressed
-- [x] Re-verify: lint clean, typecheck clean, 25/25 tests, dev Ready in 733ms
+## Recent
+- Phase 0 commit c7467d9, Phase 1 commit b01656a (pushed to dukesmith0/mindlap:main).
+- Migrations 0001-0005 applied via `scripts/apply-migrations.mjs` (Supabase Management API). Schema verified: 16 tables, 33 RLS policies, 7 games, 13 badges, auth trigger, friend-code RPC.
+- Bug #6 fixed: signup hit "Database error saving new user" because `generate_friend_code()` (0002) referenced the dropped `profiles.friend_code` column and lacked `extensions` on its search_path (pgcrypto's home). Migration 0005 fixed both.
+- MCP servers: Vercel HTTP MCP authed via OAuth (limited team access on personal scope). Supabase npx MCP wired with `--access-token` + `--project-ref` flags.
 
-## Outstanding (your action items before manual testing)
-1. Apply migrations to Supabase: from project root, run `supabase db push` (or paste each .sql file into the Supabase SQL editor in order: 0001 -> 0002 -> 0003 -> seed.sql).
-2. Confirm Vercel deployment built green after the next git push.
-3. Visit production URL, sign up with email/password (verification link comes from Resend), complete onboarding, explore /settings.
+## Outstanding
+1. Manual signup retry on Vercel deployment.
+2. Configure Supabase Auth Site URL + redirect allowlist so Resend confirmation emails point to the deployed URL, not localhost (Resend templates inherit Supabase's Site URL).
+3. Re-add Google OAuth client redirect URI `https://nookxuvlvwtppitqguxf.supabase.co/auth/v1/callback` in Google Cloud Console (the redirect_uri_mismatch issue from earlier).
 
 ## Next phases
 - [ ] Phase 2: game shell + core 4 (Math, Digit Span, N-Back, Stroop)
 - [ ] Phase 3: remaining 3 games
-- [ ] Phase 4: today's hub + leaderboards + double-XP rotation + pins
-- [ ] Phase 5: profile + improvement UX (the v1 headline)
+- [ ] Phase 4: today's hub + leaderboards + double-XP + pins
+- [ ] Phase 5: profile + improvement UX
 - [ ] Phase 6: XP + badges
 - [ ] Phase 7: friends
 - [ ] Phase 8: groups
 - [ ] Phase 9: tutorials
-- [ ] Phase 10: Glicko-2 plumbing (silent)
-- [ ] Phase 11: launch readiness
-- [ ] Phase 12 (post-launch): flip elo
+- [ ] Phase 10: Glicko-2 silent
+- [ ] Phase 11: launch readiness (incl. rate limiting)
+- [ ] Phase 12: flip elo (post-launch)

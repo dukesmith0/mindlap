@@ -63,3 +63,6 @@ logs
 # DO NOT IGNORE: .vibe/ is committed by design (project context, plans, decisions).
 # DO NOT IGNORE: .claude/ project directory if present (settings.json, hooks).
 # Pre-commit guard rails (see .githooks/pre-commit) verify no secrets in staged files.
+
+.vercel
+.env*.local
