@@ -34,6 +34,7 @@ function isPublicPath(path: string): boolean {
 const ONBOARDING_ALLOWED = new Set([
   "/onboarding",
   "/auth/callback",
+  "/auth/set-password",
   "/login",
   "/signup",
 ]);

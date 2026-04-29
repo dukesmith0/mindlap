@@ -1,0 +1,126 @@
+"use client";
+
+import { useEffect, useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { submitScoreAction } from "@/actions/submission";
+
+type Direction = "higher" | "lower";
+
+const CORE_ORDER = ["math", "digit", "nback", "stroop"] as const;
+type GameKey = (typeof CORE_ORDER)[number];
+
+function nextCoreGame(key: GameKey): GameKey | null {
+  const i = CORE_ORDER.indexOf(key);
+  if (i === -1 || i === CORE_ORDER.length - 1) return null;
+  return CORE_ORDER[i + 1] ?? null;
+}
+
+export function ResultScreen({
+  gameKey,
+  gameName,
+  score,
+  direction,
+  onRetry,
+}: {
+  gameKey: GameKey;
+  gameName: string;
+  score: number;
+  direction: Direction;
+  onRetry: () => void;
+}) {
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const [submitted, setSubmitted] = useState(false);
+  const submitBtnRef = useRef<HTMLButtonElement>(null);
+  const next = nextCoreGame(gameKey);
+
+  useEffect(() => {
+    submitBtnRef.current?.focus();
+  }, []);
+
+  function submit() {
+    if (pending || submitted) return;
+    setError(null);
+    const form = new FormData();
+    form.set("game_key", gameKey);
+    form.set("score", String(score));
+    startTransition(async () => {
+      const r = await submitScoreAction(form);
+      if (!r.ok) {
+        setError(r.error);
+        return;
+      }
+      setSubmitted(true);
+      router.refresh();
+    });
+  }
+
+  // Power-user shortcuts: Enter submits, R retries, N goes to next core game.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (!submitted && e.key === "Enter") {
+        e.preventDefault();
+        submit();
+      } else if (e.key.toLowerCase() === "r") {
+        e.preventDefault();
+        onRetry();
+      } else if (e.key.toLowerCase() === "n" && submitted && next) {
+        e.preventDefault();
+        router.push(`/play/${next}`);
+      }
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [submitted, next, score]);
+
+  return (
+    <section className="game-stage">
+      <h2>{gameName} - result</h2>
+      <div className="game-problem game-text-result" aria-live="polite">
+        {score}
+      </div>
+      <p className="game-hint">
+        {direction === "higher" ? "higher is better" : "lower is better"}
+        {" - "}
+        {submitted ? "saved" : "submit to save"}
+      </p>
+      {submitted ? (
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
+          {next && (
+            <button
+              type="button"
+              autoFocus
+              onClick={() => router.push(`/play/${next}`)}
+            >
+              next: {next} -&gt; (n)
+            </button>
+          )}
+          <button type="button" onClick={onRetry}>retry (r)</button>
+          <button type="button" onClick={() => router.push("/today")}>back to today</button>
+        </div>
+      ) : (
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
+          <button ref={submitBtnRef} type="button" onClick={submit} disabled={pending}>
+            {pending ? "..." : "submit -> (enter)"}
+          </button>
+          <button type="button" onClick={onRetry} disabled={pending}>
+            retry (r)
+          </button>
+        </div>
+      )}
+      {error && (
+        <p style={{ color: "var(--accent)", marginTop: 12, fontSize: 13 }} role="alert">
+          [{error}]
+        </p>
+      )}
+      {submitted && !error && (
+        <p style={{ color: "var(--muted)", marginTop: 12, fontSize: 13 }} role="status">
+          [saved. streak ticked, leaderboard updated.]
+        </p>
+      )}
+    </section>
+  );
+}

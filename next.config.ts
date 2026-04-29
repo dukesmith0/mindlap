@@ -9,20 +9,30 @@ const supabaseHost = (() => {
   }
 })();
 
+const isDev = process.env.NODE_ENV === "development";
+
+// React's dev-mode bundle relies on dynamic source-map reconstruction that
+// requires the 'unsafe-eval' CSP token. Production omits this token and runs
+// fully under the strict policy.
+const scriptSrc = isDev
+  ? `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com`
+  : `script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com`;
+
 const csp = [
   "default-src 'self'",
-  // Next 16's runtime + the data-theme bootstrap script need 'unsafe-inline' for now.
-  // Tighten with nonces in Phase 4.
-  `script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com`,
+  scriptSrc,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://lh3.googleusercontent.com",
   "font-src 'self' data:",
-  `connect-src 'self' https://${supabaseHost} wss://${supabaseHost} https://vitals.vercel-insights.com https://va.vercel-scripts.com`,
+  `connect-src 'self' https://${supabaseHost} wss://${supabaseHost} https://vitals.vercel-insights.com https://va.vercel-scripts.com${
+    isDev ? " ws://localhost:* http://localhost:*" : ""
+  }`,
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
   "object-src 'none'",
-  "upgrade-insecure-requests",
+  // upgrade-insecure-requests must not fire on the http://localhost dev server.
+  ...(isDev ? [] : ["upgrade-insecure-requests"]),
 ].join("; ");
 
 const securityHeaders = [

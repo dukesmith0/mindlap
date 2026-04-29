@@ -1,9 +1,14 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { RECOVERY_COOKIE, RECOVERY_COOKIE_TTL_S } from "@/lib/auth/recovery-cookie";
 
 // OAuth + email-confirmation callback. Exchanges the code for a session,
 // then sends the user on. New users land on /onboarding (proxy enforces this
 // for any user with onboarded_at = null, but we hint here to skip a redirect).
+//
+// Recovery flows that target /auth/set-password get a short-lived cookie
+// crumb so setNewPasswordAction can prove the visitor came through the email
+// link. A stolen-cookie session alone does not satisfy this gate.
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
@@ -28,5 +33,15 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  return NextResponse.redirect(new URL(next, url.origin));
+  const response = NextResponse.redirect(new URL(next, url.origin));
+  if (next === "/auth/set-password") {
+    response.cookies.set(RECOVERY_COOKIE, "1", {
+      path: "/",
+      maxAge: RECOVERY_COOKIE_TTL_S,
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+    });
+  }
+  return response;
 }

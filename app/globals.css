@@ -160,3 +160,187 @@ hr {
     opacity: 0.55;
   }
 }
+
+/* ============================================================================
+   Game cards (Zetamac Pure: top + bottom border, no bg, no radius, no shadow)
+   ============================================================================ */
+
+.game-card-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: center;
+  padding: 24px 0;
+  border-top: 1px solid var(--line);
+}
+
+.game-card-row:last-child {
+  border-bottom: 1px solid var(--line);
+}
+
+.game-card-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 17px;
+}
+
+.game-card-star {
+  color: var(--accent);
+}
+
+.game-card-meta {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+/* ============================================================================
+   In-game stage. Locked type scale per .vibe/understanding.md.
+   ============================================================================ */
+
+.game-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 24px;
+  padding: 24px 0;
+}
+
+.game-tappable {
+  background: none;
+  border: 1px solid var(--line);
+  cursor: pointer;
+  padding: 32px 16px;
+  width: 100%;
+  font-family: var(--font-mono);
+  color: var(--ink);
+}
+
+.game-tappable:hover {
+  background: none;
+  color: var(--ink);
+  border-color: var(--accent);
+}
+
+.game-hud {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  font-size: 14px;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+}
+
+.game-timer {
+  font-size: 18px;
+  color: var(--ink);
+}
+
+.game-timer.is-penalty {
+  color: #d62828;
+}
+
+.game-score {
+  font-size: 14px;
+}
+
+.game-problem {
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 400;
+  letter-spacing: -1px;
+  word-break: break-word;
+}
+
+.game-text-math   { font-size: 56px; }
+.game-text-digit  { font-size: 80px; letter-spacing: 6px; }
+.game-text-nback  { font-size: 96px; }
+.game-text-stroop { font-size: 56px; font-weight: 700; letter-spacing: 2px; }
+.game-text-result { font-size: 96px; color: var(--accent); letter-spacing: -2px; }
+
+@media (max-width: 640px) {
+  .game-text-math   { font-size: 40px; }
+  .game-text-digit  { font-size: 56px; letter-spacing: 4px; }
+  .game-text-nback  { font-size: 72px; }
+  .game-text-stroop { font-size: 40px; }
+  .game-text-result { font-size: 72px; }
+}
+
+.game-input {
+  font-size: 24px;
+  text-align: center;
+  width: 200px;
+  padding: 8px 12px;
+}
+
+.game-hint {
+  color: var(--muted);
+  font-size: 12px;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.game-dots {
+  color: var(--muted);
+  letter-spacing: 4px;
+  font-size: 18px;
+}
+
+.stroop-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
+.stroop-btn {
+  background: none;
+  border: 1px solid;
+  padding: 8px 18px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 0;
+  text-transform: lowercase;
+}
+
+.stroop-btn:hover {
+  background: none;
+  filter: brightness(1.15);
+}
+
+/* Countdown step fade-in: only animation besides streak pulse. Pure opacity. */
+@keyframes countdown-fade {
+  from { opacity: 0.2; }
+  to   { opacity: 1; }
+}
+
+.countdown-step {
+  display: inline-block;
+  animation: countdown-fade 240ms ease-out;
+}
+
+/* Anchor styled as a button. Use when navigation must be a real <a>
+   (server components, semantically a link, etc) but should render
+   visually as the standard outlined button. Avoids invalid <a><button>. */
+.btn-link {
+  display: inline-block;
+  background: none;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  padding: 8px 24px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn-link:hover {
+  background: var(--accent);
+  color: #ffffff;
+}

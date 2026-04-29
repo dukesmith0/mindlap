@@ -13,7 +13,7 @@ import {
   setThemeAction,
   updateProfileBasicsAction,
 } from "@/actions/profile";
-import { signOutAction } from "@/actions/auth";
+import { changePasswordAction, signOutAction } from "@/actions/auth";
 import type { ThemePref } from "@/lib/theme/cookie";
 
 type Props = {
@@ -47,6 +47,8 @@ export function SettingsClient(p: Props) {
         friendCode={p.friendCode}
         isPublic={p.isPublic}
       />
+      <hr />
+      <PasswordSection />
       <hr />
       <DangerZone username={p.username} />
     </>
@@ -301,6 +303,89 @@ function AccountSection({
       <p style={{ marginTop: 24 }}>
         <button onClick={() => signOutAction()}>sign out</button>
       </p>
+    </section>
+  );
+}
+
+// ----------------------------------------------------------------------------
+function PasswordSection() {
+  const [current, setCurrent] = useState("");
+  const [next, setNext] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [info, setInfo] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  function save() {
+    setError(null);
+    setInfo(null);
+    if (next !== confirm) {
+      setError("New passwords don't match.");
+      return;
+    }
+    const form = new FormData();
+    form.set("current_password", current);
+    form.set("password", next);
+    form.set("confirm_password", confirm);
+    startTransition(async () => {
+      const r = await changePasswordAction(form);
+      if (r.ok) {
+        setInfo("Password updated.");
+        setCurrent("");
+        setNext("");
+        setConfirm("");
+      } else {
+        setError(r.error);
+      }
+    });
+  }
+
+  return (
+    <section>
+      <h2>password</h2>
+      <label style={{ display: "block", marginBottom: 12 }}>
+        <span style={{ display: "block", fontSize: 12, color: "var(--muted)", marginBottom: 4 }}>
+          current password
+        </span>
+        <input
+          type="password"
+          value={current}
+          onChange={(e) => setCurrent(e.target.value)}
+          autoComplete="current-password"
+          style={{ width: "100%" }}
+        />
+      </label>
+      <label style={{ display: "block", marginBottom: 12 }}>
+        <span style={{ display: "block", fontSize: 12, color: "var(--muted)", marginBottom: 4 }}>
+          new password (10+ chars, 1 number or symbol)
+        </span>
+        <input
+          type="password"
+          value={next}
+          onChange={(e) => setNext(e.target.value)}
+          minLength={10}
+          autoComplete="new-password"
+          style={{ width: "100%" }}
+        />
+      </label>
+      <label style={{ display: "block", marginBottom: 12 }}>
+        <span style={{ display: "block", fontSize: 12, color: "var(--muted)", marginBottom: 4 }}>
+          confirm new password
+        </span>
+        <input
+          type="password"
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+          minLength={10}
+          autoComplete="new-password"
+          style={{ width: "100%" }}
+        />
+      </label>
+      <button onClick={save} disabled={pending || !current || !next || !confirm}>
+        {pending ? "..." : "update password"}
+      </button>
+      {info && <p style={{ color: "var(--muted)", fontSize: 13, marginTop: 8 }}>[{info}]</p>}
+      {error && <p style={{ color: "var(--accent)", fontSize: 13, marginTop: 8 }}>[{error}]</p>}
     </section>
   );
 }

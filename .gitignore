@@ -63,6 +63,12 @@ logs
 # Per-developer Claude Code instructions (user-local, not shared)
 CLAUDE.md
 
+# Local-only dev scripts (require service-role key; never commit)
+scripts/create-dev-user.mjs
+
+# Playwright MCP visual-check artifacts (per-developer)
+.playwright-mcp/
+
 # DO NOT IGNORE: .vibe/ is committed by design (project context, plans, decisions).
 # DO NOT IGNORE: .claude/ project directory if present (settings.json, hooks).
 # Pre-commit guard rails (see .githooks/pre-commit) verify no secrets in staged files.
