@@ -11,7 +11,9 @@ Next.js 16 App Router on Vercel + Supabase (Auth/Postgres/Storage) + Resend. All
 
 ### Success criteria
 - [ ] Sign up email/pw + Google, same email merges to one profile
+- [ ] Signup uses password + confirm-password; signin single-password
 - [ ] Resend delivers verification, password reset, group invites
+- [ ] Reset-password flow: forgot-password email -> click link -> /auth/callback -> set-new-password form (calls `supabase.auth.updateUser({ password })`) -> redirect /settings. Needs both: account section in /settings exposing "change password" for signed-in users, and a post-reset gate that requires new password before any other action.
 - [ ] Onboarding: username, theme, optional avatar
 - [ ] All 7 games playable with parity scoring
 - [ ] Submit-vs-retry on each play
@@ -35,6 +37,7 @@ Next.js 16 App Router on Vercel + Supabase (Auth/Postgres/Storage) + Resend. All
 ### Phases (v1 = 0-8 + 11; Phase 10 silent from Phase 2; Phase 12 post-launch)
 - [ ] Phase 0: scaffold (Next, Supabase, Vercel, Resend, Zetamac tokens, Courier Prime)
 - [x] Phase 1: auth + profiles + onboarding + settings + Resend templates + privacy + hard-delete
+- [ ] Phase 1.5 (entry gate for Phase 2): close all open auth-flow risks/bugs. Ship reset-password landing page + change-password in /settings (R14). Confirm bugs.md Open is empty. R13 stays Phase 11 by decision; R1/R2 stay deferred by decision; R15 is ops hygiene.
 - [ ] Phase 2: game shell + core 4 + open-ended play + submit-vs-retry
 - [ ] Phase 3: remaining 3 games (Reaction, Mine, Word)
 - [ ] Phase 4: today's hub + leaderboards + double-XP + pins + public-read gating

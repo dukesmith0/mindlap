@@ -1,6 +1,11 @@
 # Current
 
-Active: mindlap v1, Phase 1 COMPLETE + LIVE on Vercel. Awaiting manual signup retest then Phase 2 kickoff.
+Active: mindlap v1, Phase 1 LIVE. Onboarding-blockers fixed 2026-04-28; retest then Phase 2.
+
+## Just-resolved 2026-04-28
+- #8 CRITICAL: 0006 restored DML grants on public.* (Mgmt-API path skipped default-priv seeding). Applied live, 192 grants verified.
+- #9: onboarding button entity literal fixed.
+- #10: signup confirm-password added; signin unchanged.
 
 ## Last commits
 - `8bb869b` fix: signup callback 404 + friend_code trigger crash. Moved `/auth/callback` out of route group, applied 0005 to fix `generate_friend_code` (column rebind + extensions search_path), 0003 group_members policy syntax fix, .vibe condensed.

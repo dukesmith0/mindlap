@@ -129,7 +129,7 @@ export function OnboardingFlow({
               &lt;- back
             </button>
             <button type="button" onClick={finish} disabled={pending}>
-              {pending ? "..." : "let's play -&gt;"}
+              {pending ? "..." : "let's play ->"}
             </button>
           </div>
           {error && (

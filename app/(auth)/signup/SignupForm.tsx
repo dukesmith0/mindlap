@@ -11,6 +11,12 @@ export function SignupForm() {
   function onSubmit(form: FormData) {
     setError(null);
     setDone(false);
+    const password = form.get("password");
+    const confirm = form.get("confirm_password");
+    if (typeof password !== "string" || typeof confirm !== "string" || password !== confirm) {
+      setError("Passwords don't match.");
+      return;
+    }
     startTransition(async () => {
       const r = await signUpAction(form);
       if (r.ok) setDone(true);
@@ -49,6 +55,12 @@ export function SignupForm() {
             password (10+ chars, 1 number or symbol)
           </span>
           <input type="password" name="password" required minLength={10} autoComplete="new-password" style={{ width: "100%" }} />
+        </label>
+        <label style={{ display: "block", marginBottom: 16 }}>
+          <span style={{ display: "block", fontSize: 12, color: "var(--muted)", marginBottom: 4 }}>
+            confirm password
+          </span>
+          <input type="password" name="confirm_password" required minLength={10} autoComplete="new-password" style={{ width: "100%" }} />
         </label>
         <button type="submit" disabled={pending} style={{ width: "100%" }}>
           {pending ? "..." : "create account ->"}
