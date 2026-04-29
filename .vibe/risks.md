@@ -1,11 +1,11 @@
 # Risks
-Next ID: R18 | Baseline: 0C/1H/2M/4L | Last scan: 2026-04-28
+Next ID: R18 | Baseline: 0C/1H/2M/4L | Last scan: 2026-04-29
 
 ## High
-#R13 No app-level rate limit on signup/signin/reset. Public-launch DoS + Resend quota burn + credential-stuffing. v1 relies on Supabase per-IP. Phase 11: Vercel KV / Upstash IP+user bucket. Block before public launch.
+#R13 No app-level rate limit on signup/signin/reset. Public-launch DoS + Resend quota burn + credential-stuffing. v1 relies on Supabase per-IP. Phase 11: Vercel KV / Upstash IP+user bucket. Block before public launch. **Phase 7 update (2026-04-29):** scope expanded to include friend-request flooding via `/f/<code>` social engineering and onboarding-cookie auto-add path. Phase 7 friend-request rate limit (`lib/rate-limit.ts`, 30/hour/user) is a per-DB-row stopgap that folds under R13 when KV swap lands.
 
 ## Medium
-#R1 Anti-cheat deferred. RLS + DB CHECK + `auth.uid()`-tied insert + games-catalog range check only; user could craft any in-range score. OK for friends-and-groups MVP. Revisit before prize/competitive features.
+#R1 Anti-cheat deferred. RLS + DB CHECK + `auth.uid()`-tied insert + games-catalog range check only; user could craft any in-range score. OK for friends-and-groups MVP. Revisit before prize/competitive features. **Disclosure question pending** (#58 in bugs.md): should /leaderboards carry a "scores are user-reported, anti-cheat verification arrives later" footnote until replay tokens ship, or stay silent? Persona 3 review surfaced this as a "leaderboard theater" risk for the "improvement-tracking" v1 thesis.
 #R2 Glicko-2 cold-start unstable with sparse pop. Mitigated by `ELO_VISIBLE=false` (silent accumulation, Phase 10). Verify rating distribution at flip threshold (≥25 users × ≥10 ranked submissions/game).
 
 ## Low

@@ -658,6 +658,7 @@ hr {
   margin-bottom: 16px;
 }
 .profile-header h1 { margin: 0 0 2px; }
+.profile-header .subtitle { margin: 0; }
 .profile-header-meta {
   margin-left: auto;
   display: flex;
@@ -768,9 +769,14 @@ hr {
   border: 1px solid var(--line);
   background: transparent;
 }
+/* Base intensity rules used as a fallback. Theme-scoped overrides below pin
+   the exact rgba so light + dark always render against the correct accent. */
 .heatmap-cell[data-i="1"] { background: rgba(0, 102, 204, 0.25); }
 .heatmap-cell[data-i="2"] { background: rgba(0, 102, 204, 0.55); }
 .heatmap-cell[data-i="3"] { background: var(--accent); border-color: var(--accent); }
+[data-theme="light"] .heatmap-cell[data-i="1"] { background: rgba(0, 102, 204, 0.25); }
+[data-theme="light"] .heatmap-cell[data-i="2"] { background: rgba(0, 102, 204, 0.55); }
+[data-theme="light"] .heatmap-cell[data-i="3"] { background: var(--accent); border-color: var(--accent); }
 [data-theme="dark"] .heatmap-cell[data-i="1"] { background: rgba(90, 163, 255, 0.25); }
 [data-theme="dark"] .heatmap-cell[data-i="2"] { background: rgba(90, 163, 255, 0.55); }
 [data-theme="dark"] .heatmap-cell[data-i="3"] { background: var(--accent); border-color: var(--accent); }

@@ -39,13 +39,15 @@ Wrapped routes: `/today`, `/leaderboards`, `/settings`, `/play/[game]`, `/profil
 - `/login`, `/signup` - email/pw + Google OAuth (`safeNext()` open-redirect guard)
 - `/auth/callback` - OAuth + email-confirm exchange. Sets `mindlap_pwreset` crumb when `next=/auth/set-password`.
 - `/auth/set-password` - reset flow (gated by recovery cookie)
-- `/onboarding` - username + theme picker; required before authed pages
-- `/today` - 7 game cards with pinned > 2x > core > rest order, top-3 leaderboard preview per card, click-to-pin, [2x xp] pill, search input filtering by name/key
+- `/onboarding` - username + theme picker; required before authed pages. Consumes `mindlap_friend_code` cookie one-shot to auto-create pending friendship.
+- `/today` - 7 game cards with pinned > 2x > core > rest order, friends-only top-5 mini-leaderboard (with `...` + self overflow row when applicable), click-to-pin, [2x xp] pill, search input filtering by name/key, NOT YET PLAYED filler when card hasn't been played today
 - `/play/[game]` - GameShell for one of the 7 games
-- `/leaderboards` - Today/7d/All-time × 7 game tabs, anonymous-readable
-- `/profile/[username]` - public profile (sparse for `is_public=false`); summary + per-game cards (PB+date, worst, 7d median, 30d plays) + badge wall
+- `/leaderboards` - Today/7d/All-time × 7 game tabs × [global / friends] scope toggle; anonymous-readable; empty-state CTAs link to /friends when scope=friends and user has no friends
+- `/friends` - Incoming / Outgoing / Active sections; AddFriendForm with @username OR friend-code dual-input; FriendRow with state-aware actions (accept/decline, cancel, remove)
+- `/f/[code]` - public deep-link landing; anon stashes code in `mindlap_friend_code` cookie + redirects to /signup; authed sends request and redirects to /friends
+- `/profile/[username]` - public profile (sparse for `is_public=false`); header > ProfileSocialButtons (state-aware add / cancel / accept+decline / remove / opt-out filler) > badges (per-key emoji) > 90-day heatmap > per-game grid (PB / set / worst / 7d median / 30d plays / total plays)
 - `/profile/me` - redirects to canonical /profile/<username>
-- `/settings` - Profile / Preferences / Account / Password / Delete sections
+- `/settings` - Profile / Preferences / Account (public-profile + accept-friend-requests toggles) / Password / Delete sections; theme toggle is optimistic (instant `<html data-theme>` swap with rollback on action failure)
 
 ## Games (all 7 shipped)
 Pure logic in `lib/games/<key>/index.ts`, parity tests in `debug/games/<key>.test.ts`, React UIs in `components/games/<Key>Game.tsx`. Canonical metadata in `lib/games/registry.ts` (`GAME_KEYS`, `GAMES`, `isGameKey`).
@@ -67,10 +69,11 @@ Shared:
 
 ## Server actions (`actions/*.ts`, all `import "server-only"`)
 - `actions/auth.ts`: `signUpAction` (Zod, anti-enumeration, confirm-pw), `signInAction`, `signInWithGoogleAction`, `requestPasswordResetAction` (always-ok, redirects to `/auth/set-password`), `setNewPasswordAction` (gated by `mindlap_pwreset` cookie), `changePasswordAction` (verifies current password via stateless side `@supabase/supabase-js` client; live SSR session not rotated), `signOutAction` (scope:'global').
-- `actions/profile.ts`: `setThemeAction`, `setAvatarColorAction`, `changeUsernameAction` (30-day rate limit), `updateProfileBasicsAction`, `setProfilePrivacyAction`, `setSkipTutorialsAction`, `completeOnboardingAction`, `deleteAccountAction` (admin DELETE auth.users, FK cascade).
+- `actions/profile.ts`: `setThemeAction`, `setAvatarColorAction`, `changeUsernameAction` (30-day rate limit), `updateProfileBasicsAction`, `setProfilePrivacyAction`, `setSkipTutorialsAction`, `setAcceptsFriendRequestsAction`, `completeOnboardingAction` (consumes `mindlap_friend_code` cookie one-shot for auto-friend-add), `deleteAccountAction` (admin DELETE auth.users, FK cascade).
+- `actions/friendships.ts`: `addFriendAction` (Zod refine on code XOR username, rate-limited via `lib/rate-limit.ts`, target opt-out check, accepts inbound on race), `acceptFriendAction`, `declineFriendAction`, `cancelFriendRequestAction`, `removeFriendAction`.
 - `actions/submission.ts`: `submitScoreAction` (Zod int score, calls `process_submission(game_key, score, is_bonus_game)` RPC, returns `{ xpAwarded, isNewPb, best, streakCurrent }`), `togglePinAction` (idempotent on 23505).
 
-## Database (10 migrations applied live on `nookxuvlvwtppitqguxf`)
+## Database (12 migrations applied live on `nookxuvlvwtppitqguxf`)
 - `0001_init.sql` 16 tables, base CHECK constraints, `touch_updated_at` trigger.
 - `0002_handle_new_user.sql` `generate_friend_code`, `generate_username_from_email`, `handle_new_user`, `touch_last_signin` (later wired in 0004).
 - `0003_rls_policies.sql` privacy-aware SELECT on submissions/daily_aggregates, group_members column-shadowing fix, public-read whitelist.
@@ -81,10 +84,13 @@ Shared:
 - `0008_xp_and_badges.sql` `award_xp` + `eval_badges` helpers (internal, no GRANT) + extended `process_submission(game_key, score, is_bonus_game)`.
 - `0009_fix_xp_multiplier_flow.sql` pre-multiplies XP at caller (`p_multiplier=1.0`); cap scales with bonus mult (5/play, 5/day normal vs 10/play, 10/day on bonus).
 - `0010_process_submission_jsonb.sql` switches return to `RETURNS jsonb` to dodge OUT-param shadowing of table column names ("column reference 'best' is ambiguous").
+- `0011_friend_by_username.sql` `find_user_by_username(text) -> uuid` (SECURITY DEFINER, granted authenticated). Mirrors `find_user_by_friend_code` shape; citext makes lookup case-insensitive.
+- `0012_accepts_friend_requests.sql` adds `profiles.accepts_friend_requests boolean default true`. addFriendAction reads it before inserting; ProfileSocialButtons swaps the add button for an opt-out filler when target has disabled.
 
 Active surface:
 - `process_submission(text, numeric, boolean) -> jsonb` (only writer to submissions and daily_aggregates; runs streak update, XP awards via `award_xp`, badge eval via `eval_badges`).
 - `find_user_by_friend_code(text) -> uuid` (SECURITY DEFINER, granted authenticated)
+- `find_user_by_username(text) -> uuid` (SECURITY DEFINER, granted authenticated)
 - `regenerate_friend_code() -> char(8)` (SECURITY DEFINER, granted authenticated)
 
 Tables: profiles, profile_secrets, user_game_pins, daily_bonus, games (seeded), submissions, daily_aggregates, ratings, mind_elo, friendships, groups, group_members, group_invites, badges (seeded), user_badges, xp_events.
@@ -103,7 +109,7 @@ Tables: profiles, profile_secrets, user_game_pins, daily_bonus, games (seeded), 
 - XP rules in `lib/xp.ts` (JS mirror of 0008/0009/0010 SQL): participation 5/play capped 5/(user, game, PT date), PB bonus 25 × streak_mult × bonus_mult, streak_mult `min(2.5, 1 + 0.1*(streak-1))`, bonus_mult 2x on the day's daily-bonus pair, both cap and per-play double on bonus days.
 - Recovery flow uses one-shot `mindlap_pwreset` cookie (5min TTL) set by `/auth/callback?next=/auth/set-password` to gate `setNewPasswordAction`. `changePasswordAction` verifies current pw via stateless side client to avoid rotating the live SSR session.
 
-## Tests (16 files, 163 cases passing)
+## Tests (20 files, 192 cases passing)
 | File | Cases |
 |---|---|
 | debug/auth/{username,friend-code,avatar-palette,theme}.test.ts | 25 |
@@ -113,6 +119,10 @@ Tables: profiles, profile_secrets, user_game_pins, daily_bonus, games (seeded), 
 | debug/pt-date.test.ts | 7 |
 | debug/xp-bar.test.ts | 11 |
 | debug/xp.test.ts | 18 |
+| debug/badge-icons.test.ts | 6 |
+| debug/heatmap.test.ts | 11 |
+| debug/countdown.test.ts | 4 |
+| debug/friend-code-cookie.test.ts | 6 |
 
 Run: `npm test` (vitest) | `npm run test:e2e` (Playwright, no specs yet) | `npm run typecheck` | `npm run lint` | `npm run build`.
 

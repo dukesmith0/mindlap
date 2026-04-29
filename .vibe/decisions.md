@@ -116,6 +116,12 @@ All dated 2026-04-28 unless noted. `[USER]` = explicit choice; `[CLAUDE]` = impl
 - 2026-04-29 [USER] Phase 7 scope = full (mutual-accept friendships + /friends + add-by-@username AND friend_code + leaderboards Friends scope + /f/<code> deep-link with cookie stash + 30/hour rate limit). Ships as commit 2.
 - 2026-04-29 [USER] Reverse #41 plan: keep the Today mini-leaderboard, convert it to friends-only top-5; if my today score is outside the top-5, append `...` then a row with my rank + name + score below. My row renders accent. Ships in commit 2 since it depends on friend IDs.
 
+## Commit 3 Tier 3 polish (2026-04-29)
+- [USER] Picked Tier 3 ready-to-ship polish (5 bugs: #46/#55/#57/#60/#61) over Tier 1 newcomer-experience or score-interpretability work. Reason: ship fast wins with no design decisions while Tier 1 questions stay open in `current.md` "Pending design calls" for a focused future commit.
+- [CLAUDE] DangerZone keeps both the red warning and the muted "Cascades through every score..." line. The red sentence is the at-a-glance signal; the muted sentence explains the cascade. Redundant by design. If the redundancy bothers in review, drop the muted one — explicitly recorded so future-me doesn't re-litigate.
+- [CLAUDE] `.profile-header .subtitle { margin: 0 }` is scoped to the header on purpose. The global `.subtitle` margin (40px) still applies elsewhere; only the profile header's flex-row alignment was harmed by it.
+- [CLAUDE] Light-mode heatmap rules are defense-in-depth — the base `.heatmap-cell[data-i]` rules already work for light, but explicit theme-scoped overrides protect against future light-token shifts breaking the relationship.
+
 ## Commit 2 Phase 7 decisions (2026-04-29)
 - [USER] Add a `profiles.accepts_friend_requests` opt-out toggle (default true) so users can disable inbound friend requests from /settings -> Account. addFriendAction reads it and refuses to insert a pending row when target has disabled. ProfileSocialButtons replaces the "add friend" button with "[user is not accepting requests]". Migration: 0012_accepts_friend_requests.sql.
 - [USER] Today mini-leaderboard kept (reverses the original delete plan) and scoped to friends-only top-5; if my today score is outside the top 5, append `...` then my row below; my row in accent. Empty for users with no friends — the section renders nothing rather than a placeholder.

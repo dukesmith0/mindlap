@@ -458,8 +458,11 @@ function DangerZone({ username }: { username: string }) {
   return (
     <section>
       <h2 className="danger-h2">delete account</h2>
+      <p className="danger-h2" style={{ fontSize: 13, marginBottom: 8, textTransform: "none", letterSpacing: 0 }}>
+        Deleting your account is permanent. All scores, badges, and friendships are removed.
+      </p>
       <p style={{ fontSize: 13, color: "var(--muted)", marginBottom: 12 }}>
-        Permanent. Cascades through every score, badge, friendship, group membership. There is no undo.
+        Cascades through every score, badge, friendship, group membership. There is no undo.
       </p>
       <label style={{ display: "block", marginBottom: 12 }}>
         <span style={{ display: "block", fontSize: 12, color: "var(--muted)", marginBottom: 4 }}>

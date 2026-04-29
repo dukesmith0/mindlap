@@ -106,7 +106,14 @@ export function ResultScreen({
         </div>
       ) : (
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
-          <button ref={submitBtnRef} type="button" onClick={submit} disabled={pending}>
+          <button
+            ref={submitBtnRef}
+            type="button"
+            onClick={submit}
+            disabled={pending}
+            aria-busy={pending}
+            style={{ opacity: pending ? 0.6 : 1 }}
+          >
             {pending ? "..." : "submit -> (enter)"}
           </button>
           <button type="button" onClick={onRetry} disabled={pending}>

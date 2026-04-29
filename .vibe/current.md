@@ -63,7 +63,37 @@ npm test | npm run typecheck | npm run lint | npm run build
 - Vercel project `mindlap` linked. Env vars unchanged.
 - GitHub: `dukesmith0/mindlap` (public). Latest `origin/main` = `46637bc`.
 
+## Pending design calls (open questions to settle before coding)
+
+Surfaced by 6 adversarial reviews (3 user personas + UI/UX pro max + frontend design + security/risks) on 2026-04-29 after commit 2 (`c2ca5d6`). Each item is a question — read CLAUDE.md "Ask before guessing on unanswered implementation questions": surface 2-3 options and wait for the user before building.
+
+**Tier 1 — strikes the goals (low friction / easy / informative / intuitive) hardest:**
+- **Day-1 win for newcomers (#51).** Empty heatmap + streak 0 + "47/50 in Math" first-leaderboard visit is demoralizing. *Question:* Do we surface a "first-streak / first-PB / first-game-of-the-day" milestone banner at the top of /today, OR is a `<TodayMilestoneBanner>` too cute and we should instead just hide leaderboards entirely on Day 1? Personas 1+2.
+- **Heatmap is activity, not improvement (#42 already filed for build, but goal is questioned).** Heatmap shows play-count, not score trend. *Question:* Keep heatmap as activity surface AND add a per-game 30-day score sparkline (Phase 5.5), OR replace heatmap with the sparkline outright? Personas 2+3 + UI/UX.
+- **No score interpretability (#52).** `PB 47` for N-Back accuracy is meaningless without context. *Question:* Do we render a small context line under each value ("↑ above your 7d median"), arrow-only indicators, or wait for population z-scores in Phase 12? Persona 3 + UI/UX.
+- **Game taglines don't say direction (#54).** "Speed Math" alone doesn't tell a newcomer higher=better. *Question:* Extend the `lib/games/registry.ts` taglines to include direction + a one-line example, OR add a separate "direction" badge on each card, OR leave as-is and rely on the start screen? Persona 1.
+- **Friends not surfaced during onboarding (#56).** No "share your code" prompt; new users land lonely. *Question:* Add a 3rd onboarding step (friend-code share with skip CTA), OR a one-time post-onboarding banner on /today, OR an in-app email "your friend code is ABCD2345 — share it with a friend"? Persona 1.
+
+**Tier 2 — friction that compounds for daily users:**
+- **Profile page round-trips (~28).** Already filed as `#26` for Phase 11 RPC consolidation. No question pending; tracked.
+- **Per-game grid `worst` and `set` columns are low-signal (#53).** *Question:* Drop `worst` outright, hide behind a details toggle, OR keep but rename to "low this week" so it's bounded? And replace `set` (absolute date) with relative ("47 days ago"), drop entirely, or keep? Persona 2.
+- **Countdown is 2.4s × 7 games = ~17s of waiting for chained play (#62).** *Question:* Reduce STEP_MS from 600 to 400 (1.6s total countdown), add a "skip countdown" toggle in /settings persisted to a new `profiles.skip_countdown` column, OR leave countdown timing alone and fix elsewhere? Persona 2.
+- **Streak multiplier rewards consistency over skill.** A 100-day streak gets ×2.5 XP for a half-effort play. *Question:* Decouple streak from XP multiplier (make streak cosmetic + only PB awards XP), OR keep as-is until population data exists, OR introduce a separate "skill streak" (consecutive PB days) alongside the play streak? Persona 3. Defer to its own commit; needs decision before any tuning.
+- **Anti-cheat undisclosed on leaderboards (#58).** Scores aren't replay-verified (R1). *Question:* Show a small "scores are user-reported; anti-cheat verification arrives in Phase 12" footnote on /leaderboards, OR stay silent until replay tokens land? Persona 3.
+
+**Tier 3 — design system + polish (5 shipped in commit 3, remainders below):**
+- ~~#46 profile header centering~~ shipped commit 3.
+- ~~#55 DangerZone red warning~~ shipped commit 3.
+- ~~#57 username 30-day lock onboarding warning~~ shipped commit 3.
+- ~~#60 ResultScreen aria-busy + visual dim~~ shipped commit 3.
+- ~~#61 light-mode heatmap CSS~~ shipped commit 3.
+- **Heatmap day-of-week axis labels.** Folds into #45 (themed tooltips on badges + heatmap). No question pending.
+- **Server-action error toast / inline error (#59).** *Question:* Build a `<Toast>` primitive (1px accent border, 4s auto-dismiss) and surface action errors there, OR use inline-under-button errors per consumer, OR a top-of-page banner? Frontend + UI/UX.
+- **No reusable error/empty-state/pending/modal/form-field primitives.** Tracked in future.md as a design-system buildout. *Question:* Invest now (small commit) or wait until Phase 8 groups multiplies the duplication?
+
+When you pick any of these up: re-read CLAUDE.md, surface the options, and wait for the answer before coding.
+
 ## New-session ramp-up
 Read in order: `.vibe/current.md` -> `understanding.md` -> `decisions.md` -> `plans.md` -> `risks.md` -> `bugs.md` -> `future.md`. Visual ref: `.vibe/docs/style-reference/zetamac-pure.html`.
 
-Pick-up candidates after commit 2 lands: #48 avatar identity rework (color + emoji popup), #45 themed tooltips for badges + heatmap, then Phase 4.5 / 5.5 follow-ups, then Phase 8 groups.
+Pick-up candidates after commit 2 lands: tackle "Pending design calls" Tier 1 items first (highest goal alignment), then Tier 3 ready-to-ship polish, then #48 avatar identity rework, then #45 themed tooltips, then Phase 4.5 / 5.5 follow-ups, then Phase 8 groups.

@@ -63,8 +63,11 @@ export function OnboardingFlow({
       {step === 1 && (
         <section>
           <h2>step 1 of 2 - username</h2>
-          <p style={{ color: "var(--muted)", fontSize: 13, marginBottom: 12 }}>
+          <p style={{ color: "var(--muted)", fontSize: 13, marginBottom: 6 }}>
             3-24 chars. Lowercase letters, digits, underscores, hyphens.
+          </p>
+          <p style={{ color: "var(--muted)", fontSize: 13, marginBottom: 12 }}>
+            Pick carefully - you can change this once per 30 days.
           </p>
           <label style={{ display: "block", marginBottom: 16 }}>
             <input

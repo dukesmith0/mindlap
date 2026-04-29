@@ -9,6 +9,27 @@
 - 7-day full-access trial on signup to convert habit.
 - Defer until traffic justifies.
 
+## Open design questions (from 2026-04-29 reviews)
+Each item is a pending design call surfaced by 6 adversarial reviews after commit 2. See `.vibe/current.md` "Pending design calls" for the full list with options. The headline questions:
+- **Streak vs skill XP**: decouple streak multiplier from XP gain (streak becomes cosmetic; only PB awards XP) so a 100-day streak doesn't reward half-effort streak-saver plays at ×2.5. Or keep current rule until population data exists. Or introduce a separate "skill streak" (consecutive PB days) alongside the play streak.
+- **Day-1 win surface**: should new users see a milestone banner on /today, OR is that too cute and we hide leaderboards entirely until they have ≥3 plays?
+- **Heatmap fate**: keep as activity surface AND add a per-game 30-day score sparkline (Phase 5.5), OR replace heatmap with the sparkline outright?
+- **Score interpretability**: render text context lines under per-game stats ("↑ above your 7d median"), arrow-only indicators, or wait for population z-scores in Phase 12?
+- **Anti-cheat disclaimer tone**: explicit footnote on /leaderboards now, or stay silent until replay tokens land?
+- **Onboarding flow length**: add a 3rd step (friend-code share) or stay 2-step + post-arrival nudge?
+- **Per-game grid columns**: drop `worst`, hide behind details, or keep with a renamed semantic?
+- **Server-action error UX**: `<Toast>` primitive vs inline-under-button vs top-of-page banner?
+
+## Design system gaps
+From the UI/UX pro max review. None of these are blocking; they multiply pain as Phase 8 lands. Decide whether to invest now (one focused commit) or wait until duplication in groups/history/graphs surfaces forces the issue.
+- `<Toast>` / `<ErrorBox role="alert">` primitive — server actions return errors but ProfileSocialButtons + AddFriendForm + FriendRow swallow them. Pairs with bug #59.
+- `<EmptyState>` primitive — friends scope-with-zero-friends, leaderboards-with-no-submissions, today-with-no-games-matched all render inline `<p>`. No consistent styling.
+- `<PendingOverlay>` / `.is-pending` utility — some components dim buttons via opacity, others just disable. ResultScreen submit button has no visible busy state.
+- `<FormField label="" error="">` primitive — AddFriendForm + settings forms manually create label + input + error structures.
+- `<ConfirmDialog>` — no modal pattern for confirmations (e.g. delete account currently uses inline username-confirm field instead of a centered overlay).
+- Relative-date helper (`lib/relative-date.ts`) — profile heatmap and per-game PB dates show absolute dates; no shared "47 days ago" formatter.
+- Tier-color palette (`lib/tier-colors.ts`) — StreakRibbon has inline tier colors; leaderboard tier colors are separate; no single source of truth.
+
 ## Pre-launch reviews
 - Review the XP-per-level scaling curve before public launch. Current: `level = floor(sqrt(xp / 100)) + 1`, so Lv 2 at 100 xp, Lv 3 at 400, Lv 4 at 900, Lv 10 at 8100, Lv 20 at 36100. With participation cap 5/play and PB bonus 25 × streak × 2x, average daily XP for an engaged user (7 plays + 4 PBs) is roughly `35 (participation) + 4*25 = 135` at streak 1, scaling to ~270 at streak 7. So Lv 10 at ~30 days of consistent play, Lv 20 at ~120 days. Decide pre-launch: is this curve too fast (rewards exhaust quickly, no long-tail goals), too slow (early levels feel grindy), or correct? Sample population data once we have ≥1 week of users and re-tune the divisor (currently 100) without breaking persisted XP.
 
