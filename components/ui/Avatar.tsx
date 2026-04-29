@@ -23,6 +23,9 @@ export function Avatar({ color, name, size = 28 }: AvatarProps) {
         lineHeight: 1,
         fontWeight: 700,
         userSelect: "none",
+        // Courier Prime cap-baseline sits high; nudge content down 1px so the
+        // initial visually centers in the disc.
+        paddingTop: 1,
       }}
     >
       {avatarInitial(name)}

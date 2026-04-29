@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ptDate, ptDateOffset } from "@/lib/pt-date";
 import { GAMES, GAME_KEYS, isGameKey, type GameKey } from "@/lib/games/registry";
 import { AppShell } from "@/components/layout/AppShell";
+import { Avatar } from "@/components/ui/Avatar";
 
 export const metadata = { title: "Leaderboards - mindlap" };
 
@@ -15,7 +16,23 @@ function isTab(v: unknown): v is Tab {
   return v === "today" || v === "7d" || v === "all";
 }
 
-type Row = { user_id: string; username: string | null; score: number };
+type Row = {
+  user_id: string;
+  username: string | null;
+  display_name: string | null;
+  avatar_color: string | null;
+  score: number;
+};
+
+type ProfileEmbed = {
+  username?: string | null;
+  display_name?: string | null;
+  avatar_color?: string | null;
+} | null;
+
+function readProfile(r: unknown): ProfileEmbed {
+  return ((r as { profiles?: ProfileEmbed }).profiles) ?? null;
+}
 
 export default async function LeaderboardsPage({
   searchParams,
@@ -43,7 +60,7 @@ export default async function LeaderboardsPage({
 
     const { data } = await supabase
       .from("submissions")
-      .select("user_id, score, profiles(username)")
+      .select("user_id, score, profiles(username, display_name, avatar_color)")
       .eq("game_key", game)
       .gte("played_pt_date", fromDate)
       .order("score", { ascending: lower })
@@ -54,13 +71,20 @@ export default async function LeaderboardsPage({
     for (const r of data ?? []) {
       const score = Number(r.score);
       const uid = r.user_id as string;
-      const uname = ((r as unknown as { profiles?: { username?: string | null } | null }).profiles?.username) ?? null;
+      const prof = readProfile(r);
+      const next: Row = {
+        user_id: uid,
+        username: prof?.username ?? null,
+        display_name: prof?.display_name ?? null,
+        avatar_color: prof?.avatar_color ?? null,
+        score,
+      };
       const existing = bestByUser.get(uid);
       if (!existing) {
-        bestByUser.set(uid, { user_id: uid, username: uname, score });
+        bestByUser.set(uid, next);
       } else {
         const better = lower ? score < existing.score : score > existing.score;
-        if (better) bestByUser.set(uid, { user_id: uid, username: uname, score });
+        if (better) bestByUser.set(uid, next);
       }
     }
     rows = [...bestByUser.values()].sort((a, b) =>
@@ -71,7 +95,7 @@ export default async function LeaderboardsPage({
     const lower = meta.direction === "lower";
     const { data } = await supabase
       .from("submissions")
-      .select("user_id, score, profiles(username)")
+      .select("user_id, score, profiles(username, display_name, avatar_color)")
       .eq("game_key", game)
       .order("score", { ascending: lower })
       .limit(2000);
@@ -80,13 +104,20 @@ export default async function LeaderboardsPage({
     for (const r of data ?? []) {
       const score = Number(r.score);
       const uid = r.user_id as string;
-      const uname = ((r as unknown as { profiles?: { username?: string | null } | null }).profiles?.username) ?? null;
+      const prof = readProfile(r);
+      const next: Row = {
+        user_id: uid,
+        username: prof?.username ?? null,
+        display_name: prof?.display_name ?? null,
+        avatar_color: prof?.avatar_color ?? null,
+        score,
+      };
       const existing = bestByUser.get(uid);
       if (!existing) {
-        bestByUser.set(uid, { user_id: uid, username: uname, score });
+        bestByUser.set(uid, next);
       } else {
         const better = lower ? score < existing.score : score > existing.score;
-        if (better) bestByUser.set(uid, { user_id: uid, username: uname, score });
+        if (better) bestByUser.set(uid, next);
       }
     }
     rows = [...bestByUser.values()].sort((a, b) =>
@@ -155,6 +186,8 @@ export default async function LeaderboardsPage({
           <tbody>
             {top.map((r, i) => {
               const me = user?.id === r.user_id;
+              const handle = r.username ?? "anon";
+              const display = r.display_name ?? handle;
               return (
                 <tr
                   key={r.user_id}
@@ -164,7 +197,30 @@ export default async function LeaderboardsPage({
                   }}
                 >
                   <td>{i + 1}</td>
-                  <td>{r.username ?? "anon"}</td>
+                  <td style={{ maxWidth: 320 }}>
+                    {r.username ? (
+                      <Link
+                        href={`/profile/${r.username}`}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 8,
+                          color: "inherit",
+                          maxWidth: "100%",
+                        }}
+                      >
+                        <Avatar color={r.avatar_color ?? "var(--ink)"} name={display} size={22} />
+                        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {handle}
+                        </span>
+                      </Link>
+                    ) : (
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                        <Avatar color="var(--muted)" name="?" size={22} />
+                        <span>anon</span>
+                      </span>
+                    )}
+                  </td>
                   <td style={{ textAlign: "right" }}>{r.score}</td>
                 </tr>
               );

@@ -8,10 +8,13 @@ export function Countdown({ onDone }: { onDone: () => void }) {
   const [step, setStep] = useState<3 | 2 | 1 | 0>(3);
 
   useEffect(() => {
-    const t1 = setTimeout(() => setStep(2), 800);
-    const t2 = setTimeout(() => setStep(1), 1600);
-    const t3 = setTimeout(() => setStep(0), 2400);
-    const t4 = setTimeout(onDone, 2800);
+    // Each step gets the same on-screen time (#35). Tighter than before so the
+    // total countdown still feels snappy.
+    const STEP_MS = 600;
+    const t1 = setTimeout(() => setStep(2), STEP_MS);
+    const t2 = setTimeout(() => setStep(1), STEP_MS * 2);
+    const t3 = setTimeout(() => setStep(0), STEP_MS * 3);
+    const t4 = setTimeout(onDone, STEP_MS * 4);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);

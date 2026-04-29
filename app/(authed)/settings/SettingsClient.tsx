@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Avatar } from "@/components/ui/Avatar";
 import { AvatarColorPicker } from "@/components/ui/AvatarColorPicker";
@@ -138,19 +137,37 @@ function PreferencesSection({
   skipTutorials: boolean;
   avatarColor: string;
 }) {
-  const router = useRouter();
   const [theme, setThemeState] = useState<ThemePref>(themePref);
   const [skip, setSkip] = useState(skipTutorials);
   const [pending, startTransition] = useTransition();
 
   function changeTheme(next: ThemePref) {
+    const previous = theme;
     setThemeState(next);
+    // Optimistic visual flip: update `<html data-theme>` immediately so the
+    // CSS variables swap with no server round-trip (#44). The action persists
+    // the cookie + profile row in the background; if it fails we roll back.
+    let priorAttr: string | null = null;
+    if (typeof document !== "undefined") {
+      priorAttr = document.documentElement.getAttribute("data-theme");
+      const resolved =
+        next === "system"
+          ? window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light"
+          : next;
+      document.documentElement.setAttribute("data-theme", resolved);
+    }
     const form = new FormData();
     form.set("theme", next);
     startTransition(async () => {
-      await setThemeAction(form);
-      // router.refresh() re-runs the server layout so the new data-theme attribute applies.
-      router.refresh();
+      const r = await setThemeAction(form);
+      if (!r.ok) {
+        setThemeState(previous);
+        if (typeof document !== "undefined" && priorAttr !== null) {
+          document.documentElement.setAttribute("data-theme", priorAttr);
+        }
+      }
     });
   }
 
@@ -418,7 +435,7 @@ function DangerZone({ username }: { username: string }) {
 
   return (
     <section>
-      <h2>delete account</h2>
+      <h2 className="danger-h2">delete account</h2>
       <p style={{ fontSize: 13, color: "var(--muted)", marginBottom: 12 }}>
         Permanent. Cascades through every score, badge, friendship, group membership. There is no undo.
       </p>
@@ -433,7 +450,7 @@ function DangerZone({ username }: { username: string }) {
           style={{ width: "100%" }}
         />
       </label>
-      <button onClick={del} disabled={pending || !confirm}>
+      <button onClick={del} disabled={pending || !confirm} className="btn-danger">
         {pending ? "..." : "delete my account"}
       </button>
       {error && <p style={{ color: "var(--accent)", fontSize: 13, marginTop: 8 }}>[{error}]</p>}

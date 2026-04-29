@@ -28,14 +28,23 @@ export function StreakRibbon({ days }: { days: number }) {
       className="streak-ribbon"
       style={{
         color,
-        animation: "streak-pulse 2s ease-in-out infinite",
         display: "inline-flex",
         alignItems: "center",
         gap: 6,
       }}
       aria-label={`${days} day streak`}
     >
-      <span aria-hidden style={{ fontSize: 16, lineHeight: 1 }}>🔥</span>
+      {/* Pulse only on the emoji (#36); number + units stay steady. */}
+      <span
+        aria-hidden
+        style={{
+          fontSize: 16,
+          lineHeight: 1,
+          animation: "streak-pulse 2s ease-in-out infinite",
+        }}
+      >
+        🔥
+      </span>
       <span>{days}</span>
       <span style={{ color: "var(--muted)", fontSize: 12 }}>day{days === 1 ? "" : "s"}</span>
     </span>

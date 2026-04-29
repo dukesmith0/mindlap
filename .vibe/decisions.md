@@ -112,6 +112,25 @@ All dated 2026-04-28 unless noted. `[USER]` = explicit choice; `[CLAUDE]` = impl
 
 ## Phase scope decisions
 - 2026-04-28 [USER] Approach B for combined Phase 3 + 4: ship Phase 3 in full + Phase 4 essentials together; defer drag-pins / friends-filter / Daily Completion / 14-day calendar / public profiles to Phase 4.5 / 5. Why: B delivers all daily-user-visible changes in one coherent diff.
+- 2026-04-29 [USER] Polish batch scope = full sweep (14 bugs incl. new #44 theme latency). Ships as commit 1 with #42 90-day heatmap; defers all other 4.5/5.5 follow-ups (drag-pins, sparkline, history page, achievement badges) until after Phase 7.
+- 2026-04-29 [USER] Phase 7 scope = full (mutual-accept friendships + /friends + add-by-@username AND friend_code + leaderboards Friends scope + /f/<code> deep-link with cookie stash + 30/hour rate limit). Ships as commit 2.
+- 2026-04-29 [USER] Reverse #41 plan: keep the Today mini-leaderboard, convert it to friends-only top-5; if my today score is outside the top-5, append `...` then a row with my rank + name + score below. My row renders accent. Ships in commit 2 since it depends on friend IDs.
+
+## Commit 1 polish-batch decisions (2026-04-29)
+- [CLAUDE] Theme toggle optimistic flip: client writes `<html data-theme>` via `setAttribute()` immediately on click; server action persists cookie + profile row in the background; on action failure both the React state and the dataset attribute roll back to the previous value (no flash, no desync). `<html data-theme>` is the only DOM contract — no transform, no transition.
+- [CLAUDE] Tooltip primitive (`components/ui/Tooltip.tsx`): `position:absolute; left:0; bottom:calc(100% + 6px)` with NO transform (Zetamac Pure forbids transforms even for static positioning). Bubble extends right of the host. Pointer-events:none on the bubble. Default decorative usage: aria-label on host, no tabIndex; pass `focusable` for interactive children.
+- [CLAUDE] Per-game grid (`.profile-game-stats`) is a 6-column CSS grid with shared min/max widths so the same stat sits at the same x-offset across every game row. Mobile @640px collapses to 2 columns.
+- [CLAUDE] 90-day heatmap is a single `daily_aggregates` query summed by date across every game (not per-game). Layout: 13×7 grid, 11×11 cells with 1px `--line` borders, `data-i` 1/2/3 maps to opacity-tiered accent fill (rgba 0.25 / 0.55 / full). `lib/heatmap.ts` exports `heatBucket` + `buildHeatmap` as pure functions for vitest coverage.
+- [CLAUDE] Profile section order is now badges -> heatmap -> per-game (was per-game -> badges). User-driven reorder; reads as identity > activity > detail.
+- [CLAUDE] Per-badge emoji map (`lib/badges/icons.ts`): one emoji per badge_key, never combined. `pb_first_<game>` uses a game-themed icon (math 🧮, digit 🔢, nback 🧠, stroop 🎨, reaction ⚡, mine 💣, word 📝); `streak_*` -> 🔥; `all_seven_today` -> 🎯. Fallback: `•` for unknown keys, `🏆` for malformed `pb_first_<unknown>`.
+- [CLAUDE] Countdown timing: single `STEP_MS = 600` constant drives all four steps (3, 2, 1, go) so each gets equal on-screen time. Total countdown is 2400ms (was ~2800ms with the asymmetric "go" 400ms flash).
+- [CLAUDE] Streak ribbon pulse confined to the 🔥 emoji span only; number + units stay steady.
+- [CLAUDE] Avatar centering nudge: `paddingTop: 1` on the inline-flex disc to compensate for Courier Prime's high cap baseline. Affects 22px (leaderboard rows) and 48px (profile header) uniformly.
+- [CLAUDE] Favicon (`app/icon.svg`) ships with a `prefers-color-scheme` media query in inline `<style>` so the accent fill swaps from `#0066cc` to `#5aa3ff` in dark browser tabs.
+- [CLAUDE] Heatmap legend `.heatmap-cell` requires `display: inline-block` (added globally) so standalone cells outside the grid render as 11×11 squares.
+- [CLAUDE] Leaderboard rows: extended SELECT to include `profiles(username, display_name, avatar_color)` (all public-readable per `0003_rls_policies.sql`); rows render `<Link><Avatar size=22 />username</Link>` with `text-overflow: ellipsis; white-space: nowrap` on the username span and `max-width: 320px` on the cell to guard against 24-char username overflow.
+- [CLAUDE] Routed `setThemeAction` no longer triggers `router.refresh()` from the client; the optimistic dataset flip plus the action's existing `revalidatePath('/', 'layout')` covers both the immediate visual and the next SSR render. Removed the unused `useRouter` import.
+- [CLAUDE] Per-bug filing: theme-toggle latency was filed as #44 inside this commit (and resolved in the same commit) so the change has a paper trail in `bugs.md`.
 
 ## Assumptions
 - User has Supabase + Vercel accounts. Google OAuth client provisioned in Supabase Auth, identity linking enabled. Resend account, API key in Supabase SMTP config.

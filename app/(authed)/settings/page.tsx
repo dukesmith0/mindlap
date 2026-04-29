@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { SettingsClient } from "./SettingsClient";
@@ -29,6 +30,9 @@ export default async function SettingsPage() {
 
   return (
     <AppShell>
+      <p style={{ marginBottom: 12 }}>
+        <Link href="/today" className="nav-back">&lt;- today</Link>
+      </p>
       <h1>Settings</h1>
       <SettingsClient
         email={user.email ?? ""}

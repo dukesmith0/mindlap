@@ -363,6 +363,96 @@ hr {
   border-bottom-color: var(--accent);
 }
 
+/* Destructive headings + buttons (settings DangerZone). 1px borders, square
+   corners, instant fill on hover. Same shape as the default button. */
+.danger-h2 { color: #d62828; }
+.btn-danger {
+  background: none;
+  border: 1px solid #d62828;
+  color: #d62828;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  padding: 8px 24px;
+  border-radius: 0;
+  cursor: pointer;
+}
+.btn-danger:hover {
+  background: #d62828;
+  color: #ffffff;
+}
+.btn-danger:disabled {
+  border-color: var(--line);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+.btn-danger:disabled:hover {
+  background: none;
+  color: var(--muted);
+}
+
+/* /today header: title-block left + search right, baseline-aligned. */
+.today-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+.today-header > div:first-child h1 { margin: 0 0 2px; }
+.today-header > div:first-child .subtitle { margin: 0 0 0; }
+.today-search { display: inline-flex; align-items: center; gap: 6px; }
+.today-search-input { width: 220px; }
+.today-search-clear {
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 0;
+}
+.today-search-clear:hover { background: var(--line); color: var(--ink); }
+
+@media (max-width: 640px) {
+  .today-header { flex-direction: column; align-items: stretch; }
+  .today-search-input { width: 100%; }
+}
+
+/* Tooltip primitive: 1px accent border, no shadow, square, opacity-only fade.
+   Wrap a target with .tooltip-host; the .tooltip child appears on hover or focus
+   of the host. */
+@keyframes tooltip-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.tooltip-host { position: relative; display: inline-flex; }
+/* Anchored to the left edge of the host (no transform — Zetamac Pure). The
+   bubble extends to the right; on a narrow host like a single-character `*`
+   indicator this keeps the bubble fully on-screen without flexbox tricks. */
+.tooltip-host > .tooltip {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 6px);
+  padding: 4px 10px;
+  background: var(--bg);
+  color: var(--accent);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border: 1px solid var(--accent);
+  border-radius: 0;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 5;
+}
+.tooltip-host:hover > .tooltip,
+.tooltip-host:focus-within > .tooltip {
+  opacity: 1;
+  animation: tooltip-fade-in 160ms ease-out;
+}
+
 /* In-game type scale additions for new games */
 .game-text-reaction {
   font-size: 32px;
@@ -608,17 +698,26 @@ hr {
   font-size: 15px;
   margin-bottom: 10px;
 }
+/* Aligned columns across all game rows: PB / set / worst / 7d median / 30d /
+   total. Columns share widths so the same stat sits at the same x-offset on
+   every game (#37). */
 .profile-game-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 28px;
+  display: grid;
+  grid-template-columns:
+    minmax(64px, 0.9fr)
+    minmax(90px, 1fr)
+    minmax(64px, 0.9fr)
+    minmax(80px, 1fr)
+    minmax(72px, 1fr)
+    minmax(72px, 1fr);
+  gap: 6px 24px;
   margin: 0;
   font-size: 13px;
 }
 .profile-game-stats > div {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
+  flex-direction: column;
+  gap: 2px;
 }
 .profile-game-stats dt {
   color: var(--muted);
@@ -630,6 +729,46 @@ hr {
 .profile-game-stats dd {
   margin: 0;
   font-variant-numeric: tabular-nums;
+}
+@media (max-width: 640px) {
+  .profile-game-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* 90-day heatmap. 13 columns (weeks) × 7 rows (Mon..Sun), 11px cells, 1px
+   borders, no shadow, square. Color intensity scales with plays_submitted. */
+.heatmap {
+  display: grid;
+  grid-template-columns: repeat(13, 11px);
+  grid-template-rows: repeat(7, 11px);
+  grid-auto-flow: column;
+  gap: 2px;
+  margin: 8px 0 32px;
+}
+.heatmap-cell {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  border: 1px solid var(--line);
+  background: transparent;
+}
+.heatmap-cell[data-i="1"] { background: rgba(0, 102, 204, 0.25); }
+.heatmap-cell[data-i="2"] { background: rgba(0, 102, 204, 0.55); }
+.heatmap-cell[data-i="3"] { background: var(--accent); border-color: var(--accent); }
+[data-theme="dark"] .heatmap-cell[data-i="1"] { background: rgba(90, 163, 255, 0.25); }
+[data-theme="dark"] .heatmap-cell[data-i="2"] { background: rgba(90, 163, 255, 0.55); }
+[data-theme="dark"] .heatmap-cell[data-i="3"] { background: var(--accent); border-color: var(--accent); }
+.heatmap-cell.is-empty { visibility: hidden; }
+.heatmap-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
 }
 .badge-wall {
   display: flex;
@@ -645,12 +784,14 @@ hr {
   gap: 8px;
   font-size: 13px;
 }
-.badge-wall .badge-dot {
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--accent);
+.badge-wall .badge-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  font-size: 14px;
+  line-height: 1;
 }
 
 @media (max-width: 640px) {

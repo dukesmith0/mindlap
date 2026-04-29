@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { togglePinAction } from "@/actions/submission";
+import { Tooltip } from "@/components/ui/Tooltip";
 import type { GameKey } from "@/lib/games/registry";
 
 type Preview = { user_id: string; score: number; username: string | null };
@@ -69,7 +70,11 @@ export function TodayCard({
             </button>
           )}
           <span>{name}</span>
-          {isCore && <span className="game-card-star">*</span>}
+          {isCore && (
+            <Tooltip text="cognitively core game">
+              <span className="game-card-star">*</span>
+            </Tooltip>
+          )}
           {isBonus && <span className="game-card-pill">[2x xp]</span>}
         </div>
         <div className="game-card-meta">
