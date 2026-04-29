@@ -36,7 +36,7 @@ const ITEMS: Item[] = [
   {
     label: "Profile",
     href: "/profile/me",
-    enabled: false,
+    enabled: true,
     icon: (
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <circle cx="12" cy="8" r="4" />
@@ -72,9 +72,9 @@ const ITEMS: Item[] = [
     href: "/settings",
     enabled: true,
     icon: (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+        <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
         <circle cx="12" cy="12" r="3" />
-        <path d="M12 2v3m0 14v3m10-10h-3M5 12H2" />
       </svg>
     ),
   },
@@ -87,10 +87,15 @@ export function Sidebar() {
     <aside className="app-sidebar">
       <ul>
         {ITEMS.map((item) => {
+          // Profile gets a special-case so it lights up on the canonical
+          // /profile/<username> URL after the /profile/me redirect.
+          const isProfile = item.href.startsWith("/profile/");
           const isActive =
             item.enabled &&
-            (pathname === item.href ||
-              (item.href !== "/" && pathname.startsWith(item.href + "/")));
+            (isProfile
+              ? pathname.startsWith("/profile/")
+              : pathname === item.href ||
+                (item.href !== "/" && pathname.startsWith(item.href + "/")));
           if (!item.enabled) {
             return (
               <li key={item.label}>

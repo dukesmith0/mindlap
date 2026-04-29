@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ptDate } from "@/lib/pt-date";
 import { GAMES, GAME_KEYS, type GameKey } from "@/lib/games/registry";
 import { getBonusGames } from "@/lib/daily-bonus";
-import { TodayCard } from "./TodayCard";
+import { TodayList, type TodayCardData } from "./TodayList";
 import { AppShell } from "@/components/layout/AppShell";
 
 export const metadata = { title: "Today - mindlap" };
@@ -67,38 +67,31 @@ export default async function TodayPage() {
     return 3;
   }
 
+  const cards: TodayCardData[] = ordered.map((key) => ({
+    key,
+    name: GAMES[key].name,
+    tagline: GAMES[key].tagline,
+    isCore: GAMES[key].isCore,
+    isPinned: pinned.has(key),
+    isBonus: bonusSet.has(key),
+    best: todayBests.get(key),
+    preview: previews.get(key) ?? [],
+  }));
+
+  const dateLabel = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
+
   return (
     <AppShell>
-      <h1>Today&apos;s Games</h1>
-      <p className="subtitle">
-        {new Date().toLocaleDateString("en-US", {
-          weekday: "long",
-          month: "long",
-          day: "numeric",
-        })}
-      </p>
-
-      <div role="list" style={{ marginTop: 32 }}>
-        {ordered.map((key) => {
-          const meta = GAMES[key];
-          return (
-            <TodayCard
-              key={key}
-              gameKey={key}
-              name={meta.name}
-              tagline={meta.tagline}
-              isCore={meta.isCore}
-              isPinned={pinned.has(key)}
-              isBonus={bonusSet.has(key)}
-              best={todayBests.get(key)}
-              authed={isAuthed}
-              preview={previews.get(key) ?? []}
-              meId={user?.id ?? null}
-            />
-          );
-        })}
-      </div>
-
+      <TodayList
+        dateLabel={dateLabel}
+        cards={cards}
+        authed={isAuthed}
+        meId={user?.id ?? null}
+      />
       <p style={{ marginTop: 32, fontSize: 13 }}>
         <Link href="/leaderboards" className="nav-back">browse all leaderboards -&gt;</Link>
       </p>

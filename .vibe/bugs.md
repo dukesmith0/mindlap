@@ -1,7 +1,9 @@
 # Bugs
-Next ID: 20
+Next ID: 33
 
 ## Open
+#30 [MED] Pre-submit comparison view on ResultScreen. Show user's current PB, worst, 7d median, leaderboard rank for this game, plus a green `(+N)` or red `(-N)` delta indicating what would change if they submit this play. Implement as a Server Action `getPreSubmitContext(game_key, score)` returning current+projected values; render in ResultScreen above the submit button.
+#26 [LOW] Profile page does 28 supabase round-trips per render (4 queries × 7 games). Acceptable for v1 traffic; collapse to one `get_public_profile_stats(user_id)` RPC in Phase 11. File: `app/profile/[username]/page.tsx:82-146`.
 #19 [LOW] Avatar initial floats above center (Courier Prime cap-baseline). `components/ui/Avatar.tsx:9-30`. Fix: padding-top 1px or SVG `dominant-baseline=central`.
 #16 [LOW] `/favicon.ico` 404 console noise. Fix: ship `app/icon.png` or `app/favicon.ico`.
 #15 [MED] `/settings` has no back affordance. Fix: back-link or topbar/sidebar nav.
@@ -10,7 +12,18 @@ Next ID: 20
 ## Deferred
 
 ## Resolved (2026-04-28)
-#18 [LOW] No XP bar surfaced; `profiles.xp` unread. Fix: shipped `components/ui/XpBar.tsx` in topbar (Phase 4). `xp` populated by Phase 6 via `process_submission()` + `xp_events`; bar displays whatever `profiles.xp` holds today.
+#32 [HIGH] `process_submission` raised `column reference "best" is ambiguous` on every submit. Cause: `RETURNS TABLE(best, worst, mean, median, ...)` declares OUT params that shadow the daily_aggregates columns inside the function body. Fix: 0010 changes the return type to `jsonb` (no OUT params, no namespace collision); `submitScoreAction` reads the JSON object directly.
+#31 [HIGH] /profile/[username] per-game stats grid garbled. Fix: collapsed `.profile-game-grid` to single column; stats render as wrap-flex with one label/value per stat.
+#29 [LOW] Verified: pins ARE retained across sessions (RLS-gated SELECT on every render). Closed by inspection.
+#28 [MED] /today header had no search. Fix: `TodayHeader` + `TodayList` client island with name/key client-side filter.
+#27 [LOW] Participation cap coupled to bonus mult. Fix: 0009/0010 set `v_part_cap = 5 * v_bonus_mult` (10/play, 10/day on bonus days).
+#25 [MED] Sidebar Profile link never lit up on canonical `/profile/<username>`. Fix: Sidebar special-cases Profile to active on any `/profile/...`.
+#24 [HIGH] `award_xp` ignored `p_multiplier`; `xp_awarded` desynced from `profiles.xp` on bonus games. Fix: 0009/0010 pre-multiply at the caller, pass `p_multiplier=1.0`. xp_events.amount and profiles.xp now agree.
+#23 [LOW] Settings sidebar icon visually identical to Today's. Fix: swapped to a proper gear/cog SVG path in `components/layout/Sidebar.tsx`.
+#22 [MED] No XP-gained indicator on submit. Fix: `submitScoreAction` now returns `{ xpAwarded, isNewPb, best, streakCurrent }`; `ResultScreen` renders `+N xp` (accent) + `[new PB]` (amber) with opacity-fade animation per zetamac-pure rules.
+#21 [MED] Sidebar visible during gameplay competed with the focal game stage. Fix: `<AppShell noSidebar>` prop on `/play/[game]`; topbar persists.
+#20 [MED] Game stage not centered. Fix: `.app-main-centered` (max-w 720, margin 0 auto, padding 48 32) used when AppShell `noSidebar` is set.
+#18 [LOW] No XP bar surfaced; `profiles.xp` unread. Fix: shipped `components/ui/XpBar.tsx` in topbar (Phase 4). `xp` now populated live by `process_submission()` -> `xp_events` (Phase 6).
 #17 [MED] `/play/[game]` "<- today" back link looked unclickable. Fix: added `.nav-back` class with hover-color + dashed underline.
 #13 [HIGH] Dev CSP missing `unsafe-eval` -> React dev bundle crashed onboarding (chained "Failed to fetch" on Server Action). Fix: gate `unsafe-eval` + `ws://localhost:*` behind `NODE_ENV==="development"` in `next.config.ts`. Production strict.
 #12 [HIGH] N-Back leaked timeouts on unmount (`void` instead of cleanup). Fix: collect ids in `Set<>`, `forEach(clearTimeout)` on cleanup.

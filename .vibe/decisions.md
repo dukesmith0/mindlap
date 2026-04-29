@@ -101,6 +101,13 @@ All dated 2026-04-28 unless noted.
 - 2026-04-28 [CLAUDE] `/leaderboards` ships with Today / 7d / All-time tabs × 7 game tabs. Anonymous-readable. Authed user gets a sticky highlight row when their submission is on the visible page. Friends/Group filter deferred to Phase 7/8.
 - 2026-04-28 [CLAUDE] Privacy + leaderboards reconciliation: `submissions readable per privacy` policy (0003) excludes private-profile users entirely from anonymous/non-friend leaderboards. Earlier doc said "private = sparse profile, username still on leaderboards" — that was Phase-1 plan; the RLS shipped in Phase 1 makes private users invisible on leaderboards too. Tracked-as-design for v1: private profile = also private leaderboard presence. Re-evaluate if user feedback wants the original split.
 
+## Phase 5 + 6 (2026-04-28)
+- 2026-04-28 [CLAUDE] Phase 6 XP + badges shipped via migration 0008. New PG fns: `award_xp(user_id, source, amount, multiplier, metadata)` (internal, no GRANT) and `eval_badges(user_id)` (internal). `process_submission(game_key, score, is_bonus_game)` extended to call both atomically; signature now 3-arg, old 2-arg dropped. Returns include `xp_awarded` + `is_new_pb` so the client can render +N xp + [new PB] indicators.
+- 2026-04-28 [CLAUDE] XP rules shipped: participation = 5 xp/play, capped 5/(user,game,PT date) — read past xp_events filtered by metadata.game_key. Daily PB bonus = 25 xp × streak_mult × 2x_mult. Streak mult = `min(1.0 + 0.1*(streak-1), 2.5)`. Score-scaled `floor(z*50)` deferred to post-launch (needs population stats).
+- 2026-04-28 [CLAUDE] Badges auto-grant from `eval_badges` inside `process_submission`: streak_3/7/30/100 (on streak update), pb_first_<game> (any submission), all_seven_today (distinct game submissions today >= total games). Idempotent via ON CONFLICT DO NOTHING on user_badges PK.
+- 2026-04-28 [CLAUDE] Daily-bonus passed into `process_submission` from server (`isBonusGame(ptDate(), game_key)`). Future hardening: derive inside the fn from a `daily_bonus` row to remove client-trust on the 2x flag. v1 trust is acceptable since the bonus only inflates XP (not score), and R1 anti-cheat already gates on submission integrity.
+- 2026-04-28 [USER] Bugs #20/#21/#22 fixed: `<AppShell noSidebar>` for /play/[game], centered main column, +N xp + [new PB] indicators with opacity-fade animation.
+
 ## Assumptions
 - User has Supabase + Vercel accounts. Google OAuth client provisioned in Supabase Auth, identity linking enabled. Resend account, API key in Supabase SMTP config.
 - Initial player base small. Elo cold-start mitigated by silent accumulation (Risk #R2).

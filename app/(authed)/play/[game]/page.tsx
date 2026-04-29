@@ -23,7 +23,7 @@ export default async function PlayPage({
   if (!isGameKey(game)) notFound();
 
   return (
-    <AppShell>
+    <AppShell noSidebar>
       <div style={{ marginBottom: 24 }}>
         <Link href="/today" className="nav-back">&lt;- today</Link>
       </div>

@@ -4,8 +4,19 @@ import "server-only";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { ptDate } from "@/lib/pt-date";
+import { isBonusGame } from "@/lib/daily-bonus";
 
-type ActionResult = { ok: true } | { ok: false; error: string };
+type ActionResult<T = undefined> =
+  | (T extends undefined ? { ok: true } : { ok: true; data: T })
+  | { ok: false; error: string };
+
+export type SubmitScoreData = {
+  xpAwarded: number;
+  isNewPb: boolean;
+  best: number;
+  streakCurrent: number;
+};
 
 // All 7 games. Server-side check; the client also constrains via the registry.
 const GameKey = z.enum(["math", "digit", "nback", "stroop", "reaction", "mine", "word"]);
@@ -16,7 +27,9 @@ const SubmitSchema = z.object({
   score: z.coerce.number().int().nonnegative(),
 });
 
-export async function submitScoreAction(formData: FormData): Promise<ActionResult> {
+export async function submitScoreAction(
+  formData: FormData
+): Promise<ActionResult<SubmitScoreData>> {
   const parse = SubmitSchema.safeParse({
     game_key: formData.get("game_key"),
     score: formData.get("score"),
@@ -27,19 +40,39 @@ export async function submitScoreAction(formData: FormData): Promise<ActionResul
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "Not signed in." };
 
-  // process_submission (migration 0007) handles the full transaction:
-  // submission insert + daily_aggregates upsert + streak/total_submitted
-  // updates. It validates the game key and range against the catalog and
-  // raises with a readable error if anything is off. Wire-level RLS still
-  // runs on the underlying tables.
-  const { error } = await supabase.rpc("process_submission", {
+  // Resolve today's bonus pair server-side from the deterministic generator.
+  // Phase 4.5 may move this into PG so the DB also enforces it.
+  const isBonus = isBonusGame(ptDate(), parse.data.game_key);
+
+  // process_submission (migrations 0007 + 0008 + 0010) handles the full tx:
+  // submission insert + aggregates upsert + streak update + xp_events writes
+  // (participation cap, PB bonus, streak mult, 2x bonus) + badge eval.
+  // Returns a jsonb object (0010 fixed an OUT-param column-name collision).
+  const { data, error } = await supabase.rpc("process_submission", {
     p_game_key: parse.data.game_key,
     p_score: parse.data.score,
+    p_is_bonus_game: isBonus,
   });
   if (error) return { ok: false, error: error.message };
 
+  type ProcessResult = {
+    best: number;
+    streak_current: number;
+    xp_awarded: number;
+    is_new_pb: boolean;
+  };
+  const row = (data ?? {}) as ProcessResult;
+
   revalidatePath("/today");
-  return { ok: true };
+  return {
+    ok: true,
+    data: {
+      xpAwarded: Number(row.xp_awarded ?? 0),
+      isNewPb: !!row.is_new_pb,
+      best: Number(row.best ?? parse.data.score),
+      streakCurrent: Number(row.streak_current ?? 0),
+    },
+  };
 }
 
 // Click-to-pin / unpin from /today. Toggles a row in user_game_pins.

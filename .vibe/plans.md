@@ -42,8 +42,9 @@ Next.js 16 App Router on Vercel + Supabase (Auth/Postgres/Storage) + Resend. All
 - [ ] Phase 3 (in progress): remaining 3 games (Reaction, Mine, Word)
 - [ ] Phase 4 (in progress, essentials only): pins (click-to-pin), `[2x]` pill via deterministic daily_bonus, top-5 leaderboard preview on /today, /leaderboards page (Today/7d/All-time x 7 games, anonymous full visibility), public-read gating verified, `process_submission()` PG fn (aggregates + streak + plays counters; XP/Glicko stubbed for Phase 6/10).
 - [ ] Phase 4.5 follow-up: drag-reorder pins, leaderboards Friends/Group filter (post-Phase-7/8), Daily Completion sub-tab, 14-day double-XP calendar widget.
-- [ ] Phase 5: profile + improvement UX (streak ribbon, per-game cards, heatmap, history, graphs)
-- [ ] Phase 6: XP + badges (full event log, multipliers, streak bonus, badge eval triggers)
+- [ ] Phase 5.5 follow-up: 90-day heatmap, 30-day SVG sparkline per game, /profile/me/history (CSV export), /profile/me/graphs (All-plays vs Daily-average toggle), achievement badges (perfect N-back day, sub-300ms reaction).
+- [ ] Phase 5 (in progress, essentials only): /profile/[username] header + per-game stats card. Defers heatmap, sparkline, history, graphs to Phase 5.5.
+- [x] Phase 6: XP events (migration 0008) + level updates + streak/PB/all-seven badges integrated into process_submission. Defers score-scaled `floor(z*50)` to post-launch (Phase 12) since it needs population stats.
 - [ ] Phase 7: friends (mutual-accept, friend filter on leaderboards, /f/<friend_code> deep-link)
 - [ ] Phase 8: groups (public/private, roles, /g/<join_code>, invites by username/email)
 - [ ] Phase 9: tutorials (cutout-mask overlay, first-play auto, master skip)

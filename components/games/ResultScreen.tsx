@@ -31,6 +31,8 @@ export function ResultScreen({
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [xpAwarded, setXpAwarded] = useState<number>(0);
+  const [isNewPb, setIsNewPb] = useState<boolean>(false);
   const submitBtnRef = useRef<HTMLButtonElement>(null);
   const next = nextGame(gameKey);
 
@@ -50,6 +52,8 @@ export function ResultScreen({
         setError(r.error);
         return;
       }
+      setXpAwarded(r.data.xpAwarded);
+      setIsNewPb(r.data.isNewPb);
       setSubmitted(true);
       router.refresh();
     });
@@ -116,9 +120,15 @@ export function ResultScreen({
         </p>
       )}
       {submitted && !error && (
-        <p style={{ color: "var(--muted)", marginTop: 12, fontSize: 13 }} role="status">
-          [saved. streak ticked, leaderboard updated.]
-        </p>
+        <div className="result-saved" role="status">
+          {isNewPb && <span className="result-pb">[new PB]</span>}
+          {xpAwarded > 0 && (
+            <span className="result-xp">+{xpAwarded} xp</span>
+          )}
+          <span style={{ color: "var(--muted)", fontSize: 13 }}>
+            [saved. streak ticked, leaderboard updated.]
+          </span>
+        </div>
       )}
     </section>
   );

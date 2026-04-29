@@ -1,5 +1,5 @@
 # mindlap
-Last: 2026-04-28 | Phases 0/1/1.5/2 shipped, Phase 3 + Phase 4 essentials in flight. All 7 games playable on dev. 143 vitest (15 files), lint/typecheck/build clean. Topbar+sidebar shell live (zetamac-pure mock). Streak 🔥 tier-coloured + XP bar in topbar.
+Last: 2026-04-28 | Phases 0/1/1.5/2/3/4-essentials/6 shipped. Phase 5 essentials (profile page) in flight. All 7 games playable, XP + badges autograded by `process_submission` in one tx, +N xp / [new PB] feedback on submit. Topbar+sidebar shell (sidebar hides on /play). Streak 🔥 tier-coloured.
 
 ## Stack
 Next.js 16 App Router (RSC, Server Actions) | TS strict | Tailwind (most utilities disabled) + CSS vars | Supabase Auth/Postgres/Storage + pg_cron | Resend via Supabase SMTP | Courier Prime via `next/font/local` (`app/fonts/`, GDPR-clean) | Zod | Vitest unit, Playwright e2e | Vercel + Speed Insights
@@ -29,7 +29,8 @@ Theme toggle: onboarding asks once. `profiles.theme_pref` server-side, mirrored 
 - ✅ Auth: Supabase email/pw + Google, identity linking on shared verified email. `handle_new_user` trigger seeds `profiles` + `profile_secrets` (friend_code). Reset/change password live (`/auth/set-password` gated by one-shot recovery cookie; `/settings` change-password verifies current via stateless side client).
 - ✅ Games core 4: Math, Digit Span, N-Back, Stroop. Pure logic `lib/games/<g>/index.ts`, UI `components/games/<G>Game.tsx`, shared `Countdown` (3-2-1-Go), `GameShell` (ready/countdown/playing/result), `ResultScreen` (Enter=submit / R=retry / N=next core).
 - ⏳ Games secondary 3: Reaction, Minesweeper, Word Recall (Phase 3).
-- ✅ Submit-vs-retry result screen + `submitScoreAction` (Zod int score, range vs `games` catalog, RLS user_id binding).
+- ✅ Submit-vs-retry result screen + `submitScoreAction` (Zod int score, calls `process_submission` RPC with `is_bonus_game` flag from `lib/daily-bonus.ts`). Returns `{ xpAwarded, isNewPb, best, streakCurrent }` for UI feedback.
+- ✅ XP + badges (migration 0008): `process_submission` -> `award_xp` + `eval_badges` atomically. Participation 5/play capped 5/game/PT-day. PB bonus 25 × streak × 2x. Streak badges streak_3/7/30/100, pb_first_<game>, all_seven_today.
 - ✅ `/play/[game]` route renders GameShell.
 - ⏳ `/today`: 7 cards sorted user-pin > today's `[2x]` > ★ > rest. Each card: best-today, submissions-today, top-5 today preview, Play. Phase 2 ships a 4-card MVP (today-best from `daily_aggregates`); Phase 4 finishes pins/2x/leaderboard preview.
 - `/leaderboards`: tabs Today / 7d / All-time, sub-tabs per-game raw best + Daily Completion, filter Global/Friends/Group. Anonymous full visibility (no cap). Authed gets sticky "your rank".

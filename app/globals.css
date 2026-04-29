@@ -518,6 +518,145 @@ hr {
    the inline style so it stays consistent if the class is removed. */
 .streak-ribbon { letter-spacing: 0.3px; font-variant-numeric: tabular-nums; }
 
+/* Result-screen XP gain + PB indicators. opacity fade-in (no transform per
+   zetamac-pure rules). */
+@keyframes result-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.result-saved {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 16px;
+  animation: result-fade 320ms ease-out;
+}
+.result-xp {
+  color: var(--accent);
+  font-size: 18px;
+  letter-spacing: 0.5px;
+  font-variant-numeric: tabular-nums;
+}
+.result-pb {
+  color: #f59e0b;
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* Profile page */
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.profile-header h1 { margin: 0 0 2px; }
+.profile-header-meta {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.profile-bio {
+  color: var(--ink);
+  font-size: 15px;
+  margin: 8px 0 32px;
+  white-space: pre-wrap;
+}
+.profile-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 16px 0;
+  margin-bottom: 32px;
+}
+.profile-summary > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.profile-stat-label {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.profile-stat-value {
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+}
+.profile-game-grid {
+  display: flex;
+  flex-direction: column;
+}
+.profile-game-card {
+  border-top: 1px solid var(--line);
+  padding: 16px 0;
+}
+.profile-game-card:last-child {
+  border-bottom: 1px solid var(--line);
+}
+.profile-game-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  margin-bottom: 10px;
+}
+.profile-game-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 28px;
+  margin: 0;
+  font-size: 13px;
+}
+.profile-game-stats > div {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.profile-game-stats dt {
+  color: var(--muted);
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.profile-game-stats dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+.badge-wall {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 32px;
+}
+.badge-wall .badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.badge-wall .badge-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+@media (max-width: 640px) {
+  .profile-summary { grid-template-columns: 1fr; }
+}
+
 /* ============================================================================
    App shell (topbar + 200px sidebar + main). Mirrors zetamac-pure.html.
    ============================================================================ */
@@ -584,6 +723,14 @@ hr {
 .app-main {
   padding: 48px 64px;
   max-width: 720px;
+}
+
+/* Used when noSidebar=true: center the column in the viewport. */
+.app-main-centered {
+  margin: 0 auto;
+  width: 100%;
+  max-width: 720px;
+  padding: 48px 32px;
 }
 
 @media (max-width: 720px) {

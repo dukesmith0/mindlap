@@ -2,9 +2,15 @@ import { TopBar } from "./TopBar";
 import { Sidebar } from "./Sidebar";
 import { createClient } from "@/lib/supabase/server";
 
-// Wrap any anonymous-or-authed page inside the zetamac-pure app shell:
-// topbar (logo + streak/xp/avatar OR sign-in/up) + 200px sidebar nav + main.
-export async function AppShell({ children }: { children: React.ReactNode }) {
+// Wrap any page inside the zetamac-pure app shell. `noSidebar` drops the
+// sidebar (used on /play/[game] so the game stage centers in the viewport).
+export async function AppShell({
+  children,
+  noSidebar = false,
+}: {
+  children: React.ReactNode;
+  noSidebar?: boolean;
+}) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -16,6 +22,15 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       .eq("id", user.id)
       .single();
     profile = data;
+  }
+
+  if (noSidebar) {
+    return (
+      <>
+        <TopBar profile={profile} />
+        <main className="app-main app-main-centered">{children}</main>
+      </>
+    );
   }
 
   return (

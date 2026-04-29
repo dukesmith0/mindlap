@@ -1,6 +1,6 @@
 # Current
 
-Active: Phase 3 + Phase 4 essentials shipped on dev (Approach B). Awaiting commit + push to `main`. Topbar+sidebar shell matching zetamac-pure.html mock; 🔥 tiered streak; XP bar; 7 games playable end-to-end; 0007 process_submission applied live; /leaderboards page; click-to-pin + 2x rotation; 143 vitest passing.
+Active: Phase 6 + bug fixes #20/#21/#22 shipped on dev. Phase 5 essentials (`/profile/[username]`) next. Migration 0008 applied live. process_submission now writes XP events + auto-grants streak/PB/all-seven badges in one tx. ResultScreen shows +N xp + [new PB] feedback. /play/[game] drops sidebar and centers the game stage.
 
 ## Just-shipped 2026-04-28 (uncommitted)
 
