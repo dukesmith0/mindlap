@@ -116,6 +116,15 @@ All dated 2026-04-28 unless noted. `[USER]` = explicit choice; `[CLAUDE]` = impl
 - 2026-04-29 [USER] Phase 7 scope = full (mutual-accept friendships + /friends + add-by-@username AND friend_code + leaderboards Friends scope + /f/<code> deep-link with cookie stash + 30/hour rate limit). Ships as commit 2.
 - 2026-04-29 [USER] Reverse #41 plan: keep the Today mini-leaderboard, convert it to friends-only top-5; if my today score is outside the top-5, append `...` then a row with my rank + name + score below. My row renders accent. Ships in commit 2 since it depends on friend IDs.
 
+## Commit 4 avatar identity rework (2026-04-29)
+- [USER] Picked avatar identity rework (#48) as the next lane after commit 3, ahead of the open Tier-1 newcomer-experience design questions. Reason: self-contained, no decisions pending, fastest visible win for daily users.
+- [USER] Click-to-edit popup off the avatar itself (TopBar + own-profile header + /settings ProfileSection). Removes the "avatar color" picker block from /settings Preferences. TopBar avatar previously linked to /settings; that affordance is replaced by the modal — settings remains reachable from the sidebar.
+- [USER] Emoji exception list extended again: avatars now accept any single grapheme (emoji or letter) in addition to the streak ribbon (🔥) and badges (per-key emoji). Zetamac-pure rules still hold for everything else.
+- [CLAUDE] Single-grapheme validation via `Intl.Segmenter` + NFC normalization in `lib/auth/avatar-emoji.ts`. Cap is 32 chars to allow ZWJ family + skin-tone sequences; tightening to a regex CHECK is filed as risk #R18.
+- [CLAUDE] `setAvatarColorAction` replaced (not augmented) by `setAvatarIdentityAction({ color, emoji })` so a save commits both fields atomically and the modal preview matches what gets persisted. No FormData wrapper — plain object input is fine for Server Actions and avoids the Zod boilerplate for a 2-field action.
+- [CLAUDE] Modal pattern: outer `AvatarEditor({open})` returns null when closed; inner `AvatarEditorBody` is mounted only when open, so its `useState` initializers run with current props on each open. Avoids `setState`-in-`useEffect` (lint rule). Backdrop click uses mousedown+click sequence so drag-to-select inside the card doesn't accidentally close the dialog.
+- [CLAUDE] Modal focus trap + body scroll lock deferred (filed as bug #64). Acceptable v1 cut: single modal in app, two interactive sub-regions, Escape closes, click-outside closes, cancel button autofocused.
+
 ## Commit 3 Tier 3 polish (2026-04-29)
 - [USER] Picked Tier 3 ready-to-ship polish (5 bugs: #46/#55/#57/#60/#61) over Tier 1 newcomer-experience or score-interpretability work. Reason: ship fast wins with no design decisions while Tier 1 questions stay open in `current.md` "Pending design calls" for a focused future commit.
 - [CLAUDE] DangerZone keeps both the red warning and the muted "Cascades through every score..." line. The red sentence is the at-a-glance signal; the muted sentence explains the cascade. Redundant by design. If the redundancy bothers in review, drop the muted one — explicitly recorded so future-me doesn't re-litigate.

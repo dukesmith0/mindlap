@@ -27,6 +27,7 @@ type Row = {
   username: string | null;
   display_name: string | null;
   avatar_color: string | null;
+  avatar_emoji: string | null;
   score: number;
 };
 
@@ -34,6 +35,7 @@ type ProfileEmbed = {
   username?: string | null;
   display_name?: string | null;
   avatar_color?: string | null;
+  avatar_emoji?: string | null;
 } | null;
 
 function readProfile(r: unknown): ProfileEmbed {
@@ -89,7 +91,7 @@ export default async function LeaderboardsPage({
 
     let query = supabase
       .from("submissions")
-      .select("user_id, score, profiles(username, display_name, avatar_color)")
+      .select("user_id, score, profiles(username, display_name, avatar_color, avatar_emoji)")
       .eq("game_key", game)
       .gte("played_pt_date", fromDate);
     if (friendsAllowList) query = query.in("user_id", friendsAllowList);
@@ -108,6 +110,7 @@ export default async function LeaderboardsPage({
         username: prof?.username ?? null,
         display_name: prof?.display_name ?? null,
         avatar_color: prof?.avatar_color ?? null,
+        avatar_emoji: prof?.avatar_emoji ?? null,
         score,
       };
       const existing = bestByUser.get(uid);
@@ -126,7 +129,7 @@ export default async function LeaderboardsPage({
     const lower = meta.direction === "lower";
     let query = supabase
       .from("submissions")
-      .select("user_id, score, profiles(username, display_name, avatar_color)")
+      .select("user_id, score, profiles(username, display_name, avatar_color, avatar_emoji)")
       .eq("game_key", game);
     if (friendsAllowList) query = query.in("user_id", friendsAllowList);
     const { data } = await query
@@ -143,6 +146,7 @@ export default async function LeaderboardsPage({
         username: prof?.username ?? null,
         display_name: prof?.display_name ?? null,
         avatar_color: prof?.avatar_color ?? null,
+        avatar_emoji: prof?.avatar_emoji ?? null,
         score,
       };
       const existing = bestByUser.get(uid);
@@ -271,7 +275,12 @@ export default async function LeaderboardsPage({
                           maxWidth: "100%",
                         }}
                       >
-                        <Avatar color={r.avatar_color ?? "var(--ink)"} name={display} size={22} />
+                        <Avatar
+                          color={r.avatar_color ?? "var(--ink)"}
+                          name={display}
+                          emoji={r.avatar_emoji}
+                          size={22}
+                        />
                         <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           {handle}
                         </span>

@@ -1,6 +1,6 @@
 # Current
 
-Active: Commit 1 (polish batch + heatmap + theme toggle) landed at `46637bc`. Commit 2 (Phase 7 friends + #41 friends-only Today mini-leaderboard + #47 social buttons + dark-mode lift + NOT YET PLAYED filler) staged on disk, ready to commit. Vercel auto-deploys on push.
+Active: Commits 1-3 landed (`46637bc` polish + `c2ca5d6` Phase 7 + `3d4b224` Tier 3 polish). Commit 4 (avatar identity rework #48) staged on disk, ready to commit: migration 0013, AvatarEditor modal, click-to-edit on TopBar + own-profile + settings, color picker removed from /settings Preferences, AvatarColorPicker.tsx deleted, 202/202 tests pass. New bug #64 filed (modal focus trap + scroll lock, deferred). New risk #R18 filed (DB CHECK vs grapheme validator drift, self-inflicted only). Vercel auto-deploys on push.
 
 ## What works end-to-end (post commit 2 staging)
 - Sign up email/pw or Google -> email confirm -> `/auth/callback` -> `/onboarding` -> `/today`. If the user landed on `/f/<code>` first, the friend code is stashed and a pending friendship is auto-created on first onboarding submit.
@@ -15,21 +15,25 @@ Active: Commit 1 (polish batch + heatmap + theme toggle) landed at `46637bc`. Co
 - Dark mode background lifted to VS Code-ish `#1e242b` with brighter `--line`/`--muted` for contrast.
 - 192/192 vitest passing across 20 files (added `debug/friend-code-cookie.test.ts`).
 
-## Open bugs (5)
-- #50 [LOW] Filed and resolved in same commit (profile social-buttons layout). Watch for regressions.
-- #48 [MED] Avatar identity rework (color + emoji + click-to-edit modal). Defer to its own commit.
-- #46 [LOW] Profile header centering off due to .subtitle 40px bottom margin. Defer.
-- #45 [MED] Themed tooltips for badges + heatmap (single delegated hover bubble). Defer.
+## Open bugs
+- #64 [LOW] AvatarEditor modal lacks focus trap + body scroll lock. Defer until a second modal lands.
+- #62 [LOW] Countdown 2.4s × 7 = ~17s waiting. Decision-pending: STEP_MS=400 vs skip toggle.
+- #59 [MED] Server-action error toast/inline pattern missing. Decision-pending.
+- #58 [MED] Anti-cheat disclaimer on /leaderboards. Decision-pending tone.
+- #56 [LOW] Friends not surfaced during onboarding. Decision-pending: 3rd step vs post-arrival nudge.
+- #54 [MED] Game taglines on /today don't say direction. Decision-pending tone.
+- #53 [MED] Profile per-game grid: `worst` + `set` columns. Decision-pending.
+- #52 [MED] Score-context line under per-game stats missing. Decision-pending: text vs arrow indicators.
+- #51 [MED] No Day-1 win for newcomers. Decision-pending: milestone banner vs hide leaderboards.
+- #45 [MED] Themed tooltips for badges + heatmap (single delegated hover bubble).
 - #30 [MED] Pre-submit comparison view on ResultScreen.
 - #26 [LOW] Profile RPC consolidation (Phase 11).
 - #14 [MED] Digit Span overflow at length 10+. Needs design call.
 
-(Note: #50 is actually closed — listed for visibility. Open count is 6 by strict interpretation, 5 if we treat #50 as resolved.)
-
-## Open risks (`0C / 1H / 2M / 4L`)
+## Open risks (`0C / 1H / 2M / 5L`)
 - R13 [HIGH] No app-level rate limit on auth endpoints. Phase 11. Phase 7 friend-request DB-counter is a stopgap that folds under R13.
 - R1, R2 [MED] Anti-cheat deferred; Glicko cold-start unstable.
-- R3, R15, R16, R17 [LOW] Daily-bonus cron, future-migration grant regression, side-client password-grant rate sharing, per-user submission spam.
+- R3, R15, R16, R17, R18 [LOW] Daily-bonus cron, future-migration grant regression, side-client password-grant rate sharing, per-user submission spam, DB-CHECK vs grapheme-validator drift on avatar_emoji.
 
 ## Phase plan
 - [x] Phase 0 scaffold
@@ -41,7 +45,9 @@ Active: Commit 1 (polish batch + heatmap + theme toggle) landed at `46637bc`. Co
 - [x] Phase 5 essentials
 - [x] Phase 6 XP + badges
 - [x] Polish batch commit (commit 1, `46637bc`)
-- [x] Phase 7 friends + #41 reframe + #47 social (commit 2, staged)
+- [x] Phase 7 friends + #41 reframe + #47 social (commit 2, `c2ca5d6`)
+- [x] Tier 3 polish (commit 3, `3d4b224`)
+- [x] Avatar identity rework #48 (commit 4, staged)
 - [ ] Phase 4.5 follow-up: drag-reorder pins, Daily Completion sub-tab, 14-day calendar widget
 - [ ] Phase 5.5 follow-up: 30-day SVG sparkline, /profile/me/{history,graphs} + CSV export, achievement badges
 - [ ] Phase 8 groups (public/private + roles + /g/<join_code>)
@@ -59,7 +65,7 @@ npm test | npm run typecheck | npm run lint | npm run build
 ```
 
 ## Live state
-- Supabase project `nookxuvlvwtppitqguxf`: migrations 0001-0012 applied. `process_submission(text, numeric, boolean) -> jsonb` is the only writer for submissions and daily_aggregates. `find_user_by_friend_code` and `find_user_by_username` (0011) handle friend-add lookups. `profiles.accepts_friend_requests` (0012) gates inbound requests.
+- Supabase project `nookxuvlvwtppitqguxf`: migrations 0001-0013 applied. `process_submission(text, numeric, boolean) -> jsonb` is the only writer for submissions and daily_aggregates. `find_user_by_friend_code` and `find_user_by_username` (0011) handle friend-add lookups. `profiles.accepts_friend_requests` (0012) gates inbound requests. `profiles.avatar_emoji` (0013) optional single-grapheme glyph for avatars.
 - Vercel project `mindlap` linked. Env vars unchanged.
 - GitHub: `dukesmith0/mindlap` (public). Latest `origin/main` = `46637bc`.
 

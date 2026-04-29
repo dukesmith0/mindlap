@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { Avatar } from "@/components/ui/Avatar";
+import { AvatarEditTrigger } from "@/components/ui/AvatarEditTrigger";
 import { StreakRibbon } from "@/components/ui/StreakRibbon";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { XpBar, levelFromXp } from "@/components/ui/XpBar";
@@ -20,6 +21,7 @@ type ProfileRow = {
   display_name: string | null;
   bio: string | null;
   avatar_color: string;
+  avatar_emoji: string | null;
   streak_current: number | null;
   streak_longest: number | null;
   level: number | null;
@@ -60,7 +62,7 @@ export default async function ProfilePage({
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "id, username, display_name, bio, avatar_color, streak_current, streak_longest, level, xp, total_plays, total_submitted, is_public, accepts_friend_requests"
+      "id, username, display_name, bio, avatar_color, avatar_emoji, streak_current, streak_longest, level, xp, total_plays, total_submitted, is_public, accepts_friend_requests"
     )
     .eq("username", username)
     .single();
@@ -101,7 +103,12 @@ export default async function ProfilePage({
     return (
       <AppShell>
         <header className="profile-header">
-          <Avatar color={p.avatar_color} name={p.display_name ?? p.username} size={48} />
+          <Avatar
+            color={p.avatar_color}
+            name={p.display_name ?? p.username}
+            emoji={p.avatar_emoji}
+            size={48}
+          />
           <div>
             <h1>{p.username}</h1>
             <p className="subtitle">[private profile]</p>
@@ -226,7 +233,22 @@ export default async function ProfilePage({
   return (
     <AppShell>
       <header className="profile-header">
-        <Avatar color={p.avatar_color} name={p.display_name ?? p.username} size={48} />
+        {rel.kind === "self" ? (
+          <AvatarEditTrigger
+            color={p.avatar_color}
+            emoji={p.avatar_emoji}
+            displayName={p.display_name ?? p.username}
+            size={48}
+            ariaLabel="edit avatar"
+          />
+        ) : (
+          <Avatar
+            color={p.avatar_color}
+            name={p.display_name ?? p.username}
+            emoji={p.avatar_emoji}
+            size={48}
+          />
+        )}
         <div>
           <h1>{p.display_name ?? p.username}</h1>
           <p className="subtitle">@{p.username}</p>

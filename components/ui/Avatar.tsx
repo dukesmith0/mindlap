@@ -3,10 +3,12 @@ import { avatarInitial } from "@/lib/auth/avatar-palette";
 type AvatarProps = {
   color: string;
   name: string | null | undefined;
+  emoji?: string | null;
   size?: number;
 };
 
-export function Avatar({ color, name, size = 28 }: AvatarProps) {
+export function Avatar({ color, name, emoji, size = 28 }: AvatarProps) {
+  const hasEmoji = typeof emoji === "string" && emoji.length > 0;
   return (
     <span
       aria-hidden
@@ -19,16 +21,16 @@ export function Avatar({ color, name, size = 28 }: AvatarProps) {
         borderRadius: "50%",
         background: color,
         color: "#ffffff",
-        fontSize: Math.round(size * 0.45),
+        fontSize: Math.round(size * (hasEmoji ? 0.6 : 0.45)),
         lineHeight: 1,
-        fontWeight: 700,
+        fontWeight: hasEmoji ? 400 : 700,
         userSelect: "none",
-        // Courier Prime cap-baseline sits high; nudge content down 1px so the
-        // initial visually centers in the disc.
-        paddingTop: 1,
+        // Initial rendering uses Courier Prime which sits high; nudge down 1px.
+        // Emoji glyphs have their own metrics, no nudge.
+        paddingTop: hasEmoji ? 0 : 1,
       }}
     >
-      {avatarInitial(name)}
+      {hasEmoji ? emoji : avatarInitial(name)}
     </span>
   );
 }

@@ -18,7 +18,7 @@ export async function AppShell({
   if (user) {
     const { data } = await supabase
       .from("profiles")
-      .select("username, display_name, avatar_color, streak_current, level, xp")
+      .select("username, display_name, avatar_color, avatar_emoji, streak_current, level, xp")
       .eq("id", user.id)
       .single();
     profile = data;

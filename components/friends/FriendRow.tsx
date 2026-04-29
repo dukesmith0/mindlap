@@ -18,6 +18,7 @@ export type FriendRowData = {
   username: string;
   display_name: string | null;
   avatar_color: string;
+  avatar_emoji: string | null;
 };
 
 export function FriendRow({ row, mode }: { row: FriendRowData; mode: Mode }) {
@@ -36,7 +37,12 @@ export function FriendRow({ row, mode }: { row: FriendRowData; mode: Mode }) {
   return (
     <li className="friend-row">
       <Link href={`/profile/${row.username}`} className="friend-row-identity">
-        <Avatar color={row.avatar_color} name={row.display_name ?? row.username} size={28} />
+        <Avatar
+          color={row.avatar_color}
+          name={row.display_name ?? row.username}
+          emoji={row.avatar_emoji}
+          size={28}
+        />
         <div style={{ display: "flex", flexDirection: "column" }}>
           <span style={{ fontSize: 14 }}>{row.display_name ?? row.username}</span>
           <span style={{ fontSize: 12, color: "var(--muted)" }}>@{row.username}</span>

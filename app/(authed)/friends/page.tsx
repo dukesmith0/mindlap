@@ -11,6 +11,7 @@ type RawProfile = {
   username: string;
   display_name: string | null;
   avatar_color: string;
+  avatar_emoji: string | null;
 } | null;
 
 type FriendshipRow = {
@@ -28,6 +29,7 @@ function rowFromProfile(p: NonNullable<RawProfile>): FriendRowData {
     username: p.username,
     display_name: p.display_name,
     avatar_color: p.avatar_color,
+    avatar_emoji: p.avatar_emoji,
   };
 }
 
@@ -46,8 +48,8 @@ export default async function FriendsPage() {
         addressee_id,
         status,
         created_at,
-        requester:profiles!friendships_requester_id_fkey ( id, username, display_name, avatar_color ),
-        addressee:profiles!friendships_addressee_id_fkey ( id, username, display_name, avatar_color )
+        requester:profiles!friendships_requester_id_fkey ( id, username, display_name, avatar_color, avatar_emoji ),
+        addressee:profiles!friendships_addressee_id_fkey ( id, username, display_name, avatar_color, avatar_emoji )
       `,
     )
     .order("created_at", { ascending: false });

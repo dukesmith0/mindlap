@@ -1,5 +1,5 @@
 # Risks
-Next ID: R18 | Baseline: 0C/1H/2M/4L | Last scan: 2026-04-29
+Next ID: R19 | Baseline: 0C/1H/2M/5L | Last scan: 2026-04-29
 
 ## High
 #R13 No app-level rate limit on signup/signin/reset. Public-launch DoS + Resend quota burn + credential-stuffing. v1 relies on Supabase per-IP. Phase 11: Vercel KV / Upstash IP+user bucket. Block before public launch. **Phase 7 update (2026-04-29):** scope expanded to include friend-request flooding via `/f/<code>` social engineering and onboarding-cookie auto-add path. Phase 7 friend-request rate limit (`lib/rate-limit.ts`, 30/hour/user) is a per-DB-row stopgap that folds under R13 when KV swap lands.
@@ -9,6 +9,7 @@ Next ID: R18 | Baseline: 0C/1H/2M/4L | Last scan: 2026-04-29
 #R2 Glicko-2 cold-start unstable with sparse pop. Mitigated by `ELO_VISIBLE=false` (silent accumulation, Phase 10). Verify rating distribution at flip threshold (≥25 users × ≥10 ranked submissions/game).
 
 ## Low
+#R18 0013 `profiles.avatar_emoji` CHECK allows `char_length 1..32` but `lib/auth/avatar-emoji.ts` enforces exactly one extended grapheme. Self-inflicted only (RLS UPDATE policy scopes write to own row); no cross-user impact. Tighten to a regex CHECK or accept. Filed in commit 4 (avatar identity rework).
 #R17 No per-user submission rate limit; spamming `submitScoreAction` could inflate aggregates. Folds into R13.
 #R16 `changePasswordAction` side-client `signInWithPassword` counts against Supabase per-IP password-grant limit; repeat wrong-current-password can throttle normal login. Folds into R13.
 #R15 Future migrations may regress role grants if a table is created by a non-`postgres` owner (0006's `ALTER DEFAULT PRIVILEGES` is per-role). Mitigation: always use `scripts/apply-migrations.mjs` (Mgmt API as `postgres`).

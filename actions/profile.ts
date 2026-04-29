@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { isValidAvatarColor } from "@/lib/auth/avatar-palette";
+import { validateAvatarEmoji } from "@/lib/auth/avatar-emoji";
 import { validateUsername } from "@/lib/auth/username";
 import { THEME_COOKIE, isThemePref } from "@/lib/theme/cookie";
 import { FRIEND_CODE_COOKIE, isValidFriendCode } from "@/lib/auth/friend-code-cookie";
@@ -53,13 +54,29 @@ async function setThemeCookie(theme: "light" | "dark" | "system") {
 }
 
 // ----------------------------------------------------------------------------
-// Avatar color
+// Avatar identity (#48): color + optional single-grapheme emoji glyph.
+// Single action so a save commits both fields atomically and the modal
+// preview matches what gets persisted.
 // ----------------------------------------------------------------------------
-export async function setAvatarColorAction(color: string): Promise<ActionResult> {
-  if (!isValidAvatarColor(color)) return { ok: false, error: "Color not in palette" };
+export async function setAvatarIdentityAction(input: {
+  color: string;
+  emoji: string | null;
+}): Promise<ActionResult> {
+  if (!isValidAvatarColor(input.color)) {
+    return { ok: false, error: "Color not in palette" };
+  }
+  let emojiValue: string | null = null;
+  if (input.emoji !== null && input.emoji !== "") {
+    const v = validateAvatarEmoji(input.emoji);
+    if (!v.ok) return { ok: false, error: v.reason };
+    emojiValue = v.value;
+  }
   const userId = await requireUserId();
   const supabase = await createClient();
-  const { error } = await supabase.from("profiles").update({ avatar_color: color }).eq("id", userId);
+  const { error } = await supabase
+    .from("profiles")
+    .update({ avatar_color: input.color, avatar_emoji: emojiValue })
+    .eq("id", userId);
   if (error) return { ok: false, error: error.message };
   revalidatePath("/", "layout");
   return { ok: true };

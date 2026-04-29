@@ -1,13 +1,11 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Avatar } from "@/components/ui/Avatar";
-import { AvatarColorPicker } from "@/components/ui/AvatarColorPicker";
+import { AvatarEditTrigger } from "@/components/ui/AvatarEditTrigger";
 import {
   changeUsernameAction,
   deleteAccountAction,
   setAcceptsFriendRequestsAction,
-  setAvatarColorAction,
   setProfilePrivacyAction,
   setSkipTutorialsAction,
   setThemeAction,
@@ -23,6 +21,7 @@ type Props = {
   displayName: string;
   bio: string;
   avatarColor: string;
+  avatarEmoji: string | null;
   themePref: ThemePref;
   isPublic: boolean;
   skipTutorials: boolean;
@@ -38,7 +37,6 @@ export function SettingsClient(p: Props) {
       <PreferencesSection
         themePref={p.themePref}
         skipTutorials={p.skipTutorials}
-        avatarColor={p.avatarColor}
       />
       <hr />
       <AccountSection
@@ -62,11 +60,13 @@ function ProfileSection({
   displayName,
   bio,
   avatarColor,
+  avatarEmoji,
   username,
 }: {
   displayName: string;
   bio: string;
   avatarColor: string;
+  avatarEmoji: string | null;
   username: string;
 }) {
   const [name, setName] = useState(displayName);
@@ -92,9 +92,15 @@ function ProfileSection({
     <section>
       <h2>profile</h2>
       <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
-        <Avatar color={avatarColor} name={name || username} size={48} />
+        <AvatarEditTrigger
+          color={avatarColor}
+          emoji={avatarEmoji}
+          displayName={name || username}
+          size={48}
+          ariaLabel="edit avatar"
+        />
         <span style={{ color: "var(--muted)", fontSize: 13 }}>
-          {name || username}
+          click avatar to change color or emoji
         </span>
       </div>
       <label style={{ display: "block", marginBottom: 12 }}>
@@ -134,11 +140,9 @@ function ProfileSection({
 function PreferencesSection({
   themePref,
   skipTutorials,
-  avatarColor,
 }: {
   themePref: ThemePref;
   skipTutorials: boolean;
-  avatarColor: string;
 }) {
   const [theme, setThemeState] = useState<ThemePref>(themePref);
   const [skip, setSkip] = useState(skipTutorials);
@@ -202,14 +206,6 @@ function PreferencesSection({
             </label>
           ))}
         </div>
-      </div>
-
-      <div style={{ marginBottom: 24 }}>
-        <p style={{ fontSize: 12, color: "var(--muted)", marginBottom: 8 }}>avatar color</p>
-        <AvatarColorPicker
-          initialColor={avatarColor}
-          onSave={(color) => setAvatarColorAction(color)}
-        />
       </div>
 
       <label style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>

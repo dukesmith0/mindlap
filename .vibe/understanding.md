@@ -69,11 +69,11 @@ Shared:
 
 ## Server actions (`actions/*.ts`, all `import "server-only"`)
 - `actions/auth.ts`: `signUpAction` (Zod, anti-enumeration, confirm-pw), `signInAction`, `signInWithGoogleAction`, `requestPasswordResetAction` (always-ok, redirects to `/auth/set-password`), `setNewPasswordAction` (gated by `mindlap_pwreset` cookie), `changePasswordAction` (verifies current password via stateless side `@supabase/supabase-js` client; live SSR session not rotated), `signOutAction` (scope:'global').
-- `actions/profile.ts`: `setThemeAction`, `setAvatarColorAction`, `changeUsernameAction` (30-day rate limit), `updateProfileBasicsAction`, `setProfilePrivacyAction`, `setSkipTutorialsAction`, `setAcceptsFriendRequestsAction`, `completeOnboardingAction` (consumes `mindlap_friend_code` cookie one-shot for auto-friend-add), `deleteAccountAction` (admin DELETE auth.users, FK cascade).
+- `actions/profile.ts`: `setThemeAction`, `setAvatarIdentityAction({color,emoji})` (atomic color+emoji write; replaced `setAvatarColorAction` in commit 4), `changeUsernameAction` (30-day rate limit), `updateProfileBasicsAction`, `setProfilePrivacyAction`, `setSkipTutorialsAction`, `setAcceptsFriendRequestsAction`, `completeOnboardingAction` (consumes `mindlap_friend_code` cookie one-shot for auto-friend-add), `deleteAccountAction` (admin DELETE auth.users, FK cascade).
 - `actions/friendships.ts`: `addFriendAction` (Zod refine on code XOR username, rate-limited via `lib/rate-limit.ts`, target opt-out check, accepts inbound on race), `acceptFriendAction`, `declineFriendAction`, `cancelFriendRequestAction`, `removeFriendAction`.
 - `actions/submission.ts`: `submitScoreAction` (Zod int score, calls `process_submission(game_key, score, is_bonus_game)` RPC, returns `{ xpAwarded, isNewPb, best, streakCurrent }`), `togglePinAction` (idempotent on 23505).
 
-## Database (12 migrations applied live on `nookxuvlvwtppitqguxf`)
+## Database (13 migrations applied live on `nookxuvlvwtppitqguxf`)
 - `0001_init.sql` 16 tables, base CHECK constraints, `touch_updated_at` trigger.
 - `0002_handle_new_user.sql` `generate_friend_code`, `generate_username_from_email`, `handle_new_user`, `touch_last_signin` (later wired in 0004).
 - `0003_rls_policies.sql` privacy-aware SELECT on submissions/daily_aggregates, group_members column-shadowing fix, public-read whitelist.
@@ -86,6 +86,7 @@ Shared:
 - `0010_process_submission_jsonb.sql` switches return to `RETURNS jsonb` to dodge OUT-param shadowing of table column names ("column reference 'best' is ambiguous").
 - `0011_friend_by_username.sql` `find_user_by_username(text) -> uuid` (SECURITY DEFINER, granted authenticated). Mirrors `find_user_by_friend_code` shape; citext makes lookup case-insensitive.
 - `0012_accepts_friend_requests.sql` adds `profiles.accepts_friend_requests boolean default true`. addFriendAction reads it before inserting; ProfileSocialButtons swaps the add button for an opt-out filler when target has disabled.
+- `0013_avatar_emoji.sql` adds nullable `profiles.avatar_emoji text` with `char_length 1..32` CHECK. App enforces single-grapheme NFC via `lib/auth/avatar-emoji.ts` (Intl.Segmenter). Combined with `avatar_color` to form the avatar identity (#48). Risk #R18 tracks DB CHECK vs validator drift.
 
 Active surface:
 - `process_submission(text, numeric, boolean) -> jsonb` (only writer to submissions and daily_aggregates; runs streak update, XP awards via `award_xp`, badge eval via `eval_badges`).
