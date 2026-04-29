@@ -1,5 +1,5 @@
 # mindlap
-Last refresh: 2026-04-29 (commit 2 Phase 7 staged) | All 7 games playable, profile + leaderboards live, XP+badges autograded, 90-day heatmap, friends + Friends-only Today mini-leaderboard + ProfileSocialButtons + accept-requests opt-out shipped. 192 vitest passing across 20 files. typecheck/lint/build clean. Live on `dukesmith0/mindlap` -> Vercel auto-deploy.
+Last refresh: 2026-04-29 (commit 5 staged) | All 7 games playable, profile + leaderboards live, XP+badges autograded, 90-day heatmap, friends + Friends-only Today mini-leaderboard + ProfileSocialButtons + accept-requests opt-out, avatar identity (color + emoji editor) all shipped. 13 migrations live. 202 vitest passing across 21 files. typecheck/lint/build clean. Live on `dukesmith0/mindlap` -> Vercel auto-deploy.
 
 ## Stack
 - Next.js 16 App Router (RSC + Server Actions, Turbopack dev) | TS strict
@@ -22,13 +22,13 @@ Animations (only):
 - Countdown step: opacity 0.2 -> 1, 240ms ease-out (3-2-1-Go before games)
 - Result XP/PB: opacity fade-in 320ms
 
-Emoji rule: NO emoji except 🔥 on the streak ribbon (decisions.md 2026-04-28 reversal).
+Emoji rule: NO emoji in core UI except (a) 🔥 on the streak ribbon, (b) per-key emoji on badges, (c) user-chosen emoji on avatars (single grapheme via AvatarEditor).
 
 In-game type scale (override body 15px): Math 56 / Digit 80 / N-Back 96 / Stroop 56 / Result 96 / Reaction 32. Mobile @640px: 40/56/72/40/72/22.
 
 ## App shell
 - `components/layout/AppShell.tsx`: server component, fetches profile once, wraps with TopBar + Sidebar + main. Prop `noSidebar={true}` drops the sidebar (used on `/play/[game]` so the game stage centers via `.app-main-centered`).
-- `TopBar.tsx`: logo (left) + streak ribbon + XP bar + avatar OR sign-in/up CTAs (right).
+- `TopBar.tsx`: logo (left) + streak ribbon + XP bar + avatar OR sign-in/up CTAs (right). Avatar links to `/profile/<own-username>` (NOT to the editor — editing happens on own-profile header + /settings ProfileSection only).
 - `Sidebar.tsx`: 200px nav with `>` accent prefix on active row. Items: Today, Leaderboards, Profile (canonical /profile/<username> via /profile/me redirect), Friends (soon), Groups (soon), Settings. Inline SVG icons (only icons in the app per zetamac-pure rules).
 - Mobile <=720px: sidebar collapses to top horizontal strip.
 

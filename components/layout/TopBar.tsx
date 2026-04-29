@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AvatarEditTrigger } from "@/components/ui/AvatarEditTrigger";
+import { Avatar } from "@/components/ui/Avatar";
 import { StreakRibbon } from "@/components/ui/StreakRibbon";
 import { XpBar, levelFromXp } from "@/components/ui/XpBar";
 
@@ -27,13 +27,17 @@ export function TopBar({ profile }: { profile: ProfileSummary | null }) {
               xp={Number(profile.xp ?? 0)}
               level={profile.level ?? levelFromXp(Number(profile.xp ?? 0))}
             />
-            <AvatarEditTrigger
-              color={profile.avatar_color ?? "#64748b"}
-              emoji={profile.avatar_emoji}
-              displayName={profile.display_name ?? profile.username ?? "?"}
-              size={28}
-              ariaLabel="edit avatar"
-            />
+            <Link
+              href={profile.username ? `/profile/${profile.username}` : "/profile/me"}
+              aria-label="your profile"
+              style={{ display: "inline-block", lineHeight: 0 }}
+            >
+              <Avatar
+                color={profile.avatar_color ?? "#64748b"}
+                name={profile.display_name ?? profile.username ?? "?"}
+                emoji={profile.avatar_emoji}
+              />
+            </Link>
           </>
         ) : (
           <>

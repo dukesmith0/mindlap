@@ -2,80 +2,58 @@
 Next ID: 65
 
 ## Open
-#64 [LOW] AvatarEditor modal lacks focus trap + body scroll lock. Tab can escape into background DOM, page scrolls behind backdrop on small viewports. Acceptable v1 cut (single modal, two interactive sub-regions, Escape closes, click-outside closes). Fix: focus-trap-react or hand-rolled tabbable() iterator; `body { overflow: hidden }` while open. Defer until a second modal lands and the cost amortizes. File: `components/ui/AvatarEditor.tsx`.
-#62 [LOW] Countdown is 2.4s per game (600ms × 4 steps); chaining 7 games = ~17s of pure waiting. Power-user friction. Decision-pending: reduce `STEP_MS` from 600 to 400 in `components/games/Countdown.tsx`, OR add a "skip countdown" toggle in /settings persisted to a new `profiles.skip_countdown` column (would need migration 0013). See current.md "Pending design calls" Tier 2.
-#59 [MED] Server-action error toast / inline-error pattern missing. Server actions return `{ ok:false, error }` but ProfileSocialButtons + AddFriendForm + FriendRow don't surface it. Decision-pending: `<Toast>` primitive vs inline-under-button vs top-of-page banner. See current.md "Pending design calls" + future.md "Design system gaps". ProfileSocialButtons + AddFriendForm + FriendRow swallow `{ ok: false, error }` returns silently — user clicks "add friend", nothing visible happens on rate-limit / not-found. Fix: add a tiny `<Toast>` primitive under `components/ui/` (1px accent border, 4s auto-dismiss, no transform) and surface action errors there from each consumer. Pairs with frontend-design review's "design system gaps" recommendation.
-#58 [MED] Anti-cheat disclaimer missing on /leaderboards. Per `risks.md` R1, scores are RLS-checked + range-validated but NOT replay-token verified. Until replay tokens land, the leaderboard is "user-reported." Add a small footer note: "Scores are user-reported. Anti-cheat verification arrives in a later phase." File: `app/leaderboards/page.tsx`. Decide tone with user before shipping (transparency vs concealment trade-off).
-#56 [LOW] Friends not surfaced during onboarding. New users land lonely; the friend-code share flow exists but is invisible until they wander to /friends. Fix: after username + theme are picked, add an optional third step / card: "Your friend code is ABCD2345 — share it with a friend so you can compete on /today." File: `app/onboarding/OnboardingFlow.tsx`. Include a copy button + skip CTA. Decide with user whether onboarding should be 2 steps + post-arrival nudge, or 3 steps with skip.
-#54 [MED] Game taglines on /today don't say which direction wins. "Speed Math" and "Reaction" don't tell a newcomer higher-or-lower is better. Fix: extend `lib/games/registry.ts` GAMES taglines to include direction + a one-example sentence (e.g. "rapid arithmetic — solve as many as possible in 60s; higher = better"). Render unchanged on the card. Decide tone with user before editing the registry.
-#53 [MED] Profile per-game grid columns: `worst` is depressing-without-context and `set` (PB date) doesn't trend. Reviewer-recommended swaps: drop `worst` (or hide behind a details toggle), replace `set` with relative date ("47 days ago since PB"). Decide with user before editing — this is design-judgment territory.
-#52 [MED] Score-context line under per-game stats is missing. Raw `PB 47` for N-Back accuracy is meaningless without comparison. Add a one-line context under each value: "(↑ above your 7d median)" or "(↓ below your 30d average)" or just colored arrow indicators. Uses already-fetched data, no new query. Decide tone with user (text vs arrow indicators) before building.
-#51 [MED] No Day-1 win for newcomers. Empty heatmap, streak 0, "47/50 in Math" is the first thing they see. Add a top-of-/today milestone banner that surfaces "🔥 day N — keep going" or "🏆 first PB earned today on <Game>" or "X / 7 games today" when applicable. Authed-only. New component: `components/today/TodayMilestoneBanner.tsx` reading `profiles.streak_current`, today's submitted aggregates, and a derived "next milestone" from the badge criteria.
 
+| ID | Sev | Phase | Status | Note |
+|----|-----|-------|--------|------|
+| #64 | LOW | 8 | deferred | AvatarEditor modal needs focus trap + body scroll lock. Resolves when `<Modal>` primitive lands. File: `components/ui/AvatarEditor.tsx`. |
+| #62 | LOW | 7.6 | decided | Countdown `STEP_MS` 600 → 500. Total countdown 2.0s. File: `components/games/Countdown.tsx`. |
+| #59 | MED | 8 | decided | `<Toast>` primitive (1px accent border, 4s auto-dismiss, opacity-only fade). Wired into ProfileSocialButtons, AddFriendForm, FriendRow, settings forms. |
+| #58 | MED | 7.7 | decided | Anti-cheat footnote on `/leaderboards`: "scores are user-reported; replay-token verification ships post-launch." Single edit. File: `app/leaderboards/page.tsx`. |
+| #56 | LOW | 7.5 | decided | 3rd onboarding step: friend-code share + copy + skip. Edits 2-step machine to 3. File: `app/(authed)/onboarding/OnboardingFlow.tsx`. |
+| #54 | MED | 7.5 | decided | Direction badge on each `/today` game card; tap opens directions popup; auto-opens on first play (dismiss persists in `localStorage.mindlap.directions.seen.<game_key>`). |
+| #53 | MED | 7.6 | decided | Per-game grid: keep absolute date for `set`. Rename `worst` → `low (week)` (rolling 7-day low). Will be revisited once Phase 9 sparkline + Phase 5.5 graphs land. |
+| #52 | MED | 7.5 | decided | Score context line under per-game stats. Format: "↑ above your 7d median" / "↓ below your 7d median" / "= matches your 7d median". Uses already-fetched data. |
+| #51 | MED | 7.5 | decided | `<TodayMilestoneBanner>` on /today: "🔥 day N" / "🏆 first PB earned today" / "X / 7 games today". Authed-only. Hides after first week. New component: `components/today/TodayMilestoneBanner.tsx`. |
+| #45 | MED | 8 | decided | Themed tooltips for badges + heatmap. Single delegated hover bubble (one mounted `<Tooltip>`, listens to `pointermove` + `data-tip` attributes — avoids 91 mounted instances on the heatmap). `lib/badges/icons.ts` gains `badgeCriteria(key)`. |
+| #30 | MED | 9 | open | Pre-submit comparison view on ResultScreen. New action `getPreSubmitContext(game_key, score)` returning current+projected values; renders above submit button with `(+N)` / `(-N)` deltas. |
+| #26 | LOW | 13 | open | Profile page does 28 supabase round-trips per render (4 queries × 7 games). Collapse to one `get_public_profile_stats(user_id)` RPC. File: `app/profile/[username]/page.tsx`. |
+| #14 | MED | 8 | decided | Digit Span overflow length 10+: step-fn breakpoints. Classes `digit-len-9` (80px) / `-10` (72px) / `-12` (64px) / `-15` (48px) / `-18` (36px). User vetoed chunked spacing. |
 
-#45 [MED] Themed tooltips on badges + heatmap. Profile badges currently render emoji + label only; hovering should surface a Tooltip with the criteria for each badge (e.g. streak_3 -> "play 3 days in a row", pb_first_<game> -> "set your first PB on <Game>", all_seven_today -> "submit a score on every game today"). Heatmap cells currently use `title=` (default browser tooltip styling) — convert to the same themed Tooltip primitive so hover surfaces "<date>: N play(s)" in the zetamac-pure bubble. Implementation: extend `lib/badges/icons.ts` with a `badgeCriteria(key)` function returning a one-line description; wrap each `.badge` and each `.heatmap-cell` in `<Tooltip>`. Note: 91 Tooltip instances on the heatmap may be heavy; consider a single delegated hover handler that mounts one shared bubble.
-#41 [LOW] Today mini-leaderboard preview kept (reversal of original "delete" plan), but rewrites to friends-only: top-5 among me + accepted friends; if my today score isn't in the top-5, append `...` then a row with my rank + name + score; my row renders accent. Ships in commit 2 (Phase 7) since it depends on friend IDs.
-#30 [MED] Pre-submit comparison view on ResultScreen. Show user's current PB, worst, 7d median, leaderboard rank for this game, plus a green `(+N)` or red `(-N)` delta indicating what would change if they submit this play. Implement as a Server Action `getPreSubmitContext(game_key, score)` returning current+projected values; render in ResultScreen above the submit button.
-#26 [LOW] Profile page does 28 supabase round-trips per render (4 queries × 7 games). Acceptable for v1 traffic; collapse to one `get_public_profile_stats(user_id)` RPC in Phase 11. File: `app/profile/[username]/page.tsx:82-146`.
-#14 [MED] Digit Span overflows column at length 10+ (`game-text-digit` 80px / spacing 6px in 720-128 col). Discuss before fix: clamp() vs step-fn vs chunked spacing. Must fit lengths 11-15.
-
-## Deferred
+## Resolved (2026-04-29 commit 5 avatar polish + .vibe consolidation)
+- Avatar centering — emoji + initial both rendered low. Fix: switched `Avatar.tsx` from flex+padding to inline-block + `line-height: <size>px` + `text-align: center`. Reliable centering across both glyph types.
+- AvatarEditTrigger hover — square focus-ring + off-center "EDIT" text. Fix: `border-radius: 50%` on the trigger so the outline follows the disc; removed `letter-spacing` from the EDIT overlay; switched to `display: grid; place-items: center` for the overlay.
+- AvatarEditor — desktop emoji discovery gap. Fix: curated 50-emoji palette (`lib/auth/avatar-emoji-palette.ts`) rendered as a 10-col grid above the input; click fills the input. Inline shortcut hint for power users (Win + . / Cmd + Ctrl + Space).
 
 ## Resolved (2026-04-29 commit 4 avatar identity)
-#48 [MED] Avatar customization rework. Fix: migration 0013 adds `profiles.avatar_emoji text` (CHECK char_length 1..32 nullable). New `lib/auth/avatar-emoji.ts` validates exactly one extended grapheme via Intl.Segmenter, NFC-normalized, max 32 chars. New `components/ui/AvatarEditor.tsx` modal (role=dialog, aria-modal, Escape + backdrop-click close, mousedown+click sequence to avoid accidental drag-close, inner-body pattern to dodge setState-in-effect). New `components/ui/AvatarEditTrigger.tsx` button wraps `<Avatar>`. New `setAvatarIdentityAction({ color, emoji })` replaces `setAvatarColorAction`, validates + atomic update. TopBar avatar (was Link to /settings), profile header (own profile only), and settings ProfileSection avatar all open the editor. Avatar color picker removed from /settings Preferences. `AvatarColorPicker.tsx` deleted (no callers). `Avatar` accepts optional `emoji` prop. All callsites + queries updated. New `debug/avatar-emoji.test.ts` (10 cases incl. ZWJ family + skin-tone modifier). 202/202 tests pass. New risk #R18 filed for DB CHECK vs grapheme-validator drift (self-inflicted only). Two MEDIUM follow-ups filed as #64 (modal focus trap + scroll lock).
+- #48 [MED] Avatar customization rework. Migration 0013 + AvatarEditor modal + setAvatarIdentityAction (atomic color+emoji). All callsites updated. New risk #R18 (CHECK vs validator drift).
 
 ## Resolved (2026-04-29 commit 3 Tier 3 polish)
-#61 [LOW] Light-mode heatmap CSS gap. Fix: explicit `[data-theme="light"] .heatmap-cell[data-i="N"]` rules in `app/globals.css` mirroring the dark block; defense-in-depth against future light-token shifts.
-#60 [LOW] ResultScreen submit button lacked visual + screen-reader busy state. Fix: `aria-busy={pending}` + `style={{ opacity: pending ? 0.6 : 1 }}` on the submit button. Existing `role="alert"` on error and `role="status"` on success already in place.
-#57 [LOW] Username 30-day lock not surfaced during onboarding. Fix: second muted `<p>` under the chars-rule line in `app/(authed)/onboarding/OnboardingFlow.tsx` step 1: "Pick carefully - you can change this once per 30 days."
-#55 [LOW] /settings DangerZone lacked explicit "this is permanent" warning. Fix: red `<p className="danger-h2">` above the existing muted paragraph reading "Deleting your account is permanent. All scores, badges, and friendships are removed." Existing muted paragraph kept below for context (red catches attention; muted explains).
-#46 [LOW] /profile/[username] header centering off due to `.subtitle` 40px bottom margin inflating the text block height inside `.profile-header`. Fix: scoped override `.profile-header .subtitle { margin: 0 }` in globals.css adjacent to existing `.profile-header h1` rule.
+- #61 [LOW] Light-mode heatmap CSS gap.
+- #60 [LOW] ResultScreen submit lacked aria-busy + visual dim.
+- #57 [LOW] Username 30-day lock not surfaced during onboarding.
+- #55 [LOW] DangerZone lacked explicit "permanent" red warning.
+- #46 [LOW] Profile header centering off (.subtitle margin).
 
-## Resolved (2026-04-29 Phase 7 + commit 2)
-#50 [LOW] Profile header layout broke when social buttons rendered (`.profile-social` and `.profile-header-meta` both used margin-left:auto inside the same flex row, forcing streak ribbon + XP bar to wrap). Fix: moved `.profile-social` out of the flex header onto its own right-aligned row below.
-#47 [MED] Social buttons on /profile/[username]. Fix: new `components/friends/ProfileSocialButtons.tsx` client component renders state-aware buttons (add / cancel / accept+decline / remove / blocked / opt-out filler). Hidden on self / anon. Reads `profiles.accepts_friend_requests` (added in migration 0012) and replaces the add button with an opt-out message when target has disabled inbound requests. Settings exposes the toggle via `setAcceptsFriendRequestsAction`.
-#41 [LOW] Today mini-leaderboard converted to friends-only top-5: pulls submissions across `{me + accepted friends}`, ranks by direction, shows top 5 with my row in accent. If my today score isn't in the top 5, append a `...` separator then a final row with my rank + name + score. Empty for unauthed and no-friend users (which is a clean "no preview" state in the UI).
+## Resolved (2026-04-29 commit 2 Phase 7)
+- #50 [LOW] Profile header layout broke when social buttons rendered. Moved `.profile-social` to its own row.
+- #47 [MED] Social buttons on /profile (state-aware add/cancel/accept+decline/remove/blocked/opt-out).
+- #41 [LOW] Today mini-leaderboard converted to friends-only top-5 with overflow self-row.
 
-## Resolved (2026-04-29 polish batch)
-#44 [MED] Theme toggle took ~500ms to flip because change path was: click -> server action -> router.refresh() -> full re-render. Fix: optimistic client write to `<html data-theme>` via setAttribute; server action persists cookie + profile row in the background; rollback dataset + state on action failure. Files: `app/(authed)/settings/SettingsClient.tsx`.
-#43 [MED] Badges rendered as identical accent dots. Fix: `lib/badges/icons.ts` maps badge_key -> single themed emoji (🔥 streak_*, 🎯 all_seven_today, game-themed icon for pb_first_*); `app/profile/[username]/page.tsx` swaps `.badge-dot` for `.badge-icon`.
-#42 [MED] /profile/[username] needed a 90-day GitHub-style heatmap. Fix: `lib/heatmap.ts` (heatBucket + buildHeatmap pure helpers, vitest-tested), one `daily_aggregates` query in `app/profile/[username]/page.tsx`, 13×7 grid of 11×11 cells with 4 intensity buckets via `data-i` attribute. Profile section order is now badges -> heatmap -> per-game.
-#40 [MED] /leaderboards rows had no avatar and no link. Fix: extended SELECTs to include `profiles(username, display_name, avatar_color)`; rows now render `<Link><Avatar size=22 />username</Link>` with overflow ellipsis on long usernames. File: `app/leaderboards/page.tsx`.
-#39 [LOW] Core-game `*` indicator had no affordance/explanation. Fix: new `components/ui/Tooltip.tsx` (zetamac-pure 1px accent border, accent text on `--bg`, opacity-only fade-in 160ms, no transform). Wraps the `*` in `TodayCard` and the per-game card on `/profile/[username]`. Decorative by default (aria-label, no tabIndex); `focusable` opt-in for interactive use.
-#38 [LOW] Profile per-game card missed total plays. Fix: lifetime `daily_aggregates.plays_submitted` sum query + new "total plays" column. File: `app/profile/[username]/page.tsx`.
-#37 [MED] Per-game grid columns didn't align across games. Fix: `.profile-game-stats` is now a 6-column CSS grid (PB / set / worst / 7d median / 30d plays / total plays) with shared min/max widths so the same stat sits at the same x-offset on every game row; mobile @640px collapses to 2 columns.
-#36 [LOW] Streak ribbon pulse covered the entire row. Fix: animation moved from outer `.streak-ribbon` span onto the inner 🔥 emoji span only; number + units stay steady.
-#35 [LOW] Countdown 3/2/1 = 800ms each but "go" only 400ms. Fix: single `STEP_MS = 600` constant drives all four steps (0/600/1200/1800, onDone at 2400). File: `components/games/Countdown.tsx`.
-#34 [LOW] /today search input was on its own row. Fix: `.today-header` flex row with baseline alignment + space-between + 24px gap; search-input width 220px; mobile collapses to column.
-#33 [LOW] /settings DELETE ACCOUNT styling didn't read as destructive. Fix: `.danger-h2` (red) + `.btn-danger` (red border + red text, hover red fill, no transition).
-#19 [LOW] Avatar initial floated above center (Courier Prime cap-baseline). Fix: `paddingTop: 1` on the Avatar style object; affects 22px (leaderboard) and 48px (profile header) uniformly.
-#16 [LOW] /favicon.ico 404 console noise. Fix: `app/icon.svg` 32x32 with `prefers-color-scheme` media query swapping accent fill so the icon reads on both light and dark browser tabs.
-#15 [MED] /settings had no back affordance. Fix: `<- today` link via existing `.nav-back` class above the h1.
+## Resolved (2026-04-29 commit 1 polish)
+- #44 [MED] Theme toggle 500ms latency. Optimistic client write to `<html data-theme>` with rollback.
+- #43 [MED] Badges rendered as identical accent dots. `lib/badges/icons.ts` per-key emoji map.
+- #42 [MED] 90-day GitHub-style heatmap added to profile.
+- #40 [MED] /leaderboards rows had no avatar/link. Extended SELECTs + Avatar + Link.
+- #39 [LOW] Core-game `*` indicator had no affordance. New themed `Tooltip`.
+- #38 [LOW] Profile per-game card missed total plays.
+- #37 [MED] Per-game grid alignment via 6-col CSS grid.
+- #36 [LOW] Streak ribbon pulse moved to emoji span only.
+- #35 [LOW] Countdown step timing equalized via single `STEP_MS = 600`.
+- #34 [LOW] /today header collapsed to single flex row.
+- #33 [LOW] DELETE ACCOUNT styled red (.danger-h2 + .btn-danger).
+- #19 [LOW] Avatar initial cap-baseline correction.
+- #16 [LOW] /favicon 404 — `app/icon.svg` with prefers-color-scheme.
+- #15 [MED] /settings missing back affordance.
 
-## Resolved (2026-04-28)
-#32 [HIGH] `process_submission` raised `column reference "best" is ambiguous` on every submit. Cause: `RETURNS TABLE(best, worst, mean, median, ...)` declares OUT params that shadow daily_aggregates columns inside the function body. Fix: 0010 changes the return type to `jsonb`; `submitScoreAction` reads the JSON object directly.
-#31 [HIGH] /profile/<username> per-game stats grid garbled (labels colliding across columns). Fix: collapsed `.profile-game-grid` to single column; stats render as wrap-flex with one label/value per stat.
-#29 [LOW] Verified: pins ARE retained across sessions (RLS-gated SELECT on every render). Closed by inspection.
-#28 [MED] /today header had no search. Fix: `TodayHeader` + `TodayList` client island with name/key client-side filter.
-#27 [LOW] Participation cap coupled to bonus mult. Fix: 0009/0010 set `v_part_cap = 5 * v_bonus_mult` (10/play, 10/day on bonus days).
-#25 [MED] Sidebar Profile link never lit up on canonical `/profile/<username>`. Fix: Sidebar special-cases Profile to active on any `/profile/...`.
-#24 [HIGH] `award_xp` ignored `p_multiplier`; `xp_awarded` desynced from `profiles.xp` on bonus games. Fix: 0009/0010 pre-multiply at the caller, pass `p_multiplier=1.0`. xp_events.amount and profiles.xp now agree.
-#23 [LOW] Settings sidebar icon visually identical to Today's. Fix: swapped to a proper gear/cog SVG path in `components/layout/Sidebar.tsx`.
-#22 [MED] No XP-gained indicator on submit. Fix: `submitScoreAction` returns `{ xpAwarded, isNewPb, best, streakCurrent }`; ResultScreen renders `+N xp` (accent) + `[new PB]` (amber) with opacity-fade animation.
-#21 [MED] Sidebar visible during gameplay competed with the focal game stage. Fix: `<AppShell noSidebar>` prop on `/play/[game]`; topbar persists.
-#20 [MED] Game stage not centered. Fix: `.app-main-centered` (max-w 720, margin 0 auto, padding 48 32) used when AppShell `noSidebar` is set.
-#18 [LOW] No XP bar surfaced; `profiles.xp` unread. Fix: `components/ui/XpBar.tsx` in topbar; `xp` populated live by `process_submission()` -> `xp_events`.
-#17 [MED] `/play/[game]` "<- today" back link looked unclickable. Fix: added `.nav-back` class with hover-color + dashed underline.
-#13 [HIGH] Dev CSP missing `unsafe-eval` -> React dev bundle crashed onboarding. Fix: gate `unsafe-eval` + `ws://localhost:*` behind `NODE_ENV==="development"`. Production strict.
-#12 [HIGH] N-Back leaked timeouts on unmount. Fix: collect ids in `Set<>`, `forEach(clearTimeout)` on cleanup.
-#11 [HIGH] Invalid `<a><button>` across today/play/ResultScreen. Fix: `.btn-link` class for server-component nav; ResultScreen uses `router.push`.
-#10 [LOW] Signup lacked confirm-password. Fix: `confirm_password` input + client+server validation.
-#9 [LOW] Onboarding "let's play -&gt;" rendered literally (JSX entity inside JS string expr doesn't decode). Fix: use literal `->`.
-#8 [CRITICAL] Onboarding hit `permission denied for table profiles`. Mgmt-API migration path skipped Supabase default-priv seeding. Fix: 0006 `GRANT ALL` + `ALTER DEFAULT PRIVILEGES` on public schema.
-#7 [HIGH] Email-confirm 404: route lived in `app/(auth)/callback/route.ts` but `(auth)` is a route group (no URL contribution). Fix: moved to `app/auth/callback/route.ts`.
-#6 [HIGH] Signup "Database error saving new user". `generate_friend_code()` scanned dropped column + missing `extensions` in search_path for pgcrypto. Fix: 0005 rebinds collision check to `profile_secrets` and adds `extensions`.
-#5 [HIGH] `friend_code` on profiles publicly enumerable via PostgREST. Fix: 0004 moves to `profile_secrets` (owner-only RLS) + `find_user_by_friend_code(text)` RPC.
-#4 [HIGH] Open-redirect via `next` form param. Fix: `safeNext()` validates same-origin.
-#3 [HIGH] Proxy didn't redirect signed-in user without profile. Fix: missing profile -> `/onboarding`.
-#2 [HIGH] Proxy `/profile/` allowlist matched `/profile/me/*` private namespaces. Fix: `isPublicPath()` excludes `/profile/me*` before allowing `/profile/<username>`.
-#1 [HIGH] Proxy redirect dropped Supabase session cookies refreshed during `getUser()`. Fix: copy `response.cookies.getAll()` onto the redirect.
+## Resolved (earlier phases)
+Phases 0-6 bug history archived in `decisions.md` Plan Archive.

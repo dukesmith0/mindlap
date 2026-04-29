@@ -116,6 +116,30 @@ All dated 2026-04-28 unless noted. `[USER]` = explicit choice; `[CLAUDE]` = impl
 - 2026-04-29 [USER] Phase 7 scope = full (mutual-accept friendships + /friends + add-by-@username AND friend_code + leaderboards Friends scope + /f/<code> deep-link with cookie stash + 30/hour rate limit). Ships as commit 2.
 - 2026-04-29 [USER] Reverse #41 plan: keep the Today mini-leaderboard, convert it to friends-only top-5; if my today score is outside the top-5, append `...` then a row with my rank + name + score below. My row renders accent. Ships in commit 2 since it depends on friend IDs.
 
+## Commit 5 avatar polish + design-call resolutions + .vibe consolidation (2026-04-29)
+- [USER] **TopBar avatar is a profile link, not an editor.** Reverted commit 4's click-to-edit affordance on the TopBar — clicking it routes to `/profile/<own-username>`. Editing happens only on the own-profile header avatar and in /settings ProfileSection. Reason: TopBar avatar is the most-clicked avatar in the app; users expect it to be navigation, not a modal trigger.
+- [USER] Avatar centering rewrite: switched `Avatar.tsx` from flex+padding to `inline-block` + `line-height: <size>px` + `text-align: center`. Reliable across both letter and emoji glyphs at 22 / 28 / 48 / 64 px sizes.
+- [USER] AvatarEditTrigger hover affordance: blur + brightness-down on the disc, "EDIT" overlay (no letter-spacing, grid place-items center). `border-radius: 50%` on the trigger so the focus-visible outline follows the disc instead of drawing a square ring.
+- [USER] Curated 50-emoji palette in `lib/auth/avatar-emoji-palette.ts` rendered as a 10-col grid in AvatarEditor (faces / brain / animals / activities / nature). Click fills the input. Inline shortcut hint (Win + . / Cmd + Ctrl + Space) for power users wanting any system emoji.
+- [USER] **Tier 1 design calls all resolved:**
+  - #51: Option A — `<TodayMilestoneBanner>` on /today.
+  - #52: Option A — text context line "↑ above your 7d median".
+  - #54: Direction badge per game card; tap opens directions popup; auto-opens on first play.
+  - #56: Option A — 3rd onboarding step (friend-code share + skip).
+- [USER] **Tier 2 design calls resolved:**
+  - #62: Countdown `STEP_MS` 600 → 500.
+  - #53: Keep absolute date for `set`. Rename `worst` → `low (week)`. Defer further redesign until Phase 9 sparkline + Phase 5.5 graphs land.
+  - **Streak vs skill XP:** keep current "more XP for higher streak" rule. Future tuning will pair this with scaled XP-per-level + streak-extension options to balance daily curves across novice → expert.
+- [USER] **Tier 3 design calls resolved:**
+  - #58: Option A — anti-cheat footnote on /leaderboards.
+  - #59: `<Toast>` primitive for server-action errors.
+  - #14: Step-fn breakpoint classes (digit-len-9/10/12/15/18). User explicitly vetoed chunked spacing.
+- [USER] **Heatmap fate (Phase 9):** Option A — keep heatmap AND add 30-day per-game score sparkline. Profile gets a `[plays] [score]` toggle.
+- [USER] **Phase 13 launch readiness owns every remaining open bug + risk.** Cannot ship public launch with any open. Recorded as a standing rule in `plans.md`.
+- [USER] **Future asks captured (do not build before user picks):** more games to ~10 total, game start-point selection, custom timer durations + leaderboard filters, cross-game leaderboards (streak / level / scoring factor), community tab.
+- [USER] **Future enhancements captured (badges):** pinned top badges on profile, badge rarity %, badge-earn celebration on ResultScreen below XP/PB.
+- [USER] **Future enhancement captured (graphs):** mindgames-parity per-game line/scatter charts at /profile/me/graphs (Phase 5.5) — re-emphasized for visibility.
+
 ## Commit 4 avatar identity rework (2026-04-29)
 - [USER] Picked avatar identity rework (#48) as the next lane after commit 3, ahead of the open Tier-1 newcomer-experience design questions. Reason: self-contained, no decisions pending, fastest visible win for daily users.
 - [USER] Click-to-edit popup off the avatar itself (TopBar + own-profile header + /settings ProfileSection). Removes the "avatar color" picker block from /settings Preferences. TopBar avatar previously linked to /settings; that affordance is replaced by the modal — settings remains reachable from the sidebar.

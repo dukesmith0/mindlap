@@ -982,12 +982,68 @@ hr {
   border: none;
   padding: 0;
   cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-block;
+  position: relative;
+  /* Circular border-radius makes the focus-visible outline follow the disc
+     instead of drawing a square ring around the box. */
+  border-radius: 50%;
+  line-height: 0;
 }
-.avatar-edit-trigger:hover { opacity: 0.85; }
+.avatar-edit-trigger .avatar-disc {
+  transition: filter 160ms ease;
+}
+.avatar-edit-trigger::after {
+  content: "edit";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  /* No letter-spacing — trailing letter-spacing shifts perceived center. */
+  opacity: 0;
+  transition: opacity 160ms ease;
+  pointer-events: none;
+  line-height: 1;
+}
+.avatar-edit-trigger:hover .avatar-disc,
+.avatar-edit-trigger:focus-visible .avatar-disc {
+  filter: blur(2px) brightness(0.6);
+}
+.avatar-edit-trigger:hover::after,
+.avatar-edit-trigger:focus-visible::after {
+  opacity: 1;
+}
 .avatar-edit-trigger:focus-visible {
   outline: 1px solid var(--accent);
   outline-offset: 2px;
 }
+
+.avatar-emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 4px;
+}
+@media (max-width: 480px) {
+  .avatar-emoji-grid { grid-template-columns: repeat(8, 1fr); }
+}
+.avatar-emoji-cell {
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--ink);
+  padding: 0;
+  aspect-ratio: 1 / 1;
+  font-size: 18px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.avatar-emoji-cell:hover { border-color: var(--accent); }
+.avatar-emoji-cell.is-selected {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+.avatar-emoji-cell:disabled { cursor: not-allowed; opacity: 0.5; }

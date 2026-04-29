@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { Avatar } from "@/components/ui/Avatar";
 import { AVATAR_PALETTE, isValidAvatarColor } from "@/lib/auth/avatar-palette";
 import { trimAvatarEmoji, validateAvatarEmoji } from "@/lib/auth/avatar-emoji";
+import { AVATAR_EMOJI_PALETTE } from "@/lib/auth/avatar-emoji-palette";
 import { setAvatarIdentityAction } from "@/actions/profile";
 
 type Props = {
@@ -142,9 +143,28 @@ function AvatarEditorBody({
         </div>
 
         <div style={{ marginBottom: 20 }}>
-          <label style={{ display: "block" }}>
+          <p style={{ fontSize: 12, color: "var(--muted)", marginBottom: 8 }}>emoji</p>
+          <div className="avatar-emoji-grid">
+            {AVATAR_EMOJI_PALETTE.map((g) => {
+              const selected = trimmedEmoji === g;
+              return (
+                <button
+                  key={g}
+                  type="button"
+                  aria-label={`Pick ${g}`}
+                  aria-pressed={selected}
+                  onClick={() => setEmoji(g)}
+                  disabled={pending}
+                  className={selected ? "avatar-emoji-cell is-selected" : "avatar-emoji-cell"}
+                >
+                  {g}
+                </button>
+              );
+            })}
+          </div>
+          <label style={{ display: "block", marginTop: 12 }}>
             <span style={{ display: "block", fontSize: 12, color: "var(--muted)", marginBottom: 4 }}>
-              emoji or letter (optional, leave blank for initial)
+              or type any single emoji or letter (leave blank for initial)
             </span>
             <input
               type="text"
@@ -155,6 +175,9 @@ function AvatarEditorBody({
               style={{ width: "100%" }}
               disabled={pending}
             />
+            <span style={{ display: "block", fontSize: 11, color: "var(--muted)", marginTop: 4 }}>
+              tip: Win + . on Windows, Cmd + Ctrl + Space on Mac opens the system emoji picker
+            </span>
           </label>
         </div>
 

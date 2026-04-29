@@ -1,56 +1,68 @@
 # Future
 
-## Monetization (post-launch)
-- Free: 2 games per PT day total (any combination).
-- Paid: $5/mo unlimited. Annual $50/yr (~17% off).
-- Stripe. `profiles.subscription_status` (free/active/past_due/canceled) + `subscription_period_end`.
-- Daily limit enforced on submission insert trigger: free + at-limit > reject with "Upgrade" UI.
-- No pay-to-win: leaderboards/streak/XP/badges unaffected by tier.
-- 7-day full-access trial on signup to convert habit.
-- Defer until traffic justifies.
+Long-tail ideas that don't yet have a phase slot. Once one is decided + sized, lift it into `plans.md`.
 
-## Open design questions (from 2026-04-29 reviews)
-Each item is a pending design call surfaced by 6 adversarial reviews after commit 2. See `.vibe/current.md` "Pending design calls" for the full list with options. The headline questions:
-- **Streak vs skill XP**: decouple streak multiplier from XP gain (streak becomes cosmetic; only PB awards XP) so a 100-day streak doesn't reward half-effort streak-saver plays at ×2.5. Or keep current rule until population data exists. Or introduce a separate "skill streak" (consecutive PB days) alongside the play streak.
-- **Day-1 win surface**: should new users see a milestone banner on /today, OR is that too cute and we hide leaderboards entirely until they have ≥3 plays?
-- **Heatmap fate**: keep as activity surface AND add a per-game 30-day score sparkline (Phase 5.5), OR replace heatmap with the sparkline outright?
-- **Score interpretability**: render text context lines under per-game stats ("↑ above your 7d median"), arrow-only indicators, or wait for population z-scores in Phase 12?
-- **Anti-cheat disclaimer tone**: explicit footnote on /leaderboards now, or stay silent until replay tokens land?
-- **Onboarding flow length**: add a 3rd step (friend-code share) or stay 2-step + post-arrival nudge?
-- **Per-game grid columns**: drop `worst`, hide behind details, or keep with a renamed semantic?
-- **Server-action error UX**: `<Toast>` primitive vs inline-under-button vs top-of-page banner?
+## Asks-pending (do not build before user picks)
 
-## Design system gaps
-From the UI/UX pro max review. None of these are blocking; they multiply pain as Phase 8 lands. Decide whether to invest now (one focused commit) or wait until duplication in groups/history/graphs surfaces forces the issue.
-- `<Toast>` / `<ErrorBox role="alert">` primitive — server actions return errors but ProfileSocialButtons + AddFriendForm + FriendRow swallow them. Pairs with bug #59.
-- `<EmptyState>` primitive — friends scope-with-zero-friends, leaderboards-with-no-submissions, today-with-no-games-matched all render inline `<p>`. No consistent styling.
-- `<PendingOverlay>` / `.is-pending` utility — some components dim buttons via opacity, others just disable. ResultScreen submit button has no visible busy state.
-- `<FormField label="" error="">` primitive — AddFriendForm + settings forms manually create label + input + error structures.
-- `<ConfirmDialog>` — no modal pattern for confirmations (e.g. delete account currently uses inline username-confirm field instead of a centered overlay).
-- Relative-date helper (`lib/relative-date.ts`) — profile heatmap and per-game PB dates show absolute dates; no shared "47 days ago" formatter.
-- Tier-color palette (`lib/tier-colors.ts`) — StreakRibbon has inline tier colors; leaderboard tier colors are separate; no single source of truth.
+These are carried into Phase 14:
 
-## Pre-launch reviews
-- Review the XP-per-level scaling curve before public launch. Current: `level = floor(sqrt(xp / 100)) + 1`, so Lv 2 at 100 xp, Lv 3 at 400, Lv 4 at 900, Lv 10 at 8100, Lv 20 at 36100. With participation cap 5/play and PB bonus 25 × streak × 2x, average daily XP for an engaged user (7 plays + 4 PBs) is roughly `35 (participation) + 4*25 = 135` at streak 1, scaling to ~270 at streak 7. So Lv 10 at ~30 days of consistent play, Lv 20 at ~120 days. Decide pre-launch: is this curve too fast (rewards exhaust quickly, no long-tail goals), too slow (early levels feel grindy), or correct? Sample population data once we have ≥1 week of users and re-tune the divisor (currently 100) without breaking persisted XP.
+- **More games — target ~10 total.** Candidates: spatial-rotation, dual-task, paired-associate, sudoku revival.
+- **Game start-point selection** (length-based games like Digit Span — pick a starting length on the ready screen).
+- **Custom timer durations + matching leaderboard filters** (so 30s-Math doesn't compete against 60s-Math) + per-second ranking.
+- **Cross-game leaderboards** by streak / level / overall scoring factor (composite metric).
+- **Community tab** (`/community`) — player search + recently-active public profiles.
 
-## Pre-launch / v1.x ideas
-- Community tab: dedicated page (or sidebar item) with a player-search input + paginated list of recently-active public profiles, each as a clickable card (avatar + username + level + streak). Complements the friend-add-by-username surface from Phase 7. Defer until friends/groups land so the social graph has somewhere to plug in.
-- Badge index / catalog page (`/badges`): a public page that lists every available badge with its emoji, label, and acquisition criteria. Locked badges (criteria not yet met) render at reduced opacity; earned badges render full color with the earned date on hover. Doubles as discovery (users see what's possible) and reduces "what does this badge mean" friction on profiles. Pairs with bug #45 (themed criteria tooltips on profile badges) — both surfaces should pull from the same `badgeCriteria(key)` source. Defer until Phase 5.5 / 6.5 since achievement badges (perfect N-back, sub-300ms reaction) will land then and the catalog should ship with all badges visible.
-- Progress graphs (mindgames parity): per-game line / scatter charts of submitted scores over time, with toggles for "all plays" vs "daily aggregate" (PB / mean / median per day). Plus an aggregate view that overlays all 7 games on the same time axis (z-scored or normalized so direction-up = better regardless of higher-or-lower). Lives at `/profile/me/graphs` per Phase 5.5. Reuse the heatmap palette tokens for visual continuity. No external chart library — Zetamac Pure is hostile to defaults; render inline SVG with 1px stroke + accent fill, no shadows, no gradients.
-- More games — eventually ~10 total (3 more beyond the current 7). Candidates from mindgames or new: spatial-rotation, dual-task, paired-associate, sudoku revival. Defer until Phase 11+ once core polish + social are stable.
-- Game start-point selection (where applicable). For length-based games (Digit Span) allow the user to start at a chosen length (e.g. start at 5 instead of 3). For timer-based games (Math, Stroop, Reaction, etc.) this doesn't apply. Surfaces as a small "start at length N" stepper on the GameShell ready screen for eligible games. Defer.
-- Cross-game leaderboards (streak / level / overall scoring factor): expand /leaderboards beyond per-game tabs to include leaderboards by current streak, by level (XP), and by an overall "scoring factor" composite (likely the same metric as the future improvement score, or a normalized cross-game performance index). Each becomes its own tab alongside the 7 per-game leaderboards. **ASK BEFORE IMPLEMENTING** — the user wants to design the composite metric before this surface lands.
-- Custom timer durations per game (replace the locked 60s / 30s defaults with user-chosen timer presets) + matching leaderboard filters so 30s-Math doesn't get compared against 60s-Math. Plus a "per-second" ranking option for games where rate matters more than total. **ASK BEFORE IMPLEMENTING** — the user wants to revisit the design tradeoffs (leaderboard fragmentation vs flexibility) before this lands.
-- Improvement score (post-graphs): a single composite number that summarizes how much a user's cognitive performance has grown. Candidate formulation: per-game z-score delta over a 30/60/90-day window vs the user's own baseline (their first 5 submissions in that game), then averaged across games with optional weighting toward the cognitively-core 4. Surfaces on /profile and as a "+N this month" delta on /today. Ties into the v1 thesis (improvement-tracking is the headline, not raw rating). Pairs with Glicko-2 silent surfacing (Phase 10) but is conceptually independent — improvement score is intra-user, Glicko is inter-user. Defer until ≥30 days of population data exist so the baselines aren't noisy.
+## Badges system follow-ups (Phase 5.5 / 6.5)
 
-## Post-launch
-- Flip Glicko-2 UI (Phase 12) at ≥25 users × ≥10 ranked/game. Mind-elo + per-game elo tabs surface. Elo-tier badges retroactively awardable.
-- Replay-token anti-cheat: server-issued seeded tokens, signed event logs, server-side replay on submit.
-- Multiplayer head-to-head: same Glicko-2 update with real opponent rating.
-- Public-group request-approval flow (v1 has instant 1-click join only).
-- Mobile-first redesign if mobile traffic dominates.
-- Sudoku revival (code retained in mindgames, hidden).
-- Push notifications + email digests (streak reminder, friend request, badge, group invite).
-- i18n.
-- Daily-seed timezone option (currently PT-anchored).
+- **Achievement badges** (perfect N-Back day, sub-300ms Reaction, etc.). Extends `lib/badges/icons.ts` + `eval_badges` SQL.
+- **`/badges` index page** — locked + earned, criteria visible, earned date on hover. Same `badgeCriteria(key)` source as Phase 8 #45 tooltips.
+- **Pinned badges on profile** — user picks top N badges (default 3-5) to highlight at the top of the badge wall. Storage: `profiles.pinned_badges text[]` migration.
+- **Badge rarity %** — surface "X% of users have earned this" on each badge tooltip + on the `/badges` index. Computed from `count(distinct user_id) / count(distinct user_id with any submission)`. Refresh nightly via cron or RPC.
+- **Badge-earn celebration on ResultScreen** — when a play unlocks a new badge, show a small `[new badge: <emoji> <name>]` chip below the XP/PB indicators. Reads `process_submission` JSON return (already includes badge events; just plumb through).
+
+## Profile prestige (Phase 5.5 / 13)
+
+- **Prominent leaderboard rankings on profile.** A high-ranked player's profile should feel visually distinct + aspirational vs a fresh profile, so newcomers want to climb. Surface ideas: top-1 / top-10 / top-100 per-game medal chips next to game stats; a "global rank" line in the profile header (e.g. "rank 47 worldwide on Math"); rare-rank highlight (top 10 globally on any game gets an accent border on the profile card). Pairs with badge-rarity % and pinned badges. Phase 5.5 lands the data; Phase 13 polishes the visual hierarchy.
+
+## Improvement-tracking + graphs (Phase 5.5 / 9 / 15)
+
+- **Per-game 30-day score sparkline** on profile cards (Phase 9, planned).
+- **`/profile/me/history`** table view + CSV export (Phase 5.5).
+- **`/profile/me/graphs`** mindgames-parity graphical view: per-game line / scatter charts of submitted scores over time, toggle for "all plays" vs "daily aggregate" (PB / mean / median per day). Plus aggregate view overlaying all 7 games on one z-scored time axis. Inline SVG, 1px stroke + accent fill, no shadows. (Phase 5.5 — explicitly carries the original mindgames score-over-time tracking the user wants reproduced.)
+- **Improvement score** — composite z-score delta vs first-5-submissions baseline; surfaces on /profile + as "+N this month" delta on /today (Phase 15).
+- **Heatmap toggle** between `[plays]` (current) and `[score]` (sparkline) view (Phase 9, decided option A).
+
+## Design system gaps (rolled into Phase 8)
+
+The UI/UX-pro-max review surfaced these. None blocking individually; they multiply when Phase 10 groups land:
+
+- `<Toast>` / `<ErrorBox role="alert">` (#59 owns this)
+- `<EmptyState>`
+- `<PendingOverlay>` / `.is-pending`
+- `<FormField>`
+- `<ConfirmDialog>` (#64 modal primitive lays the groundwork)
+- `lib/relative-date.ts` (47-days-ago formatter)
+- `lib/tier-colors.ts` (StreakRibbon + leaderboard tier colors single source of truth)
+
+## Pre-launch reviews (Phase 13)
+
+- **XP-per-level scaling curve.** `level = floor(sqrt(xp/100)) + 1`. Lv 2 at 100 xp, Lv 10 at 8100, Lv 20 at 36100. Engaged user (~135-270 xp/day) hits Lv 10 in ~30 days, Lv 20 in ~120 days. Sample population data after ≥1 week of users; re-tune the divisor without breaking persisted XP. Pairs with the user's "more XP for higher streak" preference + future "scaled XP per level" + "streak extension options" — re-tune all three together so daily curves stay enjoyable across novice → expert.
+- **Replay-token anti-cheat (R1).** Decision-pending whether to ship in Phase 13 or defer to Phase 16. The #58 footnote acknowledges the gap; full server-issued seeded tokens + signed event logs are the resolution.
+
+## Post-launch (Phase 16)
+
+- Flip Glicko-2 UI when ≥ 25 users × ≥ 10 ranked/game (closes R2). Mind-elo + per-game elo tabs. Elo-tier badges retroactive.
+- Multiplayer head-to-head with real opponent rating.
+- Public-group request-approval flow (instant-join is v1).
+- Push notifications + daily-seed timezone option.
 - Wordle-style emoji result share for daily completion.
+- i18n.
+- Sudoku revival.
+
+## Monetization (Phase 17, traffic-gated)
+
+- Free: 2 games per PT day total.
+- Paid: $5/mo unlimited or $50/yr (~17% off). Stripe + `profiles.subscription_status` + `subscription_period_end`.
+- Daily limit on submission insert trigger.
+- 7-day full-access trial on signup.
+- No pay-to-win — leaderboards/streak/XP/badges unaffected.
