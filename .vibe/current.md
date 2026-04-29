@@ -1,61 +1,60 @@
 # Current
 
-Active: Phase 6 + bug fixes #20/#21/#22 shipped on dev. Phase 5 essentials (`/profile/[username]`) next. Migration 0008 applied live. process_submission now writes XP events + auto-grants streak/PB/all-seven badges in one tx. ResultScreen shows +N xp + [new PB] feedback. /play/[game] drops sidebar and centers the game stage.
+Active: Phases 0/1/1.5/2/3/4-essentials/5-essentials/6 shipped on `origin/main` (latest commit `be39d27`). Vercel auto-deploys. Awaiting next-session work.
 
-## Just-shipped 2026-04-28 (uncommitted)
+## What works end-to-end
+- Sign up email/pw or Google -> email confirm -> `/auth/callback` -> `/onboarding` -> `/today`.
+- All 7 games playable: 3-2-1-Go countdown -> game -> result -> Enter to submit -> `+N xp` + `[new PB]` indicator -> `N` to chain to the next game.
+- `process_submission` RPC writes the submission, upserts daily_aggregates (best/worst/mean/median + plays_submitted), updates streak/longest/total_submitted, awards xp_events (participation cap + PB bonus * streak_mult * 2x), and grants streak/PB/all-seven badges in one tx.
+- `/today`: pinned > 2x > core > rest, top-3 leaderboard preview per card, click-to-pin, search input.
+- `/leaderboards`: Today/7d/All-time × 7 game tabs, anonymous-readable.
+- `/profile/<username>`: public profile with summary + per-game cards + badge wall. Sparse for private profiles.
+- `/settings`: Profile / Preferences / Account / Password (current-pw-verified) / Delete.
+- Reset password: forgot-pw email -> `/auth/callback?next=/auth/set-password` (sets recovery cookie) -> `/auth/set-password` (gated by cookie) -> save -> `/today`.
 
-### Phase 1.5 - reset/change password
-- `/auth/set-password` page + `SetPasswordForm` (new password + confirm).
-- `setNewPasswordAction` gated by one-shot `mindlap_pwreset` cookie set by `/auth/callback` only when `next=/auth/set-password`. Stolen-cookie session cannot pivot to password reset.
-- `changePasswordAction` in `/settings` PasswordSection. Verifies current password via stateless side client (`@supabase/supabase-js` with `persistSession:false`) so the live session cookies / refresh token are not rotated and other tabs stay signed in.
-- `requestPasswordResetAction` redirect updated to `/auth/set-password`.
-- `proxy.ts` ONBOARDING_ALLOWED includes `/auth/set-password`.
+## Open bugs (3)
+- #30 [MED] Pre-submit comparison view on ResultScreen (PB/worst/7d-median/leaderboard delta with green +N / red -N). Bigger feature; deferred from last session. Needs a `getPreSubmitContext(game_key, score)` Server Action.
+- #26 [LOW] /profile/<username> does 28 supabase round-trips. Collapse to one `get_public_profile_stats` RPC in Phase 11.
+- #19 [LOW] Avatar initial visually offset above center (Courier Prime cap-baseline).
 
-### Phase 2 - 4 core games
-- `lib/games/{math,digit,nback,stroop}/index.ts` pure logic, parity-tested (36 new vitest cases; 61 total passing).
-- `components/games/*Game.tsx` React ports + shared `Countdown` (3-2-1-Go opacity fade, only animation besides streak pulse) + `GameShell` (ready/countdown/playing/result phase machine) + `ResultScreen` (autofocus submit, Enter=submit, R=retry, N=next core game).
-- `actions/submission.ts` `submitScoreAction`: Zod `int().nonnegative()` score, range-checks `games.min_score`/`max_score`, RLS user_id binding via `auth.uid()`. Inserts to `submissions`. NOTE: `daily_aggregates` NOT yet auto-written; Phase 4 ships `process_submission()` PG fn.
-- `app/(authed)/play/[game]/page.tsx` route.
-- `/today` shows 4 zetamac-pure game cards + best-today (from `daily_aggregates`, currently empty until Phase 4) + topbar streak/level/avatar.
-- `lib/pt-date.ts` server-locale-safe PT formatter.
-- `app/globals.css` adds in-game type scale (Math 56 / Digit 80 / NBack 96 / Stroop 56 / Result 96; mobile breakpoint @ 640px), `.btn-link` anchor-as-button, `@keyframes countdown-fade`.
+## Open risks (`0C / 1H / 2M / 4L`)
+- R13 [HIGH] No app-level rate limit on auth endpoints. Block before public launch (Phase 11).
+- R1, R2 [MED] Anti-cheat deferred; Glicko cold-start unstable.
+- R3, R15, R16, R17 [LOW] daily-bonus cron, future-migration grant regression, side-client password-grant rate sharing, per-user submission spam. All fold into Phase 11.
 
-### Infra
-- `next.config.ts` gates `'unsafe-eval'`, `ws://localhost:*`, and absence of `upgrade-insecure-requests` behind `NODE_ENV === "development"`. Production CSP unchanged.
-- `0006_restore_role_grants.sql` (already applied live earlier today): GRANT SELECT/INSERT/UPDATE/DELETE on all `public.*` to anon/authenticated/service_role + ALTER DEFAULT PRIVILEGES.
-- `.gitignore` adds `CLAUDE.md`, `scripts/create-dev-user.mjs`, `.playwright-mcp/`.
-
-## Bugs resolved this round
-#7-#13 closed earlier today. New since /vibe:review:
-- (none new fixed yet; #14-#19 logged Open below for next iteration)
-
-## Bugs still open (logged from manual playtest, not committing fixes this round)
-- #14 MED Digit Span sequence overflows column at length 10+; needs shrink-to-fit + readability discussion before fix.
-- #15 MED /settings has no obvious back affordance.
-- #16 LOW /favicon.ico 404 noise.
-- #17 MED /play/[game] back link ("<- today") looks unclickable, no hover state.
-- #18 LOW No XP bar surfaced anywhere; defer until Phase 6.
-- #19 LOW Avatar initial letter renders slightly above geometric center (Courier Prime cap baseline).
-
-## Risk delta
-Baseline now `0C/1H/2M/2L`. R14 (reset-password half-state) -> Resolved. R13 (rate limiting) still HIGH for Phase 11. R1/R2 MED, R3/R15 LOW unchanged.
+## Phase plan
+- [x] Phase 0 scaffold
+- [x] Phase 1 auth + profiles + onboarding + settings + privacy + hard-delete
+- [x] Phase 1.5 reset/change password (recovery-cookie crumb gate)
+- [x] Phase 2 game shell + 4 core games
+- [x] Phase 3 remaining 3 games (Reaction, Mine, Word)
+- [x] Phase 4 essentials (`/leaderboards`, click-to-pin, daily 2x, top-3 preview, `process_submission`)
+- [x] Phase 5 essentials (`/profile/<username>`)
+- [x] Phase 6 (XP events + streak/PB/all-seven badges via process_submission)
+- [ ] Phase 4.5 follow-up: drag-reorder pins, Daily Completion sub-tab, 14-day calendar widget, leaderboards Friends/Group filter (post Phase 7/8)
+- [ ] Phase 5.5 follow-up: 90-day heatmap, 30-day SVG sparkline, /profile/me/{history,graphs} + CSV export, achievement badges (perfect N-back, sub-300ms reaction)
+- [ ] Phase 7 friends (mutual-accept + filter + /f/<friend_code>)
+- [ ] Phase 8 groups (public/private + roles + /g/<join_code>)
+- [ ] Phase 9 tutorials (cutout-mask first-play overlay)
+- [ ] Phase 10 silent Glicko surface
+- [ ] Phase 11 launch readiness (rate limiting, notifications, SEO, legal, mobile pass, full e2e, prod domain)
+- [ ] Phase 12 (post-launch) elo flip when ≥25 users × ≥10 ranked/game
 
 ## Dev workflow
 ```
-npm run dev                                    # http://localhost:3000
-node scripts/create-dev-user.mjs <email> <pw>  # gitignored; needs SUPABASE_SERVICE_ROLE_KEY in .env.local
-node scripts/apply-migrations.mjs <file>       # one-off migration apply via Mgmt API
+npm run dev                                       # http://localhost:3000
+node scripts/create-dev-user.mjs <email> <pw>     # gitignored; needs SUPABASE_SERVICE_ROLE_KEY in .env.local
+node scripts/apply-migrations.mjs <file>          # one-off migration apply via Mgmt API
+npm test | npm run typecheck | npm run lint | npm run build
 ```
-Dev credentials live in CLAUDE.md (gitignored) only. Never paste them into `.vibe/` (committed) or any tracked file.
+Dev creds live in CLAUDE.md (gitignored). Never paste them into `.vibe/` (committed) or any tracked file.
 
 ## Live state
-- Supabase project `nookxuvlvwtppitqguxf`: migrations 0001-0006 applied (last verified via `npx supabase migration list --linked`).
-- Vercel project `mindlap` (linked). Env vars: NEXT_PUBLIC_SUPABASE_URL/ANON_KEY in Dev/Preview/Prod; SUPABASE_SERVICE_ROLE_KEY + RESEND_API_KEY in Preview/Prod only.
-- Latest commit on origin/main: `c9e3752` (RLS grants + onboarding entity + signup confirm-pw).
+- Supabase project `nookxuvlvwtppitqguxf`: migrations 0001-0010 applied. 192 role grants restored (0006). `process_submission(text, numeric, boolean) -> jsonb` is the only writer for submissions and daily_aggregates.
+- Vercel project `mindlap` linked. Env vars in Vercel: NEXT_PUBLIC_SUPABASE_URL/ANON_KEY in Dev/Preview/Prod; SUPABASE_SERVICE_ROLE_KEY + RESEND_API_KEY in Preview/Prod only (Dev users add the service-role key to `.env.local` to run create-dev-user.mjs).
+- GitHub: `dukesmith0/mindlap` (public). Latest `origin/main` = `be39d27`.
 
-## New-session ramp-up order
-`.vibe/current.md` -> `understanding.md` -> `decisions.md` -> `plans.md` -> `risks.md` -> `bugs.md`. Visual ref: `.vibe/docs/style-reference/zetamac-pure.html`. Game source: `C:\Users\craigs\OneDrive\Desktop\Projects\mindgames\js\*.js`.
+## New-session ramp-up
+Read in order: `.vibe/current.md` -> `understanding.md` -> `decisions.md` -> `plans.md` -> `risks.md` -> `bugs.md` -> `future.md`. Visual ref: `.vibe/docs/style-reference/zetamac-pure.html`. Game source: `C:\Users\craigs\OneDrive\Desktop\Projects\mindgames\js\*.js`.
 
-## Next phases
-- Phase 3: Reaction, Minesweeper, Word Recall (TS port + parity tests + UIs).
-- Phase 4: today hub finish (pins/2x/leaderboard preview), `process_submission()` PG fn (aggregates + silent Glicko + XP placeholder), public-read gating.
+Pick-up candidates (most-bang-for-buck first): #30 pre-submit comparison view, #14 digit-span overflow design call, Phase 7 friends, #15 settings back affordance.
