@@ -1,0 +1,27 @@
+// 115-word vocabulary list. Common, simple, distinct English (4-7 letters).
+// Bundled as a static module so the game has no per-play DB round-trip.
+export const WORDLIST: readonly string[] = [
+  "apple", "table", "river", "cloud", "brick",
+  "paper", "stone", "chair", "plant", "music",
+  "bread", "dance", "light", "smile", "ocean",
+  "flame", "grass", "window", "forest", "bridge",
+  "candle", "marble", "pencil", "coffee", "jacket",
+  "planet", "rocket", "garden", "puzzle", "ladder",
+  "basket", "anchor", "glove", "honey", "lemon",
+  "piano", "sugar", "orange", "cactus", "silver",
+  "island", "zebra", "arrow", "butter", "copper",
+  "dragon", "helmet", "tiger", "eagle", "mouse",
+  "castle", "wizard", "kitten", "desert", "valley",
+  "pillow", "button", "turtle", "violet", "meadow",
+  "jungle", "rabbit", "wagon", "banjo", "canyon",
+  "diamond", "engine", "falcon", "galaxy", "harbor",
+  "iceberg", "jigsaw", "kimono", "lizard", "magnet",
+  "needle", "orchid", "parrot", "quartz", "riddle",
+  "saddle", "toffee", "umbrella", "violin", "walnut",
+  "yogurt", "bubble", "cookie", "dimple", "ember",
+  "fossil", "gravel", "hammer", "igloo", "kayak",
+  "lantern", "monkey", "napkin", "oxygen", "pebble",
+  "quilt", "ribbon", "sandal", "teapot", "unicorn",
+  "vortex", "whisker", "yellow", "zipper", "acorn",
+  "badger", "clover", "donkey", "envelope", "feather",
+];

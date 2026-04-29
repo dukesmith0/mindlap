@@ -136,6 +136,12 @@ h2 {
   margin: 0 0 16px;
 }
 
+.subtitle {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 0 0 40px;
+}
+
 hr {
   border: 0;
   border-top: 1px solid var(--line);
@@ -343,4 +349,255 @@ hr {
 .btn-link:hover {
   background: var(--accent);
   color: #ffffff;
+}
+
+/* Inline back-nav link with affordance (#17 fix) */
+.nav-back {
+  color: var(--muted);
+  font-size: 13px;
+  text-decoration: none;
+  border-bottom: 1px dashed transparent;
+}
+.nav-back:hover {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* In-game type scale additions for new games */
+.game-text-reaction {
+  font-size: 32px;
+  letter-spacing: 0.5px;
+}
+
+@media (max-width: 640px) {
+  .game-text-reaction { font-size: 22px; }
+}
+
+.reaction-stage {
+  transition: background 80ms ease-out;
+}
+
+/* Minesweeper grid: 10x10 square cells; no shadow, 1px borders */
+.mine-grid {
+  display: inline-grid;
+  grid-template-rows: repeat(10, auto);
+  border: 1px solid var(--line);
+}
+.mine-row {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+}
+.mine-cell {
+  width: 32px;
+  height: 32px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+  border-radius: 0;
+}
+.mine-cell:hover { background: var(--line); }
+.mine-cell.is-revealed {
+  background: var(--bg);
+  cursor: default;
+  color: var(--muted);
+}
+.mine-cell.is-revealed[data-n="1"] { color: #1e88e5; }
+.mine-cell.is-revealed[data-n="2"] { color: #43a047; }
+.mine-cell.is-revealed[data-n="3"] { color: #e53935; }
+.mine-cell.is-revealed[data-n="4"] { color: #5e35b1; }
+.mine-cell.is-revealed[data-n="5"] { color: #d84315; }
+.mine-cell.is-revealed[data-n="6"] { color: #00897b; }
+.mine-cell.is-revealed[data-n="7"] { color: var(--ink); }
+.mine-cell.is-revealed[data-n="8"] { color: var(--muted); }
+.mine-cell.is-flagged { color: var(--accent); }
+.mine-cell.is-mine { background: #c62828; color: #fff; }
+
+@media (max-width: 640px) {
+  .mine-cell { width: 28px; height: 28px; font-size: 12px; }
+}
+
+/* Word recall layout */
+.word-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(120px, 1fr));
+  gap: 12px 32px;
+  text-align: left;
+}
+.word-cell {
+  font-size: 22px;
+  letter-spacing: 0.3px;
+  border-bottom: 1px solid var(--line);
+  padding: 4px 0;
+}
+.word-input {
+  width: 100%;
+  min-height: 96px;
+  font-family: var(--font-mono);
+  font-size: 16px;
+}
+
+@media (max-width: 640px) {
+  .word-grid { grid-template-columns: 1fr; }
+  .word-cell { font-size: 18px; }
+}
+
+/* Today game card extras: pin star + 2x pill */
+.game-card-pin {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0 6px;
+  font-family: var(--font-mono);
+}
+.game-card-pin.is-pinned { color: var(--accent); }
+.game-card-pin:hover { color: var(--accent); }
+.game-card-pill {
+  color: var(--accent);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-left: 8px;
+}
+
+/* Leaderboard preview rows (compact, no chrome) */
+.lb-preview {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.lb-preview-row {
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  gap: 8px;
+  padding: 2px 0;
+}
+.lb-preview-row.is-you { color: var(--accent); }
+
+/* XP bar: 1px outline + accent fill. No shadow, no radius. */
+.xp-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.xp-bar-label {
+  color: var(--ink);
+  letter-spacing: 0.5px;
+}
+.xp-bar-track {
+  display: inline-block;
+  width: 96px;
+  height: 8px;
+  border: 1px solid var(--line);
+  background: transparent;
+  position: relative;
+}
+.xp-bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transition: width 220ms ease-out;
+}
+.xp-bar-num {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 640px) {
+  .xp-bar-track { width: 64px; }
+  .xp-bar-num { display: none; }
+}
+
+/* Streak ribbon emoji slightly larger for visual presence; pulse comes from
+   the inline style so it stays consistent if the class is removed. */
+.streak-ribbon { letter-spacing: 0.3px; font-variant-numeric: tabular-nums; }
+
+/* ============================================================================
+   App shell (topbar + 200px sidebar + main). Mirrors zetamac-pure.html.
+   ============================================================================ */
+
+.app-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 32px;
+  border-bottom: 1px solid var(--line);
+}
+.app-logo { font-size: 18px; letter-spacing: -0.5px; }
+.app-logo a { color: var(--ink); }
+.app-logo a:hover { color: var(--accent); }
+.app-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.app-layout {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  min-height: calc(100vh - 60px);
+}
+
+.app-sidebar {
+  border-right: 1px solid var(--line);
+  padding: 32px 24px;
+}
+.app-sidebar ul { list-style: none; padding: 0; margin: 0; }
+.app-sidebar li { margin-bottom: 14px; }
+.sidebar-link {
+  color: var(--muted);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+}
+.sidebar-link:hover { color: var(--accent); }
+.sidebar-link.is-active { color: var(--ink); position: relative; padding-left: 14px; }
+.sidebar-link.is-active::before {
+  content: ">";
+  color: var(--accent);
+  position: absolute;
+  left: 0;
+}
+.sidebar-link.is-disabled {
+  color: var(--line);
+  cursor: not-allowed;
+}
+.sidebar-link.is-disabled:hover { color: var(--line); }
+.sidebar-soon {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--line);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.app-main {
+  padding: 48px 64px;
+  max-width: 720px;
+}
+
+@media (max-width: 720px) {
+  .app-layout { grid-template-columns: 1fr; }
+  .app-sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+    padding: 16px 24px;
+  }
+  .app-sidebar ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .app-sidebar li { margin: 0; }
+  .app-main { padding: 32px 24px; }
 }

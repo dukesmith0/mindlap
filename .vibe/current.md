@@ -1,6 +1,6 @@
 # Current
 
-Active: Phases 0-2 + 1.5 done. 4 core games playable end-to-end on dev. Awaiting `/vibe:review` verdict before commit + push to `main`.
+Active: Phase 3 + Phase 4 essentials shipped on dev (Approach B). Awaiting commit + push to `main`. Topbar+sidebar shell matching zetamac-pure.html mock; 🔥 tiered streak; XP bar; 7 games playable end-to-end; 0007 process_submission applied live; /leaderboards page; click-to-pin + 2x rotation; 143 vitest passing.
 
 ## Just-shipped 2026-04-28 (uncommitted)
 
@@ -46,7 +46,7 @@ npm run dev                                    # http://localhost:3000
 node scripts/create-dev-user.mjs <email> <pw>  # gitignored; needs SUPABASE_SERVICE_ROLE_KEY in .env.local
 node scripts/apply-migrations.mjs <file>       # one-off migration apply via Mgmt API
 ```
-Dev account already created: `dev@mindlap.test` / `changeme1234`.
+Dev credentials live in CLAUDE.md (gitignored) only. Never paste them into `.vibe/` (committed) or any tracked file.
 
 ## Live state
 - Supabase project `nookxuvlvwtppitqguxf`: migrations 0001-0006 applied (last verified via `npx supabase migration list --linked`).

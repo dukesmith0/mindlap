@@ -7,12 +7,12 @@ import { createClient } from "@/lib/supabase/server";
 
 type ActionResult = { ok: true } | { ok: false; error: string };
 
-// Phase 2 scope: 4 core games. Phase 3 will add reaction/mine/word.
-const GameKey = z.enum(["math", "digit", "nback", "stroop"]);
+// All 7 games. Server-side check; the client also constrains via the registry.
+const GameKey = z.enum(["math", "digit", "nback", "stroop", "reaction", "mine", "word"]);
 
 const SubmitSchema = z.object({
   game_key: GameKey,
-  // All 4 core games return non-negative integers (counts or accuracy %).
+  // All 7 games return non-negative integers (counts, accuracy %, or seconds).
   score: z.coerce.number().int().nonnegative(),
 });
 
@@ -27,27 +27,54 @@ export async function submitScoreAction(formData: FormData): Promise<ActionResul
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "Not signed in." };
 
-  // Range check against the games catalog so we reject out-of-bounds scores
-  // before hitting the DB CHECK. Defense in depth, not the only barrier.
-  const { data: game } = await supabase
-    .from("games")
-    .select("min_score, max_score")
-    .eq("key", parse.data.game_key)
-    .single();
-  if (!game) return { ok: false, error: "Unknown game." };
-  if (parse.data.score < Number(game.min_score)) {
-    return { ok: false, error: "Score below minimum for this game." };
-  }
-  if (game.max_score !== null && parse.data.score > Number(game.max_score)) {
-    return { ok: false, error: "Score above maximum for this game." };
-  }
-
-  const { error } = await supabase.from("submissions").insert({
-    user_id: user.id,
-    game_key: parse.data.game_key,
-    score: parse.data.score,
+  // process_submission (migration 0007) handles the full transaction:
+  // submission insert + daily_aggregates upsert + streak/total_submitted
+  // updates. It validates the game key and range against the catalog and
+  // raises with a readable error if anything is off. Wire-level RLS still
+  // runs on the underlying tables.
+  const { error } = await supabase.rpc("process_submission", {
+    p_game_key: parse.data.game_key,
+    p_score: parse.data.score,
   });
   if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/today");
+  return { ok: true };
+}
+
+// Click-to-pin / unpin from /today. Toggles a row in user_game_pins.
+const PinSchema = z.object({
+  game_key: GameKey,
+  pinned: z.coerce.boolean(),
+});
+
+export async function togglePinAction(formData: FormData): Promise<ActionResult> {
+  const parse = PinSchema.safeParse({
+    game_key: formData.get("game_key"),
+    pinned: formData.get("pinned"),
+  });
+  if (!parse.success) return { ok: false, error: "Invalid pin payload." };
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Not signed in." };
+
+  if (parse.data.pinned) {
+    const { error } = await supabase
+      .from("user_game_pins")
+      .insert({ user_id: user.id, game_key: parse.data.game_key })
+      .select()
+      .single();
+    // Idempotent: ignore unique-violation if the user clicks twice.
+    if (error && error.code !== "23505") return { ok: false, error: error.message };
+  } else {
+    const { error } = await supabase
+      .from("user_game_pins")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("game_key", parse.data.game_key);
+    if (error) return { ok: false, error: error.message };
+  }
 
   revalidatePath("/today");
   return { ok: true };

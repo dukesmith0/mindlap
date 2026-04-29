@@ -10,3 +10,9 @@ const FORMATTER = new Intl.DateTimeFormat("en-CA", {
 export function ptDate(now: Date = new Date()): string {
   return FORMATTER.format(now);
 }
+
+// Returns YYYY-MM-DD for `daysAgo` PT days before `from`. daysAgo=0 == today.
+export function ptDateOffset(daysAgo: number, from: Date = new Date()): string {
+  const ms = from.getTime() - daysAgo * 86_400_000;
+  return FORMATTER.format(new Date(ms));
+}

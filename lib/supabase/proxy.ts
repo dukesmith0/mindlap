@@ -13,8 +13,16 @@ const PUBLIC_EXACT = new Set([
   "/leaderboards",
 ]);
 
+// Anonymous-readable namespaces (prefix matches).
+const PUBLIC_PREFIXES = ["/leaderboards"];
+
 function isPublicPath(path: string): boolean {
   if (PUBLIC_EXACT.has(path)) return true;
+
+  // Public prefix namespaces (e.g. /leaderboards/anything).
+  for (const prefix of PUBLIC_PREFIXES) {
+    if (path === prefix || path.startsWith(prefix + "/")) return true;
+  }
 
   // Friend-code and group-code shareable links (anonymous lands, then signs up).
   if (path.startsWith("/f/") || path.startsWith("/g/")) return true;

@@ -39,8 +39,9 @@ Next.js 16 App Router on Vercel + Supabase (Auth/Postgres/Storage) + Resend. All
 - [x] Phase 1: auth + profiles + onboarding + settings + Resend templates + privacy + hard-delete
 - [x] Phase 1.5: reset-password landing + change-password in /settings + recovery-cookie crumb gate (closes R14)
 - [x] Phase 2: game shell + 4 core games (Math/Digit/N-Back/Stroop) + 3-2-1 countdown + submit-vs-retry + Enter/R/N power-user shortcuts
-- [ ] Phase 3: remaining 3 games (Reaction, Mine, Word)
-- [ ] Phase 4: today's hub finished (pins, double-XP `[2x]` pill, top-5 leaderboard preview, public-read gating) + `process_submission()` PG fn (writes aggregate + Glicko silent + XP placeholder)
+- [ ] Phase 3 (in progress): remaining 3 games (Reaction, Mine, Word)
+- [ ] Phase 4 (in progress, essentials only): pins (click-to-pin), `[2x]` pill via deterministic daily_bonus, top-5 leaderboard preview on /today, /leaderboards page (Today/7d/All-time x 7 games, anonymous full visibility), public-read gating verified, `process_submission()` PG fn (aggregates + streak + plays counters; XP/Glicko stubbed for Phase 6/10).
+- [ ] Phase 4.5 follow-up: drag-reorder pins, leaderboards Friends/Group filter (post-Phase-7/8), Daily Completion sub-tab, 14-day double-XP calendar widget.
 - [ ] Phase 5: profile + improvement UX (streak ribbon, per-game cards, heatmap, history, graphs)
 - [ ] Phase 6: XP + badges (full event log, multipliers, streak bonus, badge eval triggers)
 - [ ] Phase 7: friends (mutual-accept, friend filter on leaderboards, /f/<friend_code> deep-link)

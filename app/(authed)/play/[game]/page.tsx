@@ -1,16 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { GameShell } from "@/components/games/GameShell";
-
-const SUPPORTED = new Set(["math", "digit", "nback", "stroop"] as const);
-type GameKey = "math" | "digit" | "nback" | "stroop";
-
-const TITLES: Record<GameKey, string> = {
-  math: "Speed Math",
-  digit: "Digit Span",
-  nback: "N-Back",
-  stroop: "Stroop",
-};
+import { GAMES, isGameKey } from "@/lib/games/registry";
+import { AppShell } from "@/components/layout/AppShell";
 
 export async function generateMetadata({
   params,
@@ -18,8 +10,8 @@ export async function generateMetadata({
   params: Promise<{ game: string }>;
 }) {
   const { game } = await params;
-  if (!SUPPORTED.has(game as GameKey)) return { title: "Play - mindlap" };
-  return { title: `${TITLES[game as GameKey]} - mindlap` };
+  if (!isGameKey(game)) return { title: "Play - mindlap" };
+  return { title: `${GAMES[game].name} - mindlap` };
 }
 
 export default async function PlayPage({
@@ -28,16 +20,14 @@ export default async function PlayPage({
   params: Promise<{ game: string }>;
 }) {
   const { game } = await params;
-  if (!SUPPORTED.has(game as GameKey)) notFound();
+  if (!isGameKey(game)) notFound();
 
   return (
-    <main style={{ maxWidth: 720, margin: "0 auto", padding: "48px 64px" }}>
-      <div style={{ marginBottom: 32 }}>
-        <Link href="/today" style={{ color: "var(--muted)", fontSize: 13 }}>
-          &lt;- today
-        </Link>
+    <AppShell>
+      <div style={{ marginBottom: 24 }}>
+        <Link href="/today" className="nav-back">&lt;- today</Link>
       </div>
-      <GameShell gameKey={game as GameKey} />
-    </main>
+      <GameShell gameKey={game} />
+    </AppShell>
   );
 }

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { SettingsClient } from "./SettingsClient";
+import { AppShell } from "@/components/layout/AppShell";
 
 export const metadata = { title: "Settings - mindlap" };
 
@@ -27,7 +28,7 @@ export default async function SettingsPage() {
     .single();
 
   return (
-    <main style={{ maxWidth: 720, margin: "0 auto", padding: "48px 64px" }}>
+    <AppShell>
       <h1>Settings</h1>
       <SettingsClient
         email={user.email ?? ""}
@@ -41,6 +42,6 @@ export default async function SettingsPage() {
         skipTutorials={profile.skip_tutorials}
         friendCode={secret?.friend_code ?? ""}
       />
-    </main>
+    </AppShell>
   );
 }

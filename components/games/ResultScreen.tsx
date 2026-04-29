@@ -3,16 +3,15 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { submitScoreAction } from "@/actions/submission";
+import { GAME_KEYS, type GameKey } from "@/lib/games/registry";
 
 type Direction = "higher" | "lower";
 
-const CORE_ORDER = ["math", "digit", "nback", "stroop"] as const;
-type GameKey = (typeof CORE_ORDER)[number];
-
-function nextCoreGame(key: GameKey): GameKey | null {
-  const i = CORE_ORDER.indexOf(key);
-  if (i === -1 || i === CORE_ORDER.length - 1) return null;
-  return CORE_ORDER[i + 1] ?? null;
+// Wraps around so the last game points back to the first (daily-user loop).
+function nextGame(key: GameKey): GameKey | null {
+  const i = GAME_KEYS.indexOf(key);
+  if (i === -1) return null;
+  return GAME_KEYS[(i + 1) % GAME_KEYS.length] ?? null;
 }
 
 export function ResultScreen({
@@ -33,7 +32,7 @@ export function ResultScreen({
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const submitBtnRef = useRef<HTMLButtonElement>(null);
-  const next = nextCoreGame(gameKey);
+  const next = nextGame(gameKey);
 
   useEffect(() => {
     submitBtnRef.current?.focus();
@@ -56,7 +55,7 @@ export function ResultScreen({
     });
   }
 
-  // Power-user shortcuts: Enter submits, R retries, N goes to next core game.
+  // Power-user shortcuts: Enter submits, R retries, N goes to next game.
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;

@@ -1,5 +1,5 @@
 # mindlap
-Last: 2026-04-28 | Phases 0/1/1.5/2 shipped. 4 core games playable end-to-end on dev (Math/Digit/N-Back/Stroop). 61 vitest, lint+typecheck clean.
+Last: 2026-04-28 | Phases 0/1/1.5/2 shipped, Phase 3 + Phase 4 essentials in flight. All 7 games playable on dev. 143 vitest (15 files), lint/typecheck/build clean. Topbar+sidebar shell live (zetamac-pure mock). Streak 🔥 tier-coloured + XP bar in topbar.
 
 ## Stack
 Next.js 16 App Router (RSC, Server Actions) | TS strict | Tailwind (most utilities disabled) + CSS vars | Supabase Auth/Postgres/Storage + pg_cron | Resend via Supabase SMTP | Courier Prime via `next/font/local` (`app/fonts/`, GDPR-clean) | Zod | Vitest unit, Playwright e2e | Vercel + Speed Insights
@@ -88,7 +88,7 @@ Hard delete with cascade. Removes auth.users + all submissions/aggregates/rating
 - Anti-enumeration: `requestPasswordResetAction` always returns ok; signup treats "already registered" as success.
 
 ## Tests
-Vitest (`debug/**/*.test.ts`), Playwright (`tests/e2e/*.spec.ts`). Run: `npm test`, `npm run test:e2e`. 61 passing across 8 files (auth/profile/theme/avatar 25 + games 36).
+Vitest (`debug/**/*.test.ts`), Playwright (`tests/e2e/*.spec.ts`). Run: `npm test`, `npm run test:e2e`. 143 passing across 15 files: auth/profile/theme/avatar 25 + games (math/digit/nback/stroop/reaction/mine/word) parity 67 + games edge-cases 39 + daily-bonus 5 + pt-date 7 + xp-bar 11.
 
 ## Docs
 - [docs/mindgames/](docs/mindgames/): full reference copy of source mindgames `.vibe/`
