@@ -8,7 +8,7 @@ import { AppShell } from "@/components/layout/AppShell";
 
 export const metadata = { title: "Today - mindlap" };
 
-type TopRow = { username: string | null; score: number; user_id: string };
+type TopRow = { username: string | null; score: number; user_id: string; rank: number };
 
 export default async function TodayPage() {
   const supabase = await createClient();
@@ -21,6 +21,7 @@ export default async function TodayPage() {
   const bonusSet = new Set<GameKey>([bonusA, bonusB]);
 
   let isAuthed = false;
+  let friendIds: string[] = [];
   if (user) {
     isAuthed = true;
     const { data: aggs } = await supabase
@@ -37,25 +38,63 @@ export default async function TodayPage() {
       .select("game_key")
       .eq("user_id", user.id);
     if (pins) for (const p of pins) pinned.add(p.game_key as GameKey);
+
+    // Phase 7: friends-only mini-leaderboard scope. Allow list = me + accepted friends.
+    const { data: friendRows } = await supabase
+      .from("friendships")
+      .select("requester_id, addressee_id")
+      .eq("status", "accepted")
+      .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`);
+    const ids = new Set<string>([user.id]);
+    for (const r of friendRows ?? []) {
+      ids.add(r.requester_id === user.id ? r.addressee_id : r.requester_id);
+    }
+    friendIds = [...ids];
   }
 
-  // Top-3 leaderboard preview per game (today's slice).
-  const previews = new Map<GameKey, TopRow[]>();
-  for (const key of GAME_KEYS) {
-    const direction = GAMES[key].direction;
-    const { data } = await supabase
-      .from("submissions")
-      .select("user_id, score, profiles(username)")
-      .eq("game_key", key)
-      .eq("played_pt_date", ptToday)
-      .order("score", { ascending: direction === "lower" })
-      .limit(3);
-    const rows: TopRow[] = (data ?? []).map((row) => ({
-      user_id: row.user_id as string,
-      score: Number(row.score),
-      username: ((row as unknown as { profiles?: { username?: string | null } | null }).profiles?.username) ?? null,
-    }));
-    if (rows.length) previews.set(key, rows);
+  // Friends-only top-5 + overflow-self row per game (#41). For unauthed users
+  // we skip the previews entirely (no comparison group).
+  const previews = new Map<GameKey, { top: TopRow[]; selfOverflow: TopRow | null }>();
+  if (isAuthed && user && friendIds.length > 0) {
+    for (const key of GAME_KEYS) {
+      const direction = GAMES[key].direction;
+      const lower = direction === "lower";
+      const { data } = await supabase
+        .from("submissions")
+        .select("user_id, score, profiles(username)")
+        .eq("game_key", key)
+        .eq("played_pt_date", ptToday)
+        .in("user_id", friendIds)
+        .order("score", { ascending: lower })
+        .limit(200);
+
+      const bestByUser = new Map<string, TopRow>();
+      for (const row of data ?? []) {
+        const uid = row.user_id as string;
+        const score = Number(row.score);
+        const uname =
+          ((row as unknown as { profiles?: { username?: string | null } | null }).profiles
+            ?.username) ?? null;
+        const existing = bestByUser.get(uid);
+        const better = !existing || (lower ? score < existing.score : score > existing.score);
+        if (better) bestByUser.set(uid, { user_id: uid, score, username: uname, rank: 0 });
+      }
+      const sorted = [...bestByUser.values()].sort((a, b) =>
+        lower ? a.score - b.score : b.score - a.score,
+      );
+      sorted.forEach((r, i) => { r.rank = i + 1; });
+
+      const top = sorted.slice(0, 5);
+      let selfOverflow: TopRow | null = null;
+      if (top.length > 0) {
+        const inTop = top.some((r) => r.user_id === user.id);
+        if (!inTop) {
+          const meRow = sorted.find((r) => r.user_id === user.id);
+          if (meRow) selfOverflow = meRow;
+        }
+      }
+      if (top.length > 0) previews.set(key, { top, selfOverflow });
+    }
   }
 
   // Sort: pinned > 2x > core (★) > rest, all stable by GAME_KEYS sort_order.
@@ -67,16 +106,20 @@ export default async function TodayPage() {
     return 3;
   }
 
-  const cards: TodayCardData[] = ordered.map((key) => ({
-    key,
-    name: GAMES[key].name,
-    tagline: GAMES[key].tagline,
-    isCore: GAMES[key].isCore,
-    isPinned: pinned.has(key),
-    isBonus: bonusSet.has(key),
-    best: todayBests.get(key),
-    preview: previews.get(key) ?? [],
-  }));
+  const cards: TodayCardData[] = ordered.map((key) => {
+    const p = previews.get(key);
+    return {
+      key,
+      name: GAMES[key].name,
+      tagline: GAMES[key].tagline,
+      isCore: GAMES[key].isCore,
+      isPinned: pinned.has(key),
+      isBonus: bonusSet.has(key),
+      best: todayBests.get(key),
+      preview: p?.top ?? [],
+      selfOverflow: p?.selfOverflow ?? null,
+    };
+  });
 
   const dateLabel = new Date().toLocaleDateString("en-US", {
     weekday: "long",

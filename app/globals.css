@@ -16,10 +16,12 @@
 }
 
 [data-theme="dark"] {
-  --bg: #0f0f0f;
+  /* VS Code-ish dark: slightly blue-tinted, lifted off pure black for less
+     eye strain. Line/muted nudge brighter to keep contrast against the lifted bg. */
+  --bg: #1e242b;
   --ink: #f0f0f0;
-  --muted: #888888;
-  --line: #2a2a2a;
+  --muted: #9aa0a6;
+  --line: #353c44;
   --accent: #5aa3ff;
 }
 
@@ -567,7 +569,20 @@ hr {
   gap: 8px;
   padding: 2px 0;
 }
-.lb-preview-row.is-you { color: var(--accent); }
+.lb-preview-row.is-you { color: var(--accent); font-weight: 700; }
+.lb-preview-ellipsis { color: var(--line); padding: 4px 0 2px; }
+.lb-preview-ellipsis > span:first-child { letter-spacing: 2px; }
+
+/* "Not yet played" filler that replaces the friends mini-leaderboard when the
+   user hasn't played today. Reads as a clear call-to-action instead of buried
+   text on the meta line. */
+.lb-not-played {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--accent);
+  letter-spacing: 1.5px;
+  font-weight: 700;
+}
 
 /* XP bar: 1px outline + accent fill. No shadow, no radius. */
 .xp-bar {
@@ -796,6 +811,49 @@ hr {
 
 @media (max-width: 640px) {
   .profile-summary { grid-template-columns: 1fr; }
+}
+
+/* Friends page list rows. Identity (avatar + name) on the left, action
+   buttons on the right. Top + bottom border like game cards. */
+.friend-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px;
+}
+.friend-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+}
+.friend-row:last-child { border-bottom: 1px solid var(--line); }
+.friend-row-identity {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink);
+  text-decoration: none;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.friend-row-identity:hover { color: var(--accent); }
+.friend-row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Profile social-button slot: own row, right-aligned, below the header so a
+   long label (e.g. "cancel request") doesn't push the streak ribbon + XP bar
+   into a second line. */
+.profile-social {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  margin: -8px 0 24px;
 }
 
 /* ============================================================================

@@ -9,6 +9,10 @@ import { GAMES, GAME_KEYS, type GameKey } from "@/lib/games/registry";
 import { ptDate, ptDateOffset } from "@/lib/pt-date";
 import { badgeIcon, badgeLabel } from "@/lib/badges/icons";
 import { buildHeatmap } from "@/lib/heatmap";
+import {
+  ProfileSocialButtons,
+  type RelationshipState,
+} from "@/components/friends/ProfileSocialButtons";
 
 type ProfileRow = {
   id: string;
@@ -23,6 +27,7 @@ type ProfileRow = {
   total_plays: number | null;
   total_submitted: number | null;
   is_public: boolean;
+  accepts_friend_requests: boolean | null;
 };
 
 type GameStat = {
@@ -55,13 +60,41 @@ export default async function ProfilePage({
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "id, username, display_name, bio, avatar_color, streak_current, streak_longest, level, xp, total_plays, total_submitted, is_public"
+      "id, username, display_name, bio, avatar_color, streak_current, streak_longest, level, xp, total_plays, total_submitted, is_public, accepts_friend_requests"
     )
     .eq("username", username)
     .single();
 
   if (!profile) notFound();
   const p = profile as ProfileRow;
+
+  // Resolve viewer + relationship for the social buttons (#47).
+  const { data: { user: viewer } } = await supabase.auth.getUser();
+  let rel: RelationshipState = { kind: "anon" };
+  if (viewer) {
+    if (viewer.id === p.id) {
+      rel = { kind: "self" };
+    } else {
+      const { data: fRow } = await supabase
+        .from("friendships")
+        .select("requester_id, addressee_id, status")
+        .or(
+          `and(requester_id.eq.${viewer.id},addressee_id.eq.${p.id}),and(requester_id.eq.${p.id},addressee_id.eq.${viewer.id})`,
+        )
+        .maybeSingle();
+      if (!fRow) {
+        rel = { kind: "none" };
+      } else if (fRow.status === "blocked") {
+        rel = { kind: "blocked" };
+      } else if (fRow.status === "accepted") {
+        rel = { kind: "accepted" };
+      } else if (fRow.requester_id === viewer.id) {
+        rel = { kind: "outgoing_pending" };
+      } else {
+        rel = { kind: "incoming_pending" };
+      }
+    }
+  }
 
   // Sparse render for private profiles. (Friends would see the full view in Phase 7.)
   if (!p.is_public) {
@@ -203,6 +236,17 @@ export default async function ProfilePage({
           <XpBar xp={xp} level={level} />
         </div>
       </header>
+
+      {rel.kind !== "self" && rel.kind !== "anon" && (
+        <div className="profile-social">
+          <ProfileSocialButtons
+            targetUserId={p.id}
+            targetUsername={p.username}
+            acceptsRequests={p.accepts_friend_requests !== false}
+            rel={rel}
+          />
+        </div>
+      )}
 
       {p.bio && <p className="profile-bio">{p.bio}</p>}
 

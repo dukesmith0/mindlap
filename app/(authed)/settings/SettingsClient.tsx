@@ -6,6 +6,7 @@ import { AvatarColorPicker } from "@/components/ui/AvatarColorPicker";
 import {
   changeUsernameAction,
   deleteAccountAction,
+  setAcceptsFriendRequestsAction,
   setAvatarColorAction,
   setProfilePrivacyAction,
   setSkipTutorialsAction,
@@ -25,6 +26,7 @@ type Props = {
   themePref: ThemePref;
   isPublic: boolean;
   skipTutorials: boolean;
+  acceptsFriendRequests: boolean;
   friendCode: string;
 };
 
@@ -45,6 +47,7 @@ export function SettingsClient(p: Props) {
         usernameChangedAt={p.usernameChangedAt}
         friendCode={p.friendCode}
         isPublic={p.isPublic}
+        acceptsFriendRequests={p.acceptsFriendRequests}
       />
       <hr />
       <PasswordSection />
@@ -224,15 +227,18 @@ function AccountSection({
   usernameChangedAt,
   friendCode,
   isPublic,
+  acceptsFriendRequests,
 }: {
   email: string;
   username: string;
   usernameChangedAt: string | null;
   friendCode: string;
   isPublic: boolean;
+  acceptsFriendRequests: boolean;
 }) {
   const [u, setU] = useState(username);
   const [pub, setPub] = useState(isPublic);
+  const [acceptsReqs, setAcceptsReqs] = useState(acceptsFriendRequests);
   const [info, setInfo] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -261,6 +267,14 @@ function AccountSection({
     setPub(next);
     startTransition(() => {
       void setProfilePrivacyAction(next);
+    });
+  }
+
+  function toggleAcceptsRequests() {
+    const next = !acceptsReqs;
+    setAcceptsReqs(next);
+    startTransition(() => {
+      void setAcceptsFriendRequestsAction(next);
     });
   }
 
@@ -311,6 +325,14 @@ function AccountSection({
         <span>public profile</span>
         <span style={{ color: "var(--muted)", fontSize: 12 }}>
           [{pub ? "your profile page is visible" : "profile is hidden, scores still appear on leaderboards"}]
+        </span>
+      </label>
+
+      <label style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 8, marginTop: 12 }}>
+        <input type="checkbox" checked={acceptsReqs} onChange={toggleAcceptsRequests} disabled={pending} />
+        <span>accept friend requests</span>
+        <span style={{ color: "var(--muted)", fontSize: 12 }}>
+          [{acceptsReqs ? "anyone can send you a friend request" : "your profile shows 'not accepting requests'"}]
         </span>
       </label>
 

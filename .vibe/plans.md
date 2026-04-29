@@ -29,8 +29,8 @@ Next.js 16 App Router on Vercel + Supabase (Auth/Postgres/Storage) + Resend. 7 g
 - [x] Hard delete cascades correctly
 - [x] Leaderboards: Today / 7d / All-time × 7 game tabs, anonymous-readable
 - [ ] Daily Completion sub-tab on leaderboards (Phase 4.5)
-- [ ] Friends/Group filter on leaderboards (Phase 7/8)
-- [ ] Mutual-accept friends, friend filter (Phase 7). Friend-add must support BOTH friend_code AND @username lookup (`find_user_by_username` companion to `find_user_by_friend_code`).
+- [x] Friends scope on leaderboards (Phase 7); Group filter still pending Phase 8
+- [x] Mutual-accept friends + friend filter (Phase 7). add-by-@username AND friend_code both supported via `find_user_by_username` (0011) + `find_user_by_friend_code` (0004).
 - [ ] Public + private groups, leaderboard, invite via username/email/join_code (Phase 8)
 - [x] Streak/PB/all-seven-today badges award automatically via process_submission
 - [ ] Achievement badges (perfect N-back day, sub-300ms reaction) (Phase 5.5)
@@ -50,9 +50,10 @@ Next.js 16 App Router on Vercel + Supabase (Auth/Postgres/Storage) + Resend. 7 g
 - [x] Phase 4 essentials: pins, [2x] pill, top-3 leaderboard preview, /leaderboards, public-read gating, process_submission PG fn
 - [x] Phase 5 essentials: /profile/[username] + per-game stats + badge wall
 - [x] Phase 6: XP events (0008/0009/0010) + streak/PB/all-seven badge eval inside process_submission
-- [ ] Phase 4.5 follow-up: drag-reorder pins, leaderboards Friends/Group filter (post-Phase-7/8), Daily Completion sub-tab, 14-day double-XP calendar widget
-- [ ] Phase 5.5 follow-up: 90-day heatmap, 30-day SVG sparkline, /profile/me/{history,graphs} + CSV export, achievement badges
-- [ ] Phase 7: friends (mutual-accept, friend filter on leaderboards, /f/<friend_code> deep-link, add-by-@username AND add-by-friend_code surfaces)
+- [x] Polish batch + 90-day heatmap + theme-toggle latency fix (commit 1, `46637bc`)
+- [x] Phase 7: friends (mutual-accept + add-by-username AND friend-code + leaderboards Friends scope + /f/<code> deep-link with cookie stash + 30/hour rate limit + accepts_friend_requests opt-out + ProfileSocialButtons + #41 friends-only Today mini-leaderboard reframe). commit 2 (staged)
+- [ ] Phase 4.5 follow-up: drag-reorder pins, Daily Completion sub-tab, 14-day double-XP calendar widget, leaderboards Group filter (post-Phase-8)
+- [ ] Phase 5.5 follow-up: 30-day SVG sparkline, /profile/me/{history,graphs} + CSV export, achievement badges
 - [ ] Phase 8: groups (public/private, roles, /g/<join_code>, invites by username/email)
 - [ ] Phase 9: tutorials (cutout-mask overlay, first-play auto, master skip)
 - [ ] Phase 10: Glicko-2 plumbing surfaced when ELO_VISIBLE flips (post-threshold)

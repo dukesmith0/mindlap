@@ -7,7 +7,7 @@ import { togglePinAction } from "@/actions/submission";
 import { Tooltip } from "@/components/ui/Tooltip";
 import type { GameKey } from "@/lib/games/registry";
 
-type Preview = { user_id: string; score: number; username: string | null };
+type Preview = { user_id: string; score: number; username: string | null; rank: number };
 
 export function TodayCard({
   gameKey,
@@ -19,6 +19,7 @@ export function TodayCard({
   best,
   authed,
   preview,
+  selfOverflow,
   meId,
 }: {
   gameKey: GameKey;
@@ -30,6 +31,7 @@ export function TodayCard({
   best: number | undefined;
   authed: boolean;
   preview: Preview[];
+  selfOverflow: Preview | null;
   meId: string | null;
 }) {
   const router = useRouter();
@@ -79,27 +81,47 @@ export function TodayCard({
         </div>
         <div className="game-card-meta">
           {tagline}
-          {best !== undefined ? (
+          {best !== undefined && (
             <>
               {" - best today: "}
               <b style={{ color: "var(--ink)", fontWeight: 400 }}>{best}</b>
             </>
-          ) : authed ? (
-            " - not played today"
-          ) : null}
+          )}
         </div>
+        {authed && best === undefined && preview.length === 0 && (
+          <div className="lb-not-played" aria-label="not yet played today">
+            NOT YET PLAYED
+          </div>
+        )}
         {preview.length > 0 && (
-          <div className="lb-preview" aria-label="today's top scores">
-            {preview.map((row, i) => (
+          <div className="lb-preview" aria-label="today's friend leaderboard">
+            {preview.map((row) => (
               <div
-                key={`${row.user_id}-${i}`}
+                key={row.user_id}
                 className={`lb-preview-row${row.user_id === meId ? " is-you" : ""}`}
               >
-                <span>{i + 1}</span>
+                <span>{row.rank}</span>
                 <span>{row.username ?? "anon"}</span>
                 <span>{row.score}</span>
               </div>
             ))}
+            {selfOverflow && (
+              <>
+                <div className="lb-preview-row lb-preview-ellipsis" aria-hidden>
+                  <span>...</span>
+                  <span />
+                  <span />
+                </div>
+                <div
+                  key={selfOverflow.user_id}
+                  className="lb-preview-row is-you"
+                >
+                  <span>{selfOverflow.rank}</span>
+                  <span>{selfOverflow.username ?? "you"}</span>
+                  <span>{selfOverflow.score}</span>
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>

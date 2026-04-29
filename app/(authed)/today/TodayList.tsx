@@ -5,7 +5,7 @@ import { TodayHeader, gameMatchesQuery } from "./TodayHeader";
 import { TodayCard } from "./TodayCard";
 import { GAMES, type GameKey } from "@/lib/games/registry";
 
-type TopRow = { user_id: string; score: number; username: string | null };
+type TopRow = { user_id: string; score: number; username: string | null; rank: number };
 
 export type TodayCardData = {
   key: GameKey;
@@ -16,6 +16,7 @@ export type TodayCardData = {
   isBonus: boolean;
   best: number | undefined;
   preview: TopRow[];
+  selfOverflow: TopRow | null;
 };
 
 export function TodayList({
@@ -56,6 +57,7 @@ export function TodayList({
               best={c.best}
               authed={authed}
               preview={c.preview}
+              selfOverflow={c.selfOverflow}
               meId={meId}
             />
           ))

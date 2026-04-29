@@ -14,7 +14,7 @@ export default async function SettingsPage() {
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "username, username_changed_at, display_name, bio, avatar_color, theme_pref, is_public, skip_tutorials"
+      "username, username_changed_at, display_name, bio, avatar_color, theme_pref, is_public, skip_tutorials, accepts_friend_requests"
     )
     .eq("id", user.id)
     .single();
@@ -44,6 +44,7 @@ export default async function SettingsPage() {
         themePref={profile.theme_pref as "light" | "dark" | "system"}
         isPublic={profile.is_public}
         skipTutorials={profile.skip_tutorials}
+        acceptsFriendRequests={profile.accepts_friend_requests ?? true}
         friendCode={secret?.friend_code ?? ""}
       />
     </AppShell>

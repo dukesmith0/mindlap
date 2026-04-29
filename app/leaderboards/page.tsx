@@ -8,12 +8,18 @@ import { Avatar } from "@/components/ui/Avatar";
 export const metadata = { title: "Leaderboards - mindlap" };
 
 type Tab = "today" | "7d" | "all";
+type Scope = "all" | "friends";
 
 const TAB_LABEL: Record<Tab, string> = { today: "today", "7d": "7d", all: "all-time" };
 const TAB_ORDER: Tab[] = ["today", "7d", "all"];
+const SCOPE_LABEL: Record<Scope, string> = { all: "global", friends: "friends" };
+const SCOPE_ORDER: Scope[] = ["all", "friends"];
 
 function isTab(v: unknown): v is Tab {
   return v === "today" || v === "7d" || v === "all";
+}
+function isScope(v: unknown): v is Scope {
+  return v === "all" || v === "friends";
 }
 
 type Row = {
@@ -37,15 +43,36 @@ function readProfile(r: unknown): ProfileEmbed {
 export default async function LeaderboardsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string; game?: string }>;
+  searchParams: Promise<{ tab?: string; game?: string; scope?: string }>;
 }) {
   const sp = await searchParams;
   const tab: Tab = isTab(sp.tab) ? sp.tab : "today";
   const game: GameKey = isGameKey(sp.game) ? sp.game : "math";
+  const scope: Scope = isScope(sp.scope) ? sp.scope : "all";
   const meta = GAMES[game];
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+
+  // Friends scope = me + accepted friends. Anon users hitting scope=friends
+  // get an empty allow list so the table renders the empty-state CTA.
+  let friendsAllowList: string[] | null = null;
+  if (scope === "friends") {
+    if (!user) {
+      friendsAllowList = [];
+    } else {
+      const { data: friendRows } = await supabase
+        .from("friendships")
+        .select("requester_id, addressee_id")
+        .eq("status", "accepted")
+        .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`);
+      const ids = new Set<string>([user.id]);
+      for (const r of friendRows ?? []) {
+        ids.add(r.requester_id === user.id ? r.addressee_id : r.requester_id);
+      }
+      friendsAllowList = [...ids];
+    }
+  }
 
   const today = ptDate();
   // 7d window: today - 6 inclusive (7 days total).
@@ -53,16 +80,20 @@ export default async function LeaderboardsPage({
 
   let rows: Row[] = [];
 
-  if (tab === "today" || tab === "7d") {
+  if (friendsAllowList && friendsAllowList.length === 0) {
+    rows = [];
+  } else if (tab === "today" || tab === "7d") {
     // Per-window best per user from submissions, ranked by score direction.
     const lower = meta.direction === "lower";
     const fromDate = tab === "today" ? today : sevenAgo;
 
-    const { data } = await supabase
+    let query = supabase
       .from("submissions")
       .select("user_id, score, profiles(username, display_name, avatar_color)")
       .eq("game_key", game)
-      .gte("played_pt_date", fromDate)
+      .gte("played_pt_date", fromDate);
+    if (friendsAllowList) query = query.in("user_id", friendsAllowList);
+    const { data } = await query
       .order("score", { ascending: lower })
       .limit(500);
 
@@ -93,10 +124,12 @@ export default async function LeaderboardsPage({
   } else {
     // All-time: best across all submissions, ranked.
     const lower = meta.direction === "lower";
-    const { data } = await supabase
+    let query = supabase
       .from("submissions")
       .select("user_id, score, profiles(username, display_name, avatar_color)")
-      .eq("game_key", game)
+      .eq("game_key", game);
+    if (friendsAllowList) query = query.in("user_id", friendsAllowList);
+    const { data } = await query
       .order("score", { ascending: lower })
       .limit(2000);
 
@@ -138,7 +171,7 @@ export default async function LeaderboardsPage({
         {GAME_KEYS.map((k) => (
           <Link
             key={k}
-            href={`/leaderboards?tab=${tab}&game=${k}`}
+            href={`/leaderboards?tab=${tab}&game=${k}&scope=${scope}`}
             style={{
               color: k === game ? "var(--ink)" : "var(--muted)",
               borderBottom: k === game ? "1px solid var(--accent)" : "1px solid transparent",
@@ -151,11 +184,11 @@ export default async function LeaderboardsPage({
         ))}
       </nav>
 
-      <nav style={{ display: "flex", gap: 16, marginBottom: 24 }}>
+      <nav style={{ display: "flex", gap: 16, marginBottom: 8 }}>
         {TAB_ORDER.map((t) => (
           <Link
             key={t}
-            href={`/leaderboards?tab=${t}&game=${game}`}
+            href={`/leaderboards?tab=${t}&game=${game}&scope=${scope}`}
             style={{
               color: t === tab ? "var(--ink)" : "var(--muted)",
               borderBottom: t === tab ? "1px solid var(--accent)" : "1px solid transparent",
@@ -170,10 +203,39 @@ export default async function LeaderboardsPage({
         ))}
       </nav>
 
+      <nav style={{ display: "flex", gap: 12, marginBottom: 24 }}>
+        {SCOPE_ORDER.map((s) => (
+          <Link
+            key={s}
+            href={`/leaderboards?tab=${tab}&game=${game}&scope=${s}`}
+            style={{
+              color: s === scope ? "var(--accent)" : "var(--muted)",
+              fontSize: 12,
+              letterSpacing: 0.5,
+            }}
+          >
+            [{SCOPE_LABEL[s]}]
+          </Link>
+        ))}
+      </nav>
+
       {top.length === 0 ? (
-        <p style={{ color: "var(--muted)" }}>
-          [no submissions in this window yet. be the first.]
-        </p>
+        scope === "friends" ? (
+          <p style={{ color: "var(--muted)" }}>
+            {!user
+              ? "[sign in and add friends to see this view]"
+              : friendsAllowList && friendsAllowList.length === 1
+                ? "[add friends to compare scores. ]"
+                : "[no friend submissions in this window yet. ]"}
+            <Link href="/friends" className="nav-back">
+              {!user ? "sign in" : "add friends"} -&gt;
+            </Link>
+          </p>
+        ) : (
+          <p style={{ color: "var(--muted)" }}>
+            [no submissions in this window yet. be the first.]
+          </p>
+        )
       ) : (
         <table>
           <thead>

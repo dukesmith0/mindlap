@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/server";
 import { isValidAvatarColor } from "@/lib/auth/avatar-palette";
 import { validateUsername } from "@/lib/auth/username";
 import { THEME_COOKIE, isThemePref } from "@/lib/theme/cookie";
+import { FRIEND_CODE_COOKIE, isValidFriendCode } from "@/lib/auth/friend-code-cookie";
 
 type ActionResult = { ok: true } | { ok: false; error: string };
 
@@ -152,6 +153,20 @@ export async function setProfilePrivacyAction(isPublic: boolean): Promise<Action
 }
 
 // ----------------------------------------------------------------------------
+// Friend-request opt-out (Phase 7)
+// ----------------------------------------------------------------------------
+export async function setAcceptsFriendRequestsAction(accepts: boolean): Promise<ActionResult> {
+  const userId = await requireUserId();
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("profiles")
+    .update({ accepts_friend_requests: accepts })
+    .eq("id", userId);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+// ----------------------------------------------------------------------------
 // Skip-tutorials master toggle
 // ----------------------------------------------------------------------------
 export async function setSkipTutorialsAction(skip: boolean): Promise<ActionResult> {
@@ -210,6 +225,37 @@ export async function completeOnboardingAction(formData: FormData): Promise<Acti
     if (error.code === "23505") return { ok: false, error: "Username is taken. Pick another." };
     return { ok: false, error: error.message };
   }
+
+  // Phase 7: if the user landed on /f/<code> before signing up, the deep-link
+  // page stashed a friend code cookie. Consume it here (one-shot) and create
+  // a pending friendship to the link's owner. Failures are silent — we don't
+  // want a stash bug to block onboarding.
+  const cookieStore = await cookies();
+  const stashedCode = cookieStore.get(FRIEND_CODE_COOKIE)?.value;
+  if (stashedCode && isValidFriendCode(stashedCode)) {
+    const { data: targetId } = await supabase.rpc("find_user_by_friend_code", {
+      p_code: stashedCode,
+    });
+    if (targetId && targetId !== userId) {
+      const { data: targetProfile } = await supabase
+        .from("profiles")
+        .select("accepts_friend_requests")
+        .eq("id", targetId)
+        .single();
+      if (targetProfile?.accepts_friend_requests !== false) {
+        await supabase.from("friendships").upsert(
+          {
+            requester_id: userId,
+            addressee_id: targetId,
+            status: "pending",
+          },
+          { onConflict: "requester_id,addressee_id" },
+        );
+      }
+    }
+    cookieStore.delete(FRIEND_CODE_COOKIE);
+  }
+
   revalidatePath("/", "layout");
   return { ok: true };
 }

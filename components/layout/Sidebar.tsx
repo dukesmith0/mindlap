@@ -47,7 +47,7 @@ const ITEMS: Item[] = [
   {
     label: "Friends",
     href: "/friends",
-    enabled: false,
+    enabled: true,
     icon: (
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <circle cx="9" cy="8" r="3" />

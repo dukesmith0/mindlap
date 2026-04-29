@@ -1,5 +1,5 @@
 # mindlap
-Last refresh: 2026-04-29 (commit 1 polish batch staged) | All 7 games playable, profile + leaderboards live, XP+badges autograded with per-key emoji + 90-day heatmap. 186 vitest passing across 19 files. typecheck/lint/build clean. Live on `dukesmith0/mindlap` -> Vercel auto-deploy.
+Last refresh: 2026-04-29 (commit 2 Phase 7 staged) | All 7 games playable, profile + leaderboards live, XP+badges autograded, 90-day heatmap, friends + Friends-only Today mini-leaderboard + ProfileSocialButtons + accept-requests opt-out shipped. 192 vitest passing across 20 files. typecheck/lint/build clean. Live on `dukesmith0/mindlap` -> Vercel auto-deploy.
 
 ## Stack
 - Next.js 16 App Router (RSC + Server Actions, Turbopack dev) | TS strict
