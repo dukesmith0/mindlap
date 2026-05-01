@@ -4,6 +4,7 @@ import { ptDate, ptDateOffset } from "@/lib/pt-date";
 import { GAMES, GAME_KEYS, isGameKey, type GameKey } from "@/lib/games/registry";
 import { AppShell } from "@/components/layout/AppShell";
 import { Avatar } from "@/components/ui/Avatar";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export const metadata = { title: "Leaderboards - mindlap" };
 
@@ -171,52 +172,36 @@ export default async function LeaderboardsPage({
         {meta.name} - {meta.direction === "higher" ? "higher is better" : "lower is better"}
       </p>
 
-      <nav style={{ display: "flex", gap: 16, marginBottom: 16, flexWrap: "wrap" }}>
+      <nav className="lb-nav lb-nav-games">
         {GAME_KEYS.map((k) => (
           <Link
             key={k}
             href={`/leaderboards?tab=${tab}&game=${k}&scope=${scope}`}
-            style={{
-              color: k === game ? "var(--ink)" : "var(--muted)",
-              borderBottom: k === game ? "1px solid var(--accent)" : "1px solid transparent",
-              paddingBottom: 4,
-              fontSize: 13,
-            }}
+            className={`lb-tab${k === game ? " is-active" : ""}`}
           >
             {GAMES[k].name.toLowerCase()}
           </Link>
         ))}
       </nav>
 
-      <nav style={{ display: "flex", gap: 16, marginBottom: 8 }}>
+      <nav className="lb-nav lb-nav-time">
         {TAB_ORDER.map((t) => (
           <Link
             key={t}
             href={`/leaderboards?tab=${t}&game=${game}&scope=${scope}`}
-            style={{
-              color: t === tab ? "var(--ink)" : "var(--muted)",
-              borderBottom: t === tab ? "1px solid var(--accent)" : "1px solid transparent",
-              paddingBottom: 4,
-              fontSize: 13,
-              textTransform: "uppercase",
-              letterSpacing: 1,
-            }}
+            className={`lb-tab is-uppercase${t === tab ? " is-active" : ""}`}
           >
             {TAB_LABEL[t]}
           </Link>
         ))}
       </nav>
 
-      <nav style={{ display: "flex", gap: 12, marginBottom: 24 }}>
+      <nav className="lb-nav lb-nav-scope">
         {SCOPE_ORDER.map((s) => (
           <Link
             key={s}
             href={`/leaderboards?tab=${tab}&game=${game}&scope=${s}`}
-            style={{
-              color: s === scope ? "var(--accent)" : "var(--muted)",
-              fontSize: 12,
-              letterSpacing: 0.5,
-            }}
+            className={`lb-scope${s === scope ? " is-active" : ""}`}
           >
             [{SCOPE_LABEL[s]}]
           </Link>
@@ -225,20 +210,22 @@ export default async function LeaderboardsPage({
 
       {top.length === 0 ? (
         scope === "friends" ? (
-          <p style={{ color: "var(--muted)" }}>
-            {!user
-              ? "[sign in and add friends to see this view]"
-              : friendsAllowList && friendsAllowList.length === 1
-                ? "[add friends to compare scores. ]"
-                : "[no friend submissions in this window yet. ]"}
-            <Link href="/friends" className="nav-back">
-              {!user ? "sign in" : "add friends"} -&gt;
-            </Link>
-          </p>
+          <EmptyState
+            message={
+              !user
+                ? "Sign in and add friends to see this view."
+                : friendsAllowList && friendsAllowList.length === 1
+                  ? "Add friends to compare scores."
+                  : "No friend submissions in this window yet."
+            }
+            cta={
+              !user
+                ? { href: "/login", label: "sign in" }
+                : { href: "/friends", label: "add friends" }
+            }
+          />
         ) : (
-          <p style={{ color: "var(--muted)" }}>
-            [no submissions in this window yet. be the first.]
-          </p>
+          <EmptyState message="No submissions in this window yet. Be the first." />
         )
       ) : (
         <table>
@@ -299,6 +286,9 @@ export default async function LeaderboardsPage({
           </tbody>
         </table>
       )}
+      <p style={{ color: "var(--muted)", fontSize: 11, marginTop: 24 }}>
+        scores are user-reported; replay-token verification ships post-launch.
+      </p>
     </AppShell>
   );
 }

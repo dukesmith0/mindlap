@@ -40,3 +40,23 @@ export function badgeIcon(key: string): string {
 export function badgeLabel(key: string): string {
   return key.replace(/_/g, " ");
 }
+
+// Human-readable acquisition criteria, surfaced in the delegated tooltip
+// (#45) on profile badges and on the future /badges index page.
+const STATIC_CRITERIA: Record<string, string> = {
+  streak_3: "play 3 days in a row",
+  streak_7: "play 7 days in a row",
+  streak_30: "play 30 days in a row",
+  streak_100: "play 100 days in a row",
+  all_seven_today: "submit a score on every game today",
+};
+
+export function badgeCriteria(key: string): string {
+  if (STATIC_CRITERIA[key]) return STATIC_CRITERIA[key];
+  if (key.startsWith("pb_first_")) {
+    const game = key.slice("pb_first_".length) as GameKey;
+    if (GAME_KEYS.includes(game)) return `set your first PB on ${game}`;
+    return "set your first PB on a game";
+  }
+  return badgeLabel(key);
+}

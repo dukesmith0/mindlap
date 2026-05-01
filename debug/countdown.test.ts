@@ -28,9 +28,9 @@ describe("Countdown timing contract (#35)", () => {
     expect(file).toMatch(/setTimeout\(onDone, STEP_MS \* 4\);/);
   });
 
-  it("STEP_MS is 600 (snappy enough not to feel sluggish)", () => {
+  it("STEP_MS is 500 (#62: trimmed from 600 to keep chained play snappy)", () => {
     const m = file.match(/const STEP_MS = (\d+);/);
     expect(m).not.toBeNull();
-    expect(Number(m![1])).toBe(600);
+    expect(Number(m![1])).toBe(500);
   });
 });

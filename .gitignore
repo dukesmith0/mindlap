@@ -68,6 +68,8 @@ scripts/create-dev-user.mjs
 
 # Playwright MCP visual-check artifacts (per-developer)
 .playwright-mcp/
+# Playwright walkthrough screenshots saved to project root by browser_take_screenshot
+walkthrough-*.png
 
 # DO NOT IGNORE: .vibe/ is committed by design (project context, plans, decisions).
 # DO NOT IGNORE: .claude/ project directory if present (settings.json, hooks).

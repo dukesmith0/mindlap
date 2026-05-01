@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Avatar } from "@/components/ui/Avatar";
+import { useToast } from "@/components/ui/Toast";
 import {
   acceptFriendAction,
   declineFriendAction,
@@ -23,13 +24,23 @@ export type FriendRowData = {
 
 export function FriendRow({ row, mode }: { row: FriendRowData; mode: Mode }) {
   const router = useRouter();
+  const toast = useToast();
   const [pending, startTransition] = useTransition();
 
-  function call(action: (fd: FormData) => Promise<{ ok: boolean }>, key: "requester_id" | "friend_id") {
+  function call(
+    action: (fd: FormData) => Promise<{ ok: true } | { ok: false; error: string }>,
+    key: "requester_id" | "friend_id",
+    successMsg: string,
+  ) {
     const form = new FormData();
     form.set(key, row.user_id);
     startTransition(async () => {
-      await action(form);
+      const r = await action(form);
+      if (!r.ok) {
+        toast.show(r.error, "error");
+      } else {
+        toast.show(successMsg);
+      }
       router.refresh();
     });
   }
@@ -54,14 +65,14 @@ export function FriendRow({ row, mode }: { row: FriendRowData; mode: Mode }) {
             <button
               type="button"
               disabled={pending}
-              onClick={() => call(acceptFriendAction, "requester_id")}
+              onClick={() => call(acceptFriendAction, "requester_id", `${row.username} is now your friend.`)}
             >
               accept
             </button>
             <button
               type="button"
               disabled={pending}
-              onClick={() => call(declineFriendAction, "requester_id")}
+              onClick={() => call(declineFriendAction, "requester_id", "Request declined.")}
               className="btn-danger"
             >
               decline
@@ -72,7 +83,7 @@ export function FriendRow({ row, mode }: { row: FriendRowData; mode: Mode }) {
           <button
             type="button"
             disabled={pending}
-            onClick={() => call(cancelFriendRequestAction, "friend_id")}
+            onClick={() => call(cancelFriendRequestAction, "friend_id", "Request cancelled.")}
           >
             cancel
           </button>
@@ -81,7 +92,7 @@ export function FriendRow({ row, mode }: { row: FriendRowData; mode: Mode }) {
           <button
             type="button"
             disabled={pending}
-            onClick={() => call(removeFriendAction, "friend_id")}
+            onClick={() => call(removeFriendAction, "friend_id", `Removed ${row.username}.`)}
             className="btn-danger"
           >
             remove

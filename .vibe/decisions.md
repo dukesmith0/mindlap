@@ -116,6 +116,26 @@ All dated 2026-04-28 unless noted. `[USER]` = explicit choice; `[CLAUDE]` = impl
 - 2026-04-29 [USER] Phase 7 scope = full (mutual-accept friendships + /friends + add-by-@username AND friend_code + leaderboards Friends scope + /f/<code> deep-link with cookie stash + 30/hour rate limit). Ships as commit 2.
 - 2026-04-29 [USER] Reverse #41 plan: keep the Today mini-leaderboard, convert it to friends-only top-5; if my today score is outside the top-5, append `...` then a row with my rank + name + score below. My row renders accent. Ships in commit 2 since it depends on friend IDs.
 
+## Commit 6 Phases 7.5/7.6/7.7/8 + optimization + reviewer fixes (2026-04-30)
+- [USER] Big batch — Phases 7.5 (#51 milestone banner option A, #52 score-context line option A, #54 direction badge + popup auto-open, #56 3rd onboarding step), 7.6 (#62 STEP_MS=500, #53 keep date + rename worst→low (week)), 7.7 (#58 anti-cheat footnote), 8 (#59 Toast, #45 single delegated tooltip, #14 step-fn breakpoints, #64 Modal primitive). All decisions captured in commit 5 decisions block.
+- [USER] Persona review (cognitive-improvement tracker) re-prioritized Phase 9 ahead of 4.5/5.5 — trend visualization is the #1 missing answer to "am I getting better?". Quick wins shipped this commit: numeric delta replaces "better than" copy (`↑ +N vs 7d median`); sample size `n=N days` next to median.
+- [USER] TopBar avatar reverted to plain `<Link>` to own profile (no editor); editing only on profile header + /settings.
+- [USER] Direction badge hover — first attempt landed in this commit but reads as a button fill. Filed as #65 LOW for follow-up styling pass.
+- [USER] "= matches your 7d median" line dropped — only render context when there is meaningful direction.
+- [CLAUDE] Avatar centering via SVG `<text>` + post-mount `getBBox()` + module-level `Map<string, Offset>` memo. Leaderboards renders 100 avatars with one measurement per unique glyph (not 100).
+- [CLAUDE] DelegatedTooltips: single document-level `pointermove` + `focusin` listener watches `data-tip` attrs. Avoids 91 Tooltip instances on the heatmap. Mounted in AppShell.
+- [CLAUDE] Modal primitive: focus trap (tabbable iterator), body scroll lock, mousedown+click-on-backdrop sequence (so drag-to-select doesn't accidentally close), Escape close. AvatarEditor + ConfirmDialog + DirectionsModal all built on it.
+- [CLAUDE] Toast: provider in AppShell, `useToast()` returns `{show: noop}` outside provider so server-rendered tests don't crash. 4s TTL. role=status for info, role=alert for error. Wired into AddFriendForm (success+error), FriendRow (5 actions), ProfileSocialButtons (5 actions), AvatarEditor (save).
+- [CLAUDE] DirectionsModal: single shared component used by `/today` DirectionBadge (manual open) and `/play/[game]` GameShell (auto-open first time per game). localStorage gate `mindlap.directions.seen.<game_key>`. Each game has 3-line `directions` array in `lib/games/registry.ts`.
+- [CLAUDE] DST fix in `app/(authed)/today/page.tsx`: PB-today detection swapped from hardcoded `-08:00` (PST) to a 24h UTC window + `Intl.DateTimeFormat('en-CA', { timeZone: 'America/Los_Angeles' })` client filter. Resolves R19 surfaced by reviewer mid-batch.
+- [CLAUDE] Friends-mini-leaderboard rewrite: 7 separate `submissions` queries → one `daily_aggregates` query with `.in('game_key', ...)` and JS-side bucketing. Drops 7 RTTs to 1 AND removes 2000-row truncation risk for users with many friends.
+- [CLAUDE] `/today` 5 sequential awaits → one `Promise.all`. ~5 RTT saving on cold renders.
+- [CLAUDE] StreakRibbon migrated to `lib/tier-colors.ts` (was duplicating TIERS array).
+- [CLAUDE] GameShell directions modal markup → imports `<DirectionsModal>` (eliminates duplication with `/today` DirectionBadge).
+- [CLAUDE] Hover sweep: `.lb-tab` + `.lb-scope` accent on hover (was inline styles); `.game-card-row:hover` highlights both surrounding lines via adjacent-sibling selector; `.modal-card { text-align: left }` to override `.game-stage` center inheritance; `button:focus-visible { box-shadow: 0 0 0 1px var(--accent) }` so modal auto-focused buttons don't read with platform focus ring.
+- [CLAUDE] `is_new_pb` column reference in `/today` PB query was a bug — column doesn't exist; fixed to query `xp_events.source='daily_pb'`.
+- [CLAUDE] `let's play -&gt;` rendering as literal entity in JSX expression — fixed by removing entity (only JSX text auto-decodes; expressions don't).
+
 ## Commit 5 avatar polish + design-call resolutions + .vibe consolidation (2026-04-29)
 - [USER] **TopBar avatar is a profile link, not an editor.** Reverted commit 4's click-to-edit affordance on the TopBar — clicking it routes to `/profile/<own-username>`. Editing happens only on the own-profile header avatar and in /settings ProfileSection. Reason: TopBar avatar is the most-clicked avatar in the app; users expect it to be navigation, not a modal trigger.
 - [USER] Avatar centering rewrite: switched `Avatar.tsx` from flex+padding to `inline-block` + `line-height: <size>px` + `text-align: center`. Reliable across both letter and emoji glyphs at 22 / 28 / 48 / 64 px sizes.

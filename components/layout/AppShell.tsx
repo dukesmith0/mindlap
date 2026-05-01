@@ -1,5 +1,7 @@
 import { TopBar } from "./TopBar";
 import { Sidebar } from "./Sidebar";
+import { DelegatedTooltips } from "@/components/ui/DelegatedTooltips";
+import { ToastProvider } from "@/components/ui/Toast";
 import { createClient } from "@/lib/supabase/server";
 
 // Wrap any page inside the zetamac-pure app shell. `noSidebar` drops the
@@ -26,20 +28,22 @@ export async function AppShell({
 
   if (noSidebar) {
     return (
-      <>
+      <ToastProvider>
         <TopBar profile={profile} />
         <main className="app-main app-main-centered">{children}</main>
-      </>
+        <DelegatedTooltips />
+      </ToastProvider>
     );
   }
 
   return (
-    <>
+    <ToastProvider>
       <TopBar profile={profile} />
       <div className="app-layout">
         <Sidebar />
         <div className="app-main">{children}</div>
       </div>
-    </>
+      <DelegatedTooltips />
+    </ToastProvider>
   );
 }

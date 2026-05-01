@@ -13,23 +13,28 @@ const THEMES: { value: ThemePref; label: string; description: string }[] = [
   { value: "system", label: "system", description: "match your device" },
 ];
 
+type Step = 1 | 2 | 3;
+
 export function OnboardingFlow({
   suggestedUsername,
   initialTheme,
   avatarColor,
+  friendCode,
 }: {
   suggestedUsername: string;
   initialTheme: ThemePref;
   avatarColor: string;
+  friendCode: string;
 }) {
   const router = useRouter();
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<Step>(1);
   const [username, setUsername] = useState(suggestedUsername);
   const [theme, setTheme] = useState<ThemePref>(initialTheme);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const [copied, setCopied] = useState(false);
 
-  function next() {
+  function next1to2() {
     setError(null);
     const v = validateUsername(username);
     if (!v.ok) {
@@ -38,6 +43,11 @@ export function OnboardingFlow({
     }
     setUsername(v.value);
     setStep(2);
+  }
+
+  function next2to3() {
+    setError(null);
+    setStep(3);
   }
 
   function finish() {
@@ -58,11 +68,22 @@ export function OnboardingFlow({
     });
   }
 
+  function copyCode() {
+    if (typeof navigator === "undefined" || !navigator.clipboard || !friendCode) return;
+    navigator.clipboard
+      .writeText(friendCode)
+      .then(() => {
+        setCopied(true);
+        window.setTimeout(() => setCopied(false), 2000);
+      })
+      .catch(() => {});
+  }
+
   return (
     <div>
       {step === 1 && (
         <section>
-          <h2>step 1 of 2 - username</h2>
+          <h2>step 1 of 3 - username</h2>
           <p style={{ color: "var(--muted)", fontSize: 13, marginBottom: 6 }}>
             3-24 chars. Lowercase letters, digits, underscores, hyphens.
           </p>
@@ -85,7 +106,7 @@ export function OnboardingFlow({
               your avatar (change anytime in settings)
             </span>
           </div>
-          <button type="button" onClick={next}>
+          <button type="button" onClick={next1to2}>
             next -&gt;
           </button>
           {error && (
@@ -98,7 +119,7 @@ export function OnboardingFlow({
 
       {step === 2 && (
         <section>
-          <h2>step 2 of 2 - theme</h2>
+          <h2>step 2 of 3 - theme</h2>
           <p style={{ color: "var(--muted)", fontSize: 13, marginBottom: 16 }}>
             Pick a default. You can switch anytime in settings.
           </p>
@@ -129,6 +150,66 @@ export function OnboardingFlow({
           </div>
           <div style={{ display: "flex", gap: 12 }}>
             <button type="button" onClick={() => setStep(1)} disabled={pending}>
+              &lt;- back
+            </button>
+            <button type="button" onClick={next2to3} disabled={pending}>
+              next -&gt;
+            </button>
+          </div>
+          {error && (
+            <p style={{ color: "var(--accent)", marginTop: 12, fontSize: 13 }} role="alert">
+              [{error}]
+            </p>
+          )}
+        </section>
+      )}
+
+      {step === 3 && (
+        <section>
+          <h2>step 3 of 3 - bring a friend</h2>
+          <p style={{ color: "var(--muted)", fontSize: 13, marginBottom: 16 }}>
+            Mindlap is more fun with someone to chase. Share your friend code so a friend can add you.
+          </p>
+          {friendCode ? (
+            <>
+              <p style={{ color: "var(--muted)", fontSize: 12, marginBottom: 4 }}>
+                your friend code
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  padding: 16,
+                  border: "1px solid var(--line)",
+                  marginBottom: 16,
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 24,
+                    color: "var(--accent)",
+                    letterSpacing: 4,
+                    flexGrow: 1,
+                  }}
+                >
+                  {friendCode}
+                </span>
+                <button type="button" onClick={copyCode}>
+                  {copied ? "copied!" : "copy"}
+                </button>
+              </div>
+              <p style={{ color: "var(--muted)", fontSize: 12, marginBottom: 24 }}>
+                Friends can also add you by username. You can find more friends from the Friends tab anytime.
+              </p>
+            </>
+          ) : (
+            <p style={{ color: "var(--muted)", fontSize: 13, marginBottom: 24 }}>
+              You can find your friend code on /settings later.
+            </p>
+          )}
+          <div style={{ display: "flex", gap: 12 }}>
+            <button type="button" onClick={() => setStep(2)} disabled={pending}>
               &lt;- back
             </button>
             <button type="button" onClick={finish} disabled={pending}>

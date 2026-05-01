@@ -3,21 +3,21 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { addFriendAction } from "@/actions/friendships";
+import { useToast } from "@/components/ui/Toast";
 
 // Two inputs (username + friend code) on one form. Submit picks whichever
 // field is non-empty; if both, server rejects (Zod refine). Optimistic state
 // is just clearing the form on success.
 export function AddFriendForm() {
   const router = useRouter();
+  const toast = useToast();
   const [username, setUsername] = useState("");
   const [code, setCode] = useState("");
-  const [info, setInfo] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
-    setInfo(null);
     setError(null);
     if (!username.trim() && !code.trim()) {
       setError("Enter a username or a friend code");
@@ -33,12 +33,12 @@ export function AddFriendForm() {
     startTransition(async () => {
       const r = await addFriendAction(form);
       if (r.ok) {
-        setInfo("Request sent.");
+        toast.show("Friend request sent.");
         setUsername("");
         setCode("");
         router.refresh();
       } else {
-        setError(r.error);
+        toast.show(r.error, "error");
       }
     });
   }
@@ -82,8 +82,7 @@ export function AddFriendForm() {
           {pending ? "..." : "send request"}
         </button>
       </div>
-      {info && <p style={{ color: "var(--muted)", fontSize: 13, margin: 0 }}>[{info}]</p>}
-      {error && <p style={{ color: "var(--accent)", fontSize: 13, margin: 0 }}>[{error}]</p>}
+      {error && <p style={{ color: "var(--accent)", fontSize: 13, margin: 0 }} role="alert">[{error}]</p>}
     </form>
   );
 }

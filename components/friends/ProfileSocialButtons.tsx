@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/Toast";
 import {
   acceptFriendAction,
   cancelFriendRequestAction,
@@ -33,19 +34,26 @@ export function ProfileSocialButtons({
   rel: RelationshipState;
 }) {
   const router = useRouter();
+  const toast = useToast();
   const [pending, startTransition] = useTransition();
 
   if (rel.kind === "self") return null;
 
   function call(
-    action: (fd: FormData) => Promise<{ ok: boolean; error?: string }>,
+    action: (fd: FormData) => Promise<{ ok: true } | { ok: false; error: string }>,
     field: "requester_id" | "friend_id" | "username",
     value: string,
+    successMsg: string,
   ) {
     const form = new FormData();
     form.set(field, value);
     startTransition(async () => {
-      await action(form);
+      const r = await action(form);
+      if (!r.ok) {
+        toast.show(r.error, "error");
+      } else {
+        toast.show(successMsg);
+      }
       router.refresh();
     });
   }
@@ -62,7 +70,7 @@ export function ProfileSocialButtons({
         type="button"
         className="btn-danger"
         disabled={pending}
-        onClick={() => call(removeFriendAction, "friend_id", targetUserId)}
+        onClick={() => call(removeFriendAction, "friend_id", targetUserId, `Removed ${targetUsername}.`)}
       >
         remove friend
       </button>
@@ -74,7 +82,7 @@ export function ProfileSocialButtons({
       <button
         type="button"
         disabled={pending}
-        onClick={() => call(cancelFriendRequestAction, "friend_id", targetUserId)}
+        onClick={() => call(cancelFriendRequestAction, "friend_id", targetUserId, "Request cancelled.")}
       >
         cancel request
       </button>
@@ -87,7 +95,7 @@ export function ProfileSocialButtons({
         <button
           type="button"
           disabled={pending}
-          onClick={() => call(acceptFriendAction, "requester_id", targetUserId)}
+          onClick={() => call(acceptFriendAction, "requester_id", targetUserId, `${targetUsername} is now your friend.`)}
         >
           accept
         </button>
@@ -95,7 +103,7 @@ export function ProfileSocialButtons({
           type="button"
           className="btn-danger"
           disabled={pending}
-          onClick={() => call(declineFriendAction, "requester_id", targetUserId)}
+          onClick={() => call(declineFriendAction, "requester_id", targetUserId, "Request declined.")}
         >
           decline
         </button>
@@ -115,7 +123,7 @@ export function ProfileSocialButtons({
     <button
       type="button"
       disabled={pending}
-      onClick={() => call(addFriendAction, "username", targetUsername)}
+      onClick={() => call(addFriendAction, "username", targetUsername, "Friend request sent.")}
     >
       add friend
     </button>

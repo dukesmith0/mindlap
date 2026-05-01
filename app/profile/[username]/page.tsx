@@ -8,7 +8,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { createClient } from "@/lib/supabase/server";
 import { GAMES, GAME_KEYS, type GameKey } from "@/lib/games/registry";
 import { ptDate, ptDateOffset } from "@/lib/pt-date";
-import { badgeIcon, badgeLabel } from "@/lib/badges/icons";
+import { badgeCriteria, badgeIcon, badgeLabel } from "@/lib/badges/icons";
 import { buildHeatmap } from "@/lib/heatmap";
 import {
   ProfileSocialButtons,
@@ -36,8 +36,9 @@ type GameStat = {
   key: GameKey;
   pb: number | null;
   pbDate: string | null;
-  worst: number | null;
+  lowWeek: number | null;
   median7: number | null;
+  median7N: number;
   plays30: number;
   totalPlays: number;
 };
@@ -137,13 +138,18 @@ export default async function ProfilePage({
         .limit(1)
         .maybeSingle();
 
-      // Lifetime worst.
-      const { data: worstRow } = await supabase
+      // 7-day low (#53): the rolling-week extreme on the wrong side of
+      // direction. For higher=better this is min(best); for lower=better this
+      // is max(best). Bounded to last 7 days so it doesn't show a forgettable
+      // bad day from months ago.
+      const { data: lowWeekRow } = await supabase
         .from("daily_aggregates")
-        .select("worst")
+        .select("best")
         .eq("user_id", p.id)
         .eq("game_key", key)
-        .order("worst", { ascending: !lower })
+        .gte("date", sevenAgo)
+        .lte("date", today)
+        .order("best", { ascending: !lower })
         .limit(1)
         .maybeSingle();
 
@@ -193,8 +199,9 @@ export default async function ProfilePage({
         key,
         pb: pbRow ? Number(pbRow.best) : null,
         pbDate: pbRow?.date ?? null,
-        worst: worstRow ? Number(worstRow.worst) : null,
+        lowWeek: lowWeekRow ? Number(lowWeekRow.best) : null,
         median7,
+        median7N: medians.length,
         plays30,
         totalPlays,
       };
@@ -293,7 +300,12 @@ export default async function ProfilePage({
       ) : (
         <ul className="badge-wall">
           {(badges ?? []).map((b) => (
-            <li key={b.badge_key} className="badge" title={badgeLabel(b.badge_key)}>
+            <li
+              key={b.badge_key}
+              className="badge"
+              data-tip={badgeCriteria(b.badge_key)}
+              tabIndex={0}
+            >
               <span className="badge-icon" aria-hidden>{badgeIcon(b.badge_key)}</span>
               <span>{badgeLabel(b.badge_key)}</span>
             </li>
@@ -320,7 +332,7 @@ export default async function ProfilePage({
             key={c.date}
             className="heatmap-cell"
             data-i={c.bucket || undefined}
-            title={`${c.date}: ${c.count} play${c.count === 1 ? "" : "s"}`}
+            data-tip={`${c.date}: ${c.count} play${c.count === 1 ? "" : "s"}`}
           />
         ))}
       </div>
@@ -340,19 +352,47 @@ export default async function ProfilePage({
             <dl className="profile-game-stats">
               <div>
                 <dt>PB</dt>
-                <dd>{s.pb !== null ? s.pb : <span style={{ color: "var(--muted)" }}>-</span>}</dd>
+                <dd>
+                  {s.pb !== null ? s.pb : <span style={{ color: "var(--muted)" }}>-</span>}
+                  {(() => {
+                    // #52 score context: numeric delta vs 7d median, direction-aware.
+                    // Persona feedback: "+12 vs 7d median" reads as data; copy like
+                    // "better than" reads as encouragement. Arrow carries direction
+                    // semantically (↑=better regardless of higher/lower), the signed
+                    // delta carries magnitude.
+                    if (s.pb === null || s.median7 === null) return null;
+                    const diff = s.pb - s.median7;
+                    if (Math.abs(diff) < 0.001) return null;
+                    const isUp = direction(s.key) === "lower" ? diff < 0 : diff > 0;
+                    const abs = Math.abs(diff);
+                    const absStr = Number.isInteger(abs) ? abs.toString() : abs.toFixed(1);
+                    const signed = `${diff > 0 ? "+" : "-"}${absStr}`;
+                    return (
+                      <span
+                        className={`profile-stat-context ${isUp ? "is-up" : "is-down"}`}
+                      >
+                        {isUp ? "↑" : "↓"} {signed} vs 7d median
+                      </span>
+                    );
+                  })()}
+                </dd>
               </div>
               <div>
                 <dt>set</dt>
                 <dd>{s.pbDate ?? <span style={{ color: "var(--muted)" }}>-</span>}</dd>
               </div>
               <div>
-                <dt>worst</dt>
-                <dd>{s.worst !== null ? s.worst : <span style={{ color: "var(--muted)" }}>-</span>}</dd>
+                <dt>low (week)</dt>
+                <dd>{s.lowWeek !== null ? s.lowWeek : <span style={{ color: "var(--muted)" }}>-</span>}</dd>
               </div>
               <div>
                 <dt>7d median</dt>
-                <dd>{s.median7 !== null ? s.median7 : <span style={{ color: "var(--muted)" }}>-</span>}</dd>
+                <dd>
+                  {s.median7 !== null ? s.median7 : <span style={{ color: "var(--muted)" }}>-</span>}
+                  {s.median7 !== null && (
+                    <span className="profile-stat-context">n={s.median7N} day{s.median7N === 1 ? "" : "s"}</span>
+                  )}
+                </dd>
               </div>
               <div>
                 <dt>30d plays</dt>

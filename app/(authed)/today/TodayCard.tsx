@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { togglePinAction } from "@/actions/submission";
 import { Tooltip } from "@/components/ui/Tooltip";
+import { DirectionBadge } from "@/components/today/DirectionBadge";
 import type { GameKey } from "@/lib/games/registry";
 
 type Preview = { user_id: string; score: number; username: string | null; rank: number };
@@ -78,6 +79,7 @@ export function TodayCard({
             </Tooltip>
           )}
           {isBonus && <span className="game-card-pill">[2x xp]</span>}
+          <DirectionBadge gameKey={gameKey} />
         </div>
         <div className="game-card-meta">
           {tagline}

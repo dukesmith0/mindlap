@@ -8,9 +8,9 @@ export function Countdown({ onDone }: { onDone: () => void }) {
   const [step, setStep] = useState<3 | 2 | 1 | 0>(3);
 
   useEffect(() => {
-    // Each step gets the same on-screen time (#35). Tighter than before so the
-    // total countdown still feels snappy.
-    const STEP_MS = 600;
+    // Each step gets the same on-screen time (#35). 500ms × 4 = 2.0s total
+    // (#62 reduced from 600ms). Trims ~700ms off chained-play flow.
+    const STEP_MS = 500;
     const t1 = setTimeout(() => setStep(2), STEP_MS);
     const t2 = setTimeout(() => setStep(1), STEP_MS * 2);
     const t3 = setTimeout(() => setStep(0), STEP_MS * 3);

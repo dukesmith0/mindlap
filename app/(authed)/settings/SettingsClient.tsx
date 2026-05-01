@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { AvatarEditTrigger } from "@/components/ui/AvatarEditTrigger";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import {
   changeUsernameAction,
   deleteAccountAction,
@@ -429,26 +430,15 @@ function PasswordSection() {
 function DangerZone({ username }: { username: string }) {
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [pending, startTransition] = useTransition();
+  const [dialogOpen, setDialogOpen] = useState(false);
 
-  function del() {
+  function open() {
     setError(null);
     if (confirm.trim().toLowerCase() !== username.toLowerCase()) {
       setError("Type your username exactly to confirm.");
       return;
     }
-    if (typeof window !== "undefined") {
-      const ok = window.confirm(
-        "Permanently delete your mindlap account? All scores and history will be removed."
-      );
-      if (!ok) return;
-    }
-    const form = new FormData();
-    form.set("confirm_username", confirm);
-    startTransition(async () => {
-      const r = await deleteAccountAction(form);
-      if (r && !r.ok) setError(r.error);
-    });
+    setDialogOpen(true);
   }
 
   return (
@@ -471,10 +461,26 @@ function DangerZone({ username }: { username: string }) {
           style={{ width: "100%" }}
         />
       </label>
-      <button onClick={del} disabled={pending || !confirm} className="btn-danger">
-        {pending ? "..." : "delete my account"}
+      <button onClick={open} disabled={!confirm} className="btn-danger">
+        delete my account
       </button>
-      {error && <p style={{ color: "var(--accent)", fontSize: 13, marginTop: 8 }}>[{error}]</p>}
+      {error && <p style={{ color: "var(--accent)", fontSize: 13, marginTop: 8 }} role="alert">[{error}]</p>}
+      <ConfirmDialog
+        open={dialogOpen}
+        title="delete account"
+        message="This permanently removes your mindlap account, every score, every badge, and every friendship. There is no undo."
+        confirmLabel="yes, delete forever"
+        danger
+        onConfirm={async () => {
+          const form = new FormData();
+          form.set("confirm_username", confirm);
+          const r = await deleteAccountAction(form);
+          // deleteAccountAction redirects on success, so we never get an `ok`
+          // value back; only error paths return a result.
+          return r ?? { ok: true };
+        }}
+        onClose={() => setDialogOpen(false)}
+      />
     </section>
   );
 }

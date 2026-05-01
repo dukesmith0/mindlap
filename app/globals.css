@@ -62,11 +62,20 @@ button {
   padding: 8px 24px;
   border-radius: 0;
   cursor: pointer;
+  outline: none;
 }
 
 button:hover {
   background: var(--accent);
   color: #ffffff;
+}
+
+button:focus-visible {
+  /* Keep the same accent border weight whether focused or not so a
+     modal-auto-focused button doesn't suddenly read with a darker /
+     thicker ring than other buttons. Box-shadow gives a subtle 1px
+     accent halo just outside the border for keyboard users. */
+  box-shadow: 0 0 0 1px var(--accent);
 }
 
 button:disabled {
@@ -975,6 +984,9 @@ hr {
   width: 100%;
   max-width: 440px;
   padding: 24px;
+  /* Force left-aligned content; some parent contexts (e.g. .game-stage)
+     center text and that breaks readability inside dialogs. */
+  text-align: left;
 }
 
 .avatar-edit-trigger {
@@ -1047,3 +1059,228 @@ hr {
   background: var(--accent);
 }
 .avatar-emoji-cell:disabled { cursor: not-allowed; opacity: 0.5; }
+
+/* ============================================================================
+   Toast stack (#59) — bottom-right, 1px borders, opacity-only fade-in
+   ============================================================================ */
+
+.toast-stack {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 60;
+  pointer-events: none;
+}
+.toast {
+  pointer-events: auto;
+  background: var(--bg);
+  border: 1px solid var(--accent);
+  color: var(--ink);
+  padding: 10px 14px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 240px;
+  max-width: 360px;
+  animation: toast-fade-in 200ms ease-out;
+}
+.toast-error { border-color: #d62828; color: #d62828; }
+@keyframes toast-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.toast-dismiss {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 16px;
+  line-height: 1;
+  padding: 0 4px;
+  cursor: pointer;
+  margin-left: auto;
+}
+.toast-dismiss:hover { opacity: 0.7; }
+
+/* ============================================================================
+   EmptyState
+   ============================================================================ */
+
+.empty-state {
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 24px;
+  text-align: center;
+}
+.empty-state-msg {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 0 0 12px;
+}
+.empty-state-cta {
+  color: var(--accent);
+  font-size: 13px;
+}
+.empty-state-cta:hover { opacity: 0.8; }
+
+/* ============================================================================
+   Single delegated tooltip bubble (#45)
+   ============================================================================ */
+
+.delegated-tip {
+  position: fixed;
+  pointer-events: none;
+  background: var(--bg);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  font-size: 11px;
+  padding: 4px 8px;
+  z-index: 70;
+  white-space: nowrap;
+  animation: toast-fade-in 160ms ease-out;
+}
+
+/* ============================================================================
+   Leaderboard nav tabs + scope toggle (hover sweep)
+   ============================================================================ */
+
+.lb-nav {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.lb-nav-time { margin-bottom: 8px; }
+.lb-nav-scope { gap: 12px; margin-bottom: 24px; }
+
+.lb-tab {
+  color: var(--muted);
+  border-bottom: 1px solid transparent;
+  padding-bottom: 4px;
+  font-size: 13px;
+  transition: color 120ms ease, border-color 120ms ease;
+}
+.lb-tab:hover { color: var(--accent); }
+.lb-tab.is-active {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+}
+.lb-tab.is-uppercase {
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.lb-scope {
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  transition: color 120ms ease;
+}
+.lb-scope:hover { color: var(--accent); }
+.lb-scope.is-active { color: var(--accent); }
+
+/* Leaderboard rows: subtle hover highlight so a clickable row reads as
+   clickable (rows wrap a Link inside the player cell). */
+table tbody tr:hover {
+  background: rgba(0, 102, 204, 0.06);
+}
+[data-theme="dark"] table tbody tr:hover {
+  background: rgba(90, 163, 255, 0.08);
+}
+
+/* Game card on /today: subtle hover affordance (the play link is the
+   primary CTA but the whole card reads as a target). Each card only owns
+   its top border; the visible "bottom" line is the next card's top, so
+   we color that one too via the adjacent-sibling selector. */
+.game-card-row { transition: border-color 120ms ease; }
+.game-card-row:hover { border-top-color: var(--accent); }
+.game-card-row:hover + .game-card-row { border-top-color: var(--accent); }
+.game-card-row:hover:last-child { border-bottom-color: var(--accent); }
+
+/* Friends row: parallel hover for consistency. */
+.friend-row { transition: border-color 120ms ease; }
+.friend-row:hover { border-color: var(--accent); }
+
+/* ============================================================================
+   Direction badge on /today game cards (#54)
+   ============================================================================ */
+
+.direction-badge {
+  display: inline-block;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  padding: 1px 6px;
+  background: none;
+  cursor: help;
+  font-family: var(--font-mono);
+  margin-left: 8px;
+  transition: color 120ms ease, border-color 120ms ease;
+}
+.direction-badge::after {
+  content: " ?";
+  color: var(--muted);
+  font-weight: 700;
+}
+.direction-badge:hover,
+.direction-badge:focus-visible {
+  /* Override the global `button:hover` solid-fill — the badge is a chip, not
+     a primary action. Hover should clarify "click for directions", not
+     obscure the label. */
+  background: none;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.direction-badge:hover::after,
+.direction-badge:focus-visible::after { color: var(--accent); }
+
+/* ============================================================================
+   TodayMilestoneBanner (#51)
+   ============================================================================ */
+
+.milestone-banner {
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  padding: 12px 16px;
+  margin-bottom: 24px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.milestone-banner-text { color: var(--ink); font-size: 13px; }
+
+/* ============================================================================
+   Score context line under per-game stats (#52)
+   ============================================================================ */
+
+.profile-stat-context {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 2px;
+  letter-spacing: 0.3px;
+}
+.profile-stat-context.is-up { color: var(--accent); }
+.profile-stat-context.is-down { color: #d62828; }
+
+/* ============================================================================
+   Digit Span step-fn breakpoints (#14)
+   Default 80px is .game-text-digit; override per length class.
+   ============================================================================ */
+
+.game-text-digit.digit-len-10 { font-size: 72px; }
+.game-text-digit.digit-len-12 { font-size: 64px; }
+.game-text-digit.digit-len-15 { font-size: 48px; }
+.game-text-digit.digit-len-18 { font-size: 36px; }
+@media (max-width: 640px) {
+  .game-text-digit.digit-len-10 { font-size: 56px; }
+  .game-text-digit.digit-len-12 { font-size: 48px; }
+  .game-text-digit.digit-len-15 { font-size: 36px; }
+  .game-text-digit.digit-len-18 { font-size: 28px; }
+}
