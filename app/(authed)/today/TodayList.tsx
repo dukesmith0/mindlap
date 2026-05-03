@@ -41,8 +41,8 @@ export function TodayList({
       <TodayHeader dateLabel={dateLabel} onQueryChange={setQuery} />
       <div role="list" style={{ marginTop: 32 }}>
         {visible.length === 0 ? (
-          <p style={{ color: "var(--muted)", fontSize: 13, padding: "24px 0" }}>
-            [no games match &quot;{query}&quot;]
+          <p className="tag" style={{ padding: "24px 0" }}>
+            no games match &quot;{query}&quot;
           </p>
         ) : (
           visible.map((c) => (

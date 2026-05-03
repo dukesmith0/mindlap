@@ -1,0 +1,1834 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<title>mindlap — style reference (canonical)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================================
+   CANONICAL TOKENS — mirrors app/globals.css verbatim. Update both files
+   when introducing new tokens.
+   ============================================================================ */
+:root {
+  --bg: #ffffff;
+  --ink: #111111;
+  --muted: #666666;
+  --line: #e5e5e5;
+  --accent: #0066cc;
+  --danger: #d62828;
+  --on-accent: #ffffff;
+  --reaction-go: #2e7d32;
+  --reaction-wait: #c62828;
+  --reaction-early: #f57c00;
+  --font-mono: "Courier Prime", ui-monospace, "Courier New", Courier, monospace;
+}
+[data-theme="dark"] {
+  --bg: #1e242b;
+  --ink: #f0f0f0;
+  --muted: #9aa0a6;
+  --line: #353c44;
+  --accent: #5aa3ff;
+  --danger: #ef4444;
+  --on-accent: #0f1419;
+  --reaction-go: #4caf50;
+  --reaction-wait: #ef4444;
+  --reaction-early: #ffa726;
+}
+
+/* ============================================================================
+   PAGE CHROME (the style page itself, not the showcased components)
+   ============================================================================ */
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  line-height: 1.6;
+}
+.page-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+}
+.page-title { font-size: 18px; letter-spacing: -0.5px; }
+.page-title-meta { color: var(--muted); font-size: 12px; margin-left: 12px; }
+.page-controls { display: inline-flex; gap: 12px; align-items: center; }
+.theme-toggle {
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+.theme-toggle:hover { color: var(--accent); border-color: var(--accent); }
+
+.page-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: calc(100vh - 60px);
+}
+.page-sidebar {
+  border-right: 1px solid var(--line);
+  padding: 24px 16px;
+  position: sticky;
+  top: 57px;
+  align-self: start;
+  max-height: calc(100vh - 57px);
+  overflow-y: auto;
+}
+.page-sidebar h4 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+  margin: 16px 0 6px;
+  font-weight: 400;
+}
+.page-sidebar a {
+  display: block;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 12px;
+  padding: 2px 0;
+}
+.page-sidebar a:hover { color: var(--accent); }
+
+.page-main {
+  padding: 32px 48px 96px;
+  max-width: 920px;
+}
+.preamble {
+  border: 1px dashed var(--line);
+  padding: 16px;
+  margin-bottom: 32px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.preamble strong { color: var(--ink); font-weight: 400; }
+
+.section { margin: 0 0 56px; padding-top: 8px; }
+.section-title {
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 4px;
+}
+.section-h {
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: -0.3px;
+  margin: 0 0 16px;
+}
+.section-note {
+  color: var(--muted);
+  font-size: 12px;
+  margin: -8px 0 16px;
+}
+
+.demo {
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 20px 0;
+  margin-bottom: 24px;
+}
+.demo-title {
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 4px;
+}
+.demo-desc {
+  color: var(--muted);
+  font-size: 12px;
+  margin: 0 0 12px;
+}
+.demo-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+}
+.demo-row.col { flex-direction: column; align-items: flex-start; gap: 12px; }
+.code-hint {
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 8px;
+  letter-spacing: 0.3px;
+}
+.swatch-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
+.swatch {
+  border: 1px solid var(--line);
+  padding: 8px;
+  font-size: 11px;
+}
+.swatch-fill { height: 32px; border: 1px solid var(--line); margin-bottom: 6px; }
+.swatch-name { color: var(--ink); }
+.swatch-hex { color: var(--muted); }
+
+/* ============================================================================
+   APP COMPONENTS — canonical CSS (mirrors app/globals.css)
+   ============================================================================ */
+
+/* --- BASE --- */
+.app a { color: var(--ink); text-decoration: none; }
+.app a:hover { color: var(--accent); }
+
+/* --- BUTTONS (canonical set) --- */
+.app-btn {
+  background: none;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  padding: 8px 24px;
+  border-radius: 0;
+  cursor: pointer;
+  outline: none;
+}
+.app-btn:hover { background: var(--accent); color: var(--on-accent); }
+.app-btn:focus-visible { box-shadow: 0 0 0 1px var(--accent); }
+.app-btn:disabled { border-color: var(--line); color: var(--muted); cursor: not-allowed; }
+.app-btn:disabled:hover { background: none; color: var(--muted); }
+
+.app-btn-link {
+  display: inline-block;
+  background: none;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  padding: 8px 24px;
+  text-decoration: none;
+  cursor: pointer;
+}
+.app-btn-link:hover { background: var(--accent); color: var(--on-accent); }
+
+.app-btn-danger {
+  background: none;
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  padding: 8px 24px;
+  border-radius: 0;
+  cursor: pointer;
+}
+.app-btn-danger:hover { background: var(--danger); color: var(--on-accent); }
+.app-btn-danger:disabled { border-color: var(--line); color: var(--muted); cursor: not-allowed; }
+.app-btn-danger:disabled:hover { background: none; color: var(--muted); }
+
+/* small modifier — used by chip-sized actions (search clear, etc.) */
+.app-btn-sm {
+  padding: 4px 10px;
+  font-size: 12px;
+  border-color: var(--line);
+  color: var(--muted);
+}
+.app-btn-sm:hover { background: var(--line); color: var(--ink); }
+
+/* icon button — borderless single-glyph (toast dismiss, today pin) */
+.app-btn-icon {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0 6px;
+  font-family: var(--font-mono);
+  line-height: 1;
+}
+.app-btn-icon:hover { color: var(--accent); }
+.app-btn-icon.is-active { color: var(--accent); }
+
+/* ghost — canonical name; .game-tappable kept as a JSX alias */
+.app-btn-ghost {
+  background: none;
+  border: 1px solid var(--line);
+  cursor: pointer;
+  padding: 32px 16px;
+  width: 100%;
+  font-family: var(--font-mono);
+  color: var(--ink);
+  border-radius: 0;
+  font-size: 15px;
+}
+.app-btn-ghost:hover { border-color: var(--accent); }
+
+/* --- INPUTS --- */
+.app-input,
+.app-textarea,
+.app-select {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 0;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  padding: 6px 10px;
+  outline: none;
+}
+.app-input:focus,
+.app-textarea:focus,
+.app-select:focus { border-color: var(--accent); }
+
+/* native checkbox/radio styled to match the rest of the system */
+.app-check, .app-radio {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  cursor: pointer;
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0;
+  position: relative;
+}
+.app-check { border-radius: 0; }
+.app-radio { border-radius: 50%; }
+.app-check:hover, .app-radio:hover { border-color: var(--accent); }
+.app-check:focus-visible, .app-radio:focus-visible { box-shadow: 0 0 0 1px var(--accent); }
+.app-check:checked { background: var(--accent); border-color: var(--accent); }
+.app-check:checked::after {
+  content: "";
+  position: absolute;
+  left: 4px; top: 0;
+  width: 5px; height: 10px;
+  border: solid var(--on-accent);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.app-radio:checked { border-color: var(--accent); }
+.app-radio:checked::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  background: var(--accent);
+  border-radius: 50%;
+}
+
+/* --- HEADINGS --- */
+.app h1 { font-size: 22px; font-weight: 400; letter-spacing: -0.3px; margin: 0 0 4px; }
+.app h2 {
+  font-size: 14px; font-weight: 400; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--muted); margin: 0 0 16px;
+}
+/* h3 fills the gap between h1 and h2 */
+.app h3 { font-size: 16px; font-weight: 400; letter-spacing: -0.2px; margin: 0 0 8px; }
+.app .subtitle { color: var(--muted); font-size: 13px; margin: 0 0 24px; }
+.app .hint { color: var(--muted); font-size: 12px; }
+.app .micro { color: var(--muted); font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; }
+
+/* --- TAGS / BRACKETED STATUS (single canonical convention) --- */
+.app-tag { color: var(--muted); font-size: 13px; }
+.app-tag::before { content: "["; }
+.app-tag::after { content: "]"; }
+.app-tag-accent { color: var(--accent); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+.app-tag-accent::before { content: "["; }
+.app-tag-accent::after { content: "]"; }
+.app-tag-error { color: var(--danger); font-size: 13px; }  /* errors use danger so they don't read as links */
+.app-tag-error::before { content: "["; }
+.app-tag-error::after { content: "]"; }
+.app-tag-danger { color: var(--danger); font-size: 13px; }
+.app-tag-danger::before { content: "["; }
+.app-tag-danger::after { content: "]"; }
+
+/* --- DIRECTION BADGE / CHIPS --- */
+.app-direction-badge {
+  display: inline-block;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  padding: 1px 6px;
+  background: none;
+  cursor: help;
+  font-family: var(--font-mono);
+  transition: color 120ms ease, border-color 120ms ease;
+}
+.app-direction-badge::after { content: " ?"; color: var(--muted); font-weight: 700; }
+.app-direction-badge:hover, .app-direction-badge:focus-visible {
+  background: none; border-color: var(--accent); color: var(--accent);
+}
+.app-direction-badge:hover::after, .app-direction-badge:focus-visible::after { color: var(--accent); }
+
+/* --- TABS --- */
+.app-tab {
+  color: var(--muted);
+  border-bottom: 1px solid transparent;
+  padding-bottom: 4px;
+  font-size: 13px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 120ms ease, border-color 120ms ease;
+}
+.app-tab:hover { color: var(--accent); }
+.app-tab.is-active { color: var(--ink); border-bottom-color: var(--accent); }
+.app-tab.is-uppercase { text-transform: uppercase; letter-spacing: 1px; }
+
+.app-scope {
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  text-decoration: none;
+  cursor: pointer;
+}
+.app-scope:hover { color: var(--accent); }
+.app-scope.is-active { color: var(--accent); }
+
+/* --- CARDS / ROWS --- */
+.app-card-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: center;
+  padding: 24px 0;
+  border-top: 1px solid var(--line);
+  transition: border-color 120ms ease;
+}
+.app-card-row:last-child { border-bottom: 1px solid var(--line); }
+.app-card-row:hover { border-top-color: var(--accent); }
+
+.app-friend-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+  transition: border-color 120ms ease;
+}
+.app-friend-row:last-child { border-bottom: 1px solid var(--line); }
+.app-friend-row:hover { border-color: var(--accent); }
+
+.app-empty-state {
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 24px;
+  text-align: center;
+}
+.app-empty-state-msg { color: var(--muted); font-size: 13px; margin: 0 0 12px; }
+.app-empty-state-cta { color: var(--accent); font-size: 13px; }
+.app-empty-state-cta:hover { opacity: 0.8; }
+
+.app-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 16px 0;
+}
+.app-summary > div { display: flex; flex-direction: column; gap: 4px; }
+.app-summary .label {
+  font-size: 11px; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 1px;
+}
+.app-summary .value { font-size: 20px; font-variant-numeric: tabular-nums; }
+
+/* --- TABLES --- */
+.app-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.app-table th {
+  color: var(--muted); font-weight: 400; font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.5px;
+  text-align: left; padding: 10px 0; border-bottom: 1px solid var(--line);
+}
+.app-table td { text-align: left; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.app-table tbody tr:hover { background: rgba(0, 102, 204, 0.06); }
+[data-theme="dark"] .app-table tbody tr:hover { background: rgba(90, 163, 255, 0.08); }
+
+/* --- TOOLTIPS --- */
+.app-tooltip-host { position: relative; display: inline-flex; }
+.app-tooltip-host > .app-tooltip {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 6px);
+  padding: 4px 10px;
+  background: var(--bg);
+  color: var(--accent);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border: 1px solid var(--accent);
+  border-radius: 0;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 5;
+}
+.app-tooltip-host:hover > .app-tooltip,
+.app-tooltip-host:focus-within > .app-tooltip {
+  opacity: 1;
+  animation: tooltip-fade-in 160ms ease-out;
+}
+@keyframes tooltip-fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+/* --- MODAL --- */
+.app-modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  z-index: 200;
+}
+.app-modal-card {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  width: 100%;
+  max-width: 440px;
+  padding: 24px;
+  text-align: left;
+}
+
+/* --- TOAST --- */
+.app-toast {
+  background: var(--bg);
+  border: 1px solid var(--accent);
+  color: var(--ink);
+  padding: 10px 14px;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 240px;
+  max-width: 360px;
+  animation: toast-fade-in 200ms ease-out;
+}
+.app-toast.is-error { border-color: var(--danger); color: var(--danger); }
+@keyframes toast-fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+/* --- AVATAR --- */
+.app-avatar {
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--on-accent);
+  user-select: none;
+  font-weight: 700;
+  vertical-align: middle;
+  font-family: var(--font-mono);
+}
+.app-avatar.is-emoji { font-weight: 400; font-family: "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif; }
+.app-avatar-trigger {
+  background: none; border: none; padding: 0; cursor: pointer;
+  display: inline-block; position: relative; line-height: 0;
+  border-radius: 50%;
+}
+.app-avatar-trigger .app-avatar { transition: filter 160ms ease; }
+.app-avatar-trigger::after {
+  content: "edit"; position: absolute; inset: 0;
+  display: grid; place-items: center;
+  color: #ffffff; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; opacity: 0;
+  transition: opacity 160ms ease; pointer-events: none; line-height: 1;
+}
+.app-avatar-trigger:hover .app-avatar,
+.app-avatar-trigger:focus-visible .app-avatar { filter: blur(2px) brightness(0.6); }
+.app-avatar-trigger:hover::after, .app-avatar-trigger:focus-visible::after { opacity: 1; }
+.app-avatar-trigger:focus-visible { outline: 1px solid var(--accent); outline-offset: 2px; }
+
+/* --- XP BAR --- */
+.app-xp {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 12px; color: var(--muted);
+}
+.app-xp-label { color: var(--ink); letter-spacing: 0.5px; }
+.app-xp-track {
+  display: inline-block; width: 96px; height: 8px;
+  border: 1px solid var(--line); background: transparent; position: relative;
+}
+.app-xp-fill { display: block; height: 100%; background: var(--accent); transition: width 220ms ease-out; }
+.app-xp-num { font-variant-numeric: tabular-nums; }
+
+/* --- STREAK RIBBON --- */
+.app-streak {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-variant-numeric: tabular-nums;
+}
+.app-streak .flame { font-size: 16px; line-height: 1; animation: streak-pulse 2s ease-in-out infinite; }
+.app-streak .units { color: var(--muted); font-size: 12px; }
+@keyframes streak-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+
+/* --- HEATMAP --- */
+.app-heatmap-grid {
+  display: grid;
+  grid-template-columns: repeat(13, 11px);
+  grid-template-rows: repeat(7, 11px);
+  grid-auto-flow: column;
+  gap: 2px;
+}
+.app-heat-cell { width: 11px; height: 11px; border: 1px solid var(--line); background: transparent; }
+.app-heat-cell[data-i="1"] { background: rgba(0, 102, 204, 0.25); }
+.app-heat-cell[data-i="2"] { background: rgba(0, 102, 204, 0.55); }
+.app-heat-cell[data-i="3"] { background: var(--accent); border-color: var(--accent); }
+[data-theme="dark"] .app-heat-cell[data-i="1"] { background: rgba(90, 163, 255, 0.25); }
+[data-theme="dark"] .app-heat-cell[data-i="2"] { background: rgba(90, 163, 255, 0.55); }
+.app-heat-legend {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase;
+}
+
+/* --- MINE CELLS --- */
+.app-mine {
+  width: 32px; height: 32px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-family: var(--font-mono); font-size: 14px;
+  cursor: pointer; padding: 0; border-radius: 0;
+  display: inline-grid; place-items: center;
+}
+.app-mine:hover { background: var(--line); }
+.app-mine.is-revealed { cursor: default; color: var(--muted); }
+.app-mine.is-revealed[data-n="1"] { color: #1e88e5; }
+.app-mine.is-revealed[data-n="2"] { color: #43a047; }
+.app-mine.is-revealed[data-n="3"] { color: #e53935; }
+.app-mine.is-revealed[data-n="4"] { color: #5e35b1; }
+.app-mine.is-revealed[data-n="5"] { color: #d84315; }
+.app-mine.is-revealed[data-n="6"] { color: #00897b; }
+.app-mine.is-revealed[data-n="7"] { color: var(--ink); }
+.app-mine.is-revealed[data-n="8"] { color: var(--muted); }
+.app-mine.is-flagged { color: var(--accent); }
+.app-mine.is-mine { background: var(--danger); color: var(--on-accent); }
+
+/* --- STROOP --- */
+.app-stroop-btn {
+  background: none;
+  border: 1px solid;
+  padding: 8px 18px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 0;
+  text-transform: lowercase;
+}
+.app-stroop-btn:hover { filter: brightness(1.15); }
+
+/* --- WORD GRID --- */
+.app-word-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(120px, 1fr));
+  gap: 12px 32px;
+  text-align: left;
+}
+.app-word-cell {
+  font-size: 22px;
+  letter-spacing: 0.3px;
+  border-bottom: 1px solid var(--line);
+  padding: 4px 0;
+}
+
+/* --- GAME TEXT SCALES --- */
+.gt-math   { font-size: 56px; letter-spacing: -1px; }
+.gt-digit  { font-size: 80px; letter-spacing: 6px; }
+.gt-nback  { font-size: 96px; }
+.gt-stroop { font-size: 56px; font-weight: 700; letter-spacing: 2px; }
+.gt-result { font-size: 96px; color: var(--accent); letter-spacing: -2px; }
+.gt-reaction { font-size: 32px; letter-spacing: 0.5px; }
+
+/* --- HUD --- */
+.app-hud {
+  display: flex; width: 100%; justify-content: space-between;
+  font-size: 14px; color: var(--muted); letter-spacing: 0.5px;
+}
+.app-timer { font-size: 18px; color: var(--ink); }
+.app-timer.is-penalty { color: var(--danger); }
+
+/* --- SIDEBAR / TOPBAR --- */
+.app-shell-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 32px;
+  border-bottom: 1px solid var(--line);
+}
+.app-shell-logo { font-size: 18px; letter-spacing: -0.5px; }
+.app-shell-logo a { color: var(--ink); }
+.app-shell-logo a:hover { color: var(--accent); }
+.app-shell-topright { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+
+.app-shell-sidebar { padding: 16px 24px; border-right: 1px solid var(--line); }
+.app-shell-sidebar ul { list-style: none; padding: 0; margin: 0; }
+.app-shell-sidebar li { margin-bottom: 14px; }
+.app-shell-link {
+  color: var(--muted); text-decoration: none;
+  display: flex; align-items: center; gap: 10px; font-size: 15px;
+}
+.app-shell-link:hover { color: var(--accent); }
+.app-shell-link.is-active { color: var(--ink); position: relative; padding-left: 14px; }
+.app-shell-link.is-active::before {
+  content: ">"; color: var(--accent); position: absolute; left: 0;
+}
+.app-shell-link.is-disabled { color: var(--line); cursor: not-allowed; }
+.app-shell-link.is-disabled:hover { color: var(--line); }
+.app-shell-soon {
+  margin-left: auto; font-size: 10px; color: var(--line);
+  letter-spacing: 1px; text-transform: uppercase;
+}
+.app-shell-link svg { opacity: 0.7; }
+
+/* --- MILESTONE BANNER --- */
+.app-milestone {
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  padding: 12px 16px;
+  font-size: 14px;
+  display: flex; align-items: center; gap: 12px;
+}
+.app-milestone-text { color: var(--ink); font-size: 13px; }
+
+/* --- COUNTDOWN --- */
+.app-countdown {
+  display: inline-block;
+  font-size: 56px;
+  animation: countdown-fade 240ms ease-out;
+}
+@keyframes countdown-fade { from { opacity: 0.2; } to { opacity: 1; } }
+
+/* --- RESULT --- */
+.app-result-saved {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  animation: result-fade 320ms ease-out;
+}
+.app-result-xp { color: var(--accent); font-size: 18px; letter-spacing: 0.5px; font-variant-numeric: tabular-nums; }
+.app-result-pb { color: #f59e0b; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; }
+@keyframes result-fade { from { opacity: 0; } to { opacity: 1; } }
+
+/* --- LB PREVIEW (mini leaderboard inside cards) --- */
+.app-lb-preview { font-size: 13px; color: var(--muted); }
+.app-lb-preview-row {
+  display: grid; grid-template-columns: 24px 1fr auto; gap: 8px; padding: 2px 0;
+}
+.app-lb-preview-row.is-you { color: var(--accent); font-weight: 700; }
+
+/* helpers */
+.muted { color: var(--muted); }
+.numeric { font-variant-numeric: tabular-nums; }
+hr.app-hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+</style>
+</head>
+<body>
+
+<header class="page-topbar">
+  <div>
+    <span class="page-title">mindlap / style page</span>
+    <span class="page-title-meta">// canonical reference — last edited 2026-05-03</span>
+  </div>
+  <div class="page-controls">
+    <button class="theme-toggle" id="themeToggle" type="button">toggle theme</button>
+  </div>
+</header>
+
+<div class="page-layout">
+  <nav class="page-sidebar">
+    <h4>tokens</h4>
+    <a href="#s-1-1">[1.1] colors</a>
+    <a href="#s-1-2">[1.2] type scale</a>
+    <a href="#s-1-3">[1.3] spacing</a>
+    <h4>typography</h4>
+    <a href="#s-2-1">[2.1] h1</a>
+    <a href="#s-2-2">[2.2] h2</a>
+    <a href="#s-2-3">[2.3] h3</a>
+    <a href="#s-2-4">[2.4] body / hint</a>
+    <a href="#s-2-5">[2.5] links</a>
+    <h4>buttons</h4>
+    <a href="#s-3-1">[3.1] primary</a>
+    <a href="#s-3-2">[3.2] btn-link</a>
+    <a href="#s-3-3">[3.3] danger</a>
+    <a href="#s-3-4">[3.4] sm</a>
+    <a href="#s-3-5">[3.5] icon</a>
+    <a href="#s-3-6">[3.6] ghost</a>
+    <a href="#s-3-7">[3.7] disabled</a>
+    <a href="#s-3-8">[3.8] focus</a>
+    <h4>forms</h4>
+    <a href="#s-4-1">[4.1] text input</a>
+    <a href="#s-4-2">[4.2] password</a>
+    <a href="#s-4-3">[4.3] textarea</a>
+    <a href="#s-4-4">[4.4] select</a>
+    <a href="#s-4-5">[4.5] checkbox</a>
+    <a href="#s-4-6">[4.6] radio</a>
+    <a href="#s-4-7">[4.7] FormField</a>
+    <h4>status</h4>
+    <a href="#s-5-1">[5.1] tag muted</a>
+    <a href="#s-5-2">[5.2] tag accent</a>
+    <a href="#s-5-3">[5.3] tag error</a>
+    <a href="#s-5-4">[5.4] tag danger</a>
+    <h4>chips</h4>
+    <a href="#s-6-1">[6.1] direction badge</a>
+    <a href="#s-6-2">[6.2] tabs</a>
+    <a href="#s-6-3">[6.3] scope toggle</a>
+    <h4>cards</h4>
+    <a href="#s-7-1">[7.1] game card row</a>
+    <a href="#s-7-2">[7.2] friend row</a>
+    <a href="#s-7-3">[7.3] empty state</a>
+    <a href="#s-7-4">[7.4] summary trio</a>
+    <h4>tables</h4>
+    <a href="#s-8-1">[8.1] leaderboard</a>
+    <h4>tooltips</h4>
+    <a href="#s-9-1">[9.1] wrapped</a>
+    <a href="#s-9-2">[9.2] delegated</a>
+    <h4>overlays</h4>
+    <a href="#s-10-1">[10.1] modal</a>
+    <a href="#s-10-2">[10.2] confirm dialog</a>
+    <a href="#s-11-1">[11.1] toast info</a>
+    <a href="#s-11-2">[11.2] toast error</a>
+    <h4>identity</h4>
+    <a href="#s-12-1">[12.1] avatar sizes</a>
+    <a href="#s-12-2">[12.2] avatar editor</a>
+    <a href="#s-13-1">[13.1] xp bar</a>
+    <a href="#s-14-1">[14.1] streak ribbon</a>
+    <h4>data</h4>
+    <a href="#s-15-1">[15.1] heatmap</a>
+    <a href="#s-15-2">[15.2] lb preview</a>
+    <a href="#s-16-1">[16.1] milestone banner</a>
+    <h4>games</h4>
+    <a href="#s-17-1">[17.1] mine cells</a>
+    <a href="#s-17-2">[17.2] stroop</a>
+    <a href="#s-17-3">[17.3] word grid</a>
+    <a href="#s-17-4">[17.4] game text</a>
+    <a href="#s-17-5">[17.5] hud</a>
+    <a href="#s-17-6">[17.6] countdown</a>
+    <a href="#s-17-7">[17.7] result</a>
+    <h4>shell</h4>
+    <a href="#s-18-1">[18.1] sidebar</a>
+    <a href="#s-18-2">[18.2] topbar</a>
+    <h4>animations</h4>
+    <a href="#s-19-1">[19.1] all motion</a>
+  </nav>
+
+  <main class="page-main app">
+    <div class="preamble">
+      <strong>How to use this page.</strong>
+      Each demo has a <span class="muted">[N.N] TITLE</span> identifier you can reference when flagging issues
+      (e.g. "[3.4] looks too small in dark mode").
+      Toggle theme via the button in the topbar to verify both. Hover, focus, click — every state is live.
+      <br><br>
+      <strong>This file is a static reference.</strong> The Zetamac Pure system shipped via
+      <code>app/globals.css</code> is the source of truth. A standalone HTML file rots — when you change tokens or
+      component styles, update both. The follow-up to fold this into a live <code>/style</code> route inside the
+      Next.js app is filed in <code>.vibe/future.md</code>.
+      <br><br>
+      <strong>Canonical set (consolidated 2026-05-03):</strong> 5 base tokens + <code>--danger</code> +
+      <code>--on-accent</code> + 3 reaction-game tokens; canonical button family
+      (<code>.btn-link</code>, <code>.btn-danger</code>, <code>.btn-sm</code>, <code>.btn-icon</code>,
+      <code>.btn-ghost</code>); styled native checkbox + radio; a single <code>.tag</code> /
+      <code>.tag-accent</code> / <code>.tag-error</code> convention for bracketed status text;
+      <code>.text-muted-sm</code> / <code>.text-muted-xs</code> / <code>.numeric</code> utilities.
+    </div>
+
+    <!-- ====================================================================
+         1. TOKENS
+         ==================================================================== -->
+    <section class="section">
+      <p class="section-title">[1] tokens</p>
+      <h2 class="section-h">design tokens</h2>
+
+      <div class="demo" id="s-1-1">
+        <p class="demo-title">[1.1] color tokens</p>
+        <p class="demo-desc">5 base + --danger + --on-accent + 3 reaction-game tokens. Toggle theme to verify dark variants.</p>
+        <div class="swatch-grid">
+          <div class="swatch"><div class="swatch-fill" style="background: var(--bg)"></div><div class="swatch-name">--bg</div><div class="swatch-hex" id="hex-bg">#ffffff</div></div>
+          <div class="swatch"><div class="swatch-fill" style="background: var(--ink)"></div><div class="swatch-name">--ink</div><div class="swatch-hex" id="hex-ink">#111111</div></div>
+          <div class="swatch"><div class="swatch-fill" style="background: var(--muted)"></div><div class="swatch-name">--muted</div><div class="swatch-hex" id="hex-muted">#666666</div></div>
+          <div class="swatch"><div class="swatch-fill" style="background: var(--line)"></div><div class="swatch-name">--line</div><div class="swatch-hex" id="hex-line">#e5e5e5</div></div>
+          <div class="swatch"><div class="swatch-fill" style="background: var(--accent)"></div><div class="swatch-name">--accent</div><div class="swatch-hex" id="hex-accent">#0066cc</div></div>
+          <div class="swatch"><div class="swatch-fill" style="background: var(--danger)"></div><div class="swatch-name">--danger</div><div class="swatch-hex" id="hex-danger">#d62828</div></div>
+          <div class="swatch"><div class="swatch-fill" style="background: var(--on-accent)"></div><div class="swatch-name">--on-accent</div><div class="swatch-hex" id="hex-on-accent">#ffffff</div></div>
+        </div>
+      </div>
+
+      <div class="demo" id="s-1-2">
+        <p class="demo-title">[1.2] type scale</p>
+        <p class="demo-desc">UI sizes 10–22, display sizes 24+. All Courier Prime, weight 400 unless noted.</p>
+        <div class="demo-row col">
+          <span style="font-size: 10px;">10px / micro chip / letter-spacing 1px</span>
+          <span style="font-size: 11px;">11px / table header, profile-stat-label, tooltip</span>
+          <span style="font-size: 12px;">12px / form label, hint, scope toggle</span>
+          <span style="font-size: 13px;">13px / subtitle, secondary text, tag</span>
+          <span style="font-size: 14px;">14px / button text, h2, table row</span>
+          <span style="font-size: 15px;">15px / body, input, sidebar link</span>
+          <span style="font-size: 16px;">16px / h3, word-input</span>
+          <span style="font-size: 17px;">17px / game-card title</span>
+          <span style="font-size: 18px;">18px / topbar logo, game timer</span>
+          <span style="font-size: 20px;">20px / profile-stat value</span>
+          <span style="font-size: 22px;">22px / h1</span>
+          <span style="font-size: 24px;">24px / game-input</span>
+          <span style="font-size: 32px;">32px / game-text-reaction</span>
+          <span style="font-size: 56px; line-height: 1;">56px / math, stroop</span>
+          <span style="font-size: 80px; line-height: 1;">80 / digit</span>
+          <span style="font-size: 96px; line-height: 1;">96 / nback, result</span>
+        </div>
+      </div>
+
+      <div class="demo" id="s-1-3">
+        <p class="demo-title">[1.3] spacing values in use</p>
+        <p class="demo-desc">No formal scale yet. Cluster values: 4 / 8 / 12 / 16 / 24 / 32 / 48 / 64. Stragglers (6, 10, 14) suggest a real scale is overdue.</p>
+        <div class="demo-row" style="align-items: stretch;">
+          <span style="background: var(--accent); width: 4px; height: 32px;" title="4"></span>
+          <span style="background: var(--accent); width: 8px; height: 32px;" title="8"></span>
+          <span style="background: var(--accent); width: 12px; height: 32px;" title="12"></span>
+          <span style="background: var(--accent); width: 16px; height: 32px;" title="16"></span>
+          <span style="background: var(--accent); width: 24px; height: 32px;" title="24"></span>
+          <span style="background: var(--accent); width: 32px; height: 32px;" title="32"></span>
+          <span style="background: var(--accent); width: 48px; height: 32px;" title="48"></span>
+          <span style="background: var(--accent); width: 64px; height: 32px;" title="64"></span>
+        </div>
+        <p class="code-hint">Hover each bar to see the px value.</p>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         2. TYPOGRAPHY
+         ==================================================================== -->
+    <section class="section">
+      <p class="section-title">[2] typography</p>
+      <h2 class="section-h">headings + text styles</h2>
+
+      <div class="demo" id="s-2-1">
+        <p class="demo-title">[2.1] h1</p>
+        <p class="demo-desc">22px, weight 400, letter-spacing -0.3px. Page-level title.</p>
+        <h1>Today's Games</h1>
+      </div>
+
+      <div class="demo" id="s-2-2">
+        <p class="demo-title">[2.2] h2</p>
+        <p class="demo-desc">14px, uppercase, letter-spacing 1px, color --muted. Section label.</p>
+        <h2>leaderboard preview</h2>
+      </div>
+
+      <div class="demo" id="s-2-3">
+        <p class="demo-title">[2.3] h3</p>
+        <p class="demo-desc">16px, weight 400, letter-spacing -0.2px. Section subhead between h1 and h2.</p>
+        <h3>Section subhead</h3>
+      </div>
+
+      <div class="demo" id="s-2-4">
+        <p class="demo-title">[2.4] body / subtitle / hint / micro</p>
+        <p class="demo-desc">Four canonical text scales below h1/h2/h3.</p>
+        <p>Body text at 15px. Default everywhere.</p>
+        <p class="subtitle">subtitle — 13px muted, used under h1</p>
+        <p class="hint">hint — 12px muted, form helper text</p>
+        <p class="micro">micro — 11px muted uppercase, table headers + labels</p>
+      </div>
+
+      <div class="demo" id="s-2-5">
+        <p class="demo-title">[2.5] links</p>
+        <p class="demo-desc">Inherit ink color, hover to accent. No underline.</p>
+        <p>Inline <a href="#">a regular link</a> in body text. Hover it.</p>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         3. BUTTONS
+         ==================================================================== -->
+    <section class="section">
+      <p class="section-title">[3] buttons</p>
+      <h2 class="section-h">canonical button set (6 variants)</h2>
+      <p class="section-note">Six canonical button variants. Anything else in the wild is dead code. All hover states are live.</p>
+
+      <div class="demo" id="s-3-1">
+        <p class="demo-title">[3.1] primary outlined / button</p>
+        <p class="demo-desc">Default. 1px accent border, accent text → fills accent on hover. The everyday button.</p>
+        <div class="demo-row">
+          <button class="app-btn" type="button">play -&gt;</button>
+          <button class="app-btn" type="button">save</button>
+          <button class="app-btn" type="button">submit -&gt; (enter)</button>
+        </div>
+      </div>
+
+      <div class="demo" id="s-3-2">
+        <p class="demo-title">[3.2] btn-link / anchor styled as button</p>
+        <p class="demo-desc">Same look as [3.1] but renders as &lt;a&gt;. Use when the action is real navigation.</p>
+        <div class="demo-row">
+          <a href="#" class="app-btn-link">play -&gt;</a>
+          <a href="#" class="app-btn-link">sign in</a>
+        </div>
+      </div>
+
+      <div class="demo" id="s-3-3">
+        <p class="demo-title">[3.3] btn-danger</p>
+        <p class="demo-desc">Red border + red text → fills danger on hover. Account deletion, decline, remove friend.</p>
+        <div class="demo-row">
+          <button class="app-btn-danger" type="button">delete account</button>
+          <button class="app-btn-danger" type="button">remove</button>
+          <button class="app-btn-danger" type="button">decline</button>
+        </div>
+      </div>
+
+      <div class="demo" id="s-3-4">
+        <p class="demo-title">[3.4] btn-sm</p>
+        <p class="demo-desc">Small variant. Used by chip-sized actions (today search clear, etc.).</p>
+        <div class="demo-row">
+          <button class="app-btn app-btn-sm" type="button">clear</button>
+          <button class="app-btn app-btn-sm" type="button">copy</button>
+          <button class="app-btn app-btn-sm" type="button">cancel</button>
+        </div>
+      </div>
+
+      <div class="demo" id="s-3-5">
+        <p class="demo-title">[3.5] btn-icon</p>
+        <p class="demo-desc">Borderless single-glyph button. Used by toast dismiss + today pin.</p>
+        <div class="demo-row">
+          <button class="app-btn-icon" type="button" aria-label="dismiss">×</button>
+          <button class="app-btn-icon" type="button" aria-label="pin">*</button>
+          <button class="app-btn-icon is-active" type="button" aria-label="pinned">&gt;</button>
+          <span class="muted code-hint">is-active = pinned/selected state</span>
+        </div>
+      </div>
+
+      <div class="demo" id="s-3-6">
+        <p class="demo-title">[3.6] btn-ghost</p>
+        <p class="demo-desc">Large invisible target with line border. Currently <code>.game-tappable</code>. Used for NBack tap-target.</p>
+        <button class="app-btn-ghost" type="button" style="max-width: 320px;">tap when you see a match</button>
+      </div>
+
+      <div class="demo" id="s-3-7">
+        <p class="demo-title">[3.7] disabled state</p>
+        <p class="demo-desc">All variants share the same disabled treatment: --line border, --muted text, not-allowed cursor.</p>
+        <div class="demo-row">
+          <button class="app-btn" type="button" disabled>save</button>
+          <button class="app-btn-danger" type="button" disabled>delete</button>
+          <button class="app-btn app-btn-sm" type="button" disabled>clear</button>
+        </div>
+      </div>
+
+      <div class="demo" id="s-3-8">
+        <p class="demo-title">[3.8] focus state (keyboard)</p>
+        <p class="demo-desc">Tab into the button below to see the 1px accent halo. No thicker, no offset.</p>
+        <button class="app-btn" type="button">focus me with Tab</button>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         4. FORM CONTROLS
+         ==================================================================== -->
+    <section class="section">
+      <p class="section-title">[4] form controls</p>
+      <h2 class="section-h">inputs and FormField composition</h2>
+
+      <div class="demo" id="s-4-1">
+        <p class="demo-title">[4.1] text input</p>
+        <p class="demo-desc">1px line border → accent on focus. No radius, no shadow.</p>
+        <input class="app-input" type="text" placeholder="username" style="width: 280px;">
+      </div>
+
+      <div class="demo" id="s-4-2">
+        <p class="demo-title">[4.2] password</p>
+        <p class="demo-desc">Visually identical, native masking.</p>
+        <input class="app-input" type="password" value="hunter2hunter2" style="width: 280px;">
+      </div>
+
+      <div class="demo" id="s-4-3">
+        <p class="demo-title">[4.3] textarea</p>
+        <p class="demo-desc">Same border treatment.</p>
+        <textarea class="app-textarea" rows="3" style="width: 100%; max-width: 480px;" placeholder="bio (optional, max 280)"></textarea>
+      </div>
+
+      <div class="demo" id="s-4-4">
+        <p class="demo-title">[4.4] select</p>
+        <p class="demo-desc">Native &lt;select&gt; with the same border treatment. Browser draws the arrow.</p>
+        <select class="app-select" style="width: 200px;">
+          <option>today</option>
+          <option>7d</option>
+          <option>all-time</option>
+        </select>
+      </div>
+
+      <div class="demo" id="s-4-5">
+        <p class="demo-title">[4.5] checkbox</p>
+        <p class="demo-desc">16×16 line border, fills accent when checked, 1px accent halo on focus. The checkmark glyph is the single allowed transform exception in the system.</p>
+        <label style="cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+          <input class="app-check" type="checkbox" checked> public profile
+        </label>
+        <span style="display: inline-block; width: 16px;"></span>
+        <label style="cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+          <input class="app-check" type="checkbox"> skip tutorials globally
+        </label>
+      </div>
+
+      <div class="demo" id="s-4-6">
+        <p class="demo-title">[4.6] radio</p>
+        <p class="demo-desc">Same recipe as checkbox but circular.</p>
+        <div class="demo-row">
+          <label style="cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+            <input class="app-radio" type="radio" name="r1" checked> light
+          </label>
+          <label style="cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+            <input class="app-radio" type="radio" name="r1"> dark
+          </label>
+          <label style="cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+            <input class="app-radio" type="radio" name="r1"> system
+          </label>
+        </div>
+      </div>
+
+      <div class="demo" id="s-4-7">
+        <p class="demo-title">[4.7] FormField composition (label + hint + error)</p>
+        <p class="demo-desc">FormField wraps label + hint + error. Forms across the app are migrated to this pattern.</p>
+        <div style="max-width: 360px;">
+          <div style="margin-bottom: 12px;">
+            <label style="display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px;">display name (optional, max 40)</label>
+            <input class="app-input" type="text" value="Duke" style="width: 100%;">
+            <p class="hint" style="margin: 4px 0 0;">shown on your profile and leaderboards</p>
+          </div>
+          <div style="margin-bottom: 12px;">
+            <label style="display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px;">username</label>
+            <input class="app-input" type="text" value="!! invalid !!" style="width: 100%;">
+            <p class="app-tag-error" style="margin: 4px 0 0; font-size: 12px;" role="alert">username may only contain letters, digits, and underscores</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         5. STATUS / TAGS
+         ==================================================================== -->
+    <section class="section">
+      <p class="section-title">[5] status / brackets</p>
+      <h2 class="section-h">single canonical bracketed-status convention</h2>
+      <p class="section-note">Replaces literal <code>[{error}]</code> JSX strings and the deleted <code>BracketPill</code> component. Brackets live in pseudo-elements; do not include them in JSX content.</p>
+
+      <div class="demo" id="s-5-1">
+        <p class="demo-title">[5.1] tag muted (.app-tag)</p>
+        <p class="demo-desc">Default. Status + ack messages.</p>
+        <div class="demo-row col">
+          <span class="app-tag">no streak</span>
+          <span class="app-tag">unavailable</span>
+          <span class="app-tag">saved. streak ticked, leaderboard updated.</span>
+          <span class="app-tag">not yet played</span>
+        </div>
+      </div>
+
+      <div class="demo" id="s-5-2">
+        <p class="demo-title">[5.2] tag accent (.app-tag-accent)</p>
+        <p class="demo-desc">Bonus / notable status chip (e.g. "2x xp", "new pb").</p>
+        <div class="demo-row">
+          <span class="app-tag-accent">2x xp</span>
+          <span class="app-tag-accent">new pb</span>
+          <span class="app-tag-accent">bonus</span>
+        </div>
+      </div>
+
+      <div class="demo" id="s-5-3">
+        <p class="demo-title">[5.3] tag error (.app-tag-error)</p>
+        <p class="demo-desc">Form validation errors. Per current code, errors use <code>--accent</code>, not <code>--danger</code>. (Open question: should errors be danger? Flag below.)</p>
+        <div class="demo-row col">
+          <span class="app-tag-error">username is taken</span>
+          <span class="app-tag-error">passwords don't match</span>
+        </div>
+      </div>
+
+      <div class="demo" id="s-5-4">
+        <p class="demo-title">[5.4] tag danger (.app-tag-danger)</p>
+        <p class="demo-desc">Reserved for destructive confirmations / blocking errors. Uses <code>--danger</code>.</p>
+        <div class="demo-row col">
+          <span class="app-tag-danger">this action cannot be undone</span>
+          <span class="app-tag-danger">account deletion is permanent</span>
+        </div>
+        <p class="code-hint">DECISION NEEDED: Should form errors use [5.3] accent or [5.4] danger? Current code uses accent everywhere; I think danger reads more correctly.</p>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         6. CHIPS
+         ==================================================================== -->
+    <section class="section">
+      <p class="section-title">[6] pills / chips</p>
+      <h2 class="section-h">interactive chips</h2>
+
+      <div class="demo" id="s-6-1">
+        <p class="demo-title">[6.1] direction badge</p>
+        <p class="demo-desc">Hovers to accent border. Clickable for directions modal. Uppercase 10px text + "?" suffix.</p>
+        <div class="demo-row">
+          <button class="app-direction-badge" type="button">higher</button>
+          <button class="app-direction-badge" type="button">lower</button>
+        </div>
+      </div>
+
+      <div class="demo" id="s-6-2">
+        <p class="demo-title">[6.2] tabs (.app-tab)</p>
+        <p class="demo-desc">Text + bottom border on active. Hover to accent. Used for game switcher + time-window switcher on /leaderboards.</p>
+        <div class="demo-row" style="gap: 16px;">
+          <a href="#" class="app-tab is-active">math</a>
+          <a href="#" class="app-tab">digit</a>
+          <a href="#" class="app-tab">nback</a>
+          <a href="#" class="app-tab">stroop</a>
+          <a href="#" class="app-tab">reaction</a>
+          <a href="#" class="app-tab">mine</a>
+          <a href="#" class="app-tab">word</a>
+        </div>
+        <div class="demo-row" style="gap: 16px; margin-top: 12px;">
+          <a href="#" class="app-tab is-uppercase is-active">today</a>
+          <a href="#" class="app-tab is-uppercase">7d</a>
+          <a href="#" class="app-tab is-uppercase">all-time</a>
+        </div>
+      </div>
+
+      <div class="demo" id="s-6-3">
+        <p class="demo-title">[6.3] scope toggle (.app-scope)</p>
+        <p class="demo-desc">Smaller, no underline. For [global / friends] toggle on leaderboards.</p>
+        <div class="demo-row" style="gap: 12px;">
+          <a href="#" class="app-scope is-active">[global]</a>
+          <a href="#" class="app-scope">[friends]</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         7. CARDS / ROWS
+         ==================================================================== -->
+    <section class="section">
+      <p class="section-title">[7] cards / rows</p>
+      <h2 class="section-h">list rows and bordered surfaces</h2>
+
+      <div class="demo" id="s-7-1">
+        <p class="demo-title">[7.1] game card row</p>
+        <p class="demo-desc">Top + bottom border (last child only), no fill, no radius. Hover lights the top border accent.</p>
+        <div class="app-card-row">
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px; font-size: 17px;">
+              <button class="app-btn-icon" type="button" aria-label="pin">*</button>
+              <span>Speed Math</span>
+              <span style="color: var(--accent);">*</span>
+              <span class="app-tag-accent">2x xp</span>
+              <button class="app-direction-badge" type="button">higher</button>
+            </div>
+            <div style="color: var(--muted); font-size: 13px; margin-top: 6px;">
+              Solve as many as you can in 60s — best today: <span style="color: var(--ink);">47</span>
+            </div>
+          </div>
+          <a href="#" class="app-btn-link">play -&gt;</a>
+        </div>
+        <div class="app-card-row">
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px; font-size: 17px;">
+              <span>Digit Span</span>
+            </div>
+            <div style="color: var(--muted); font-size: 13px; margin-top: 6px;">
+              Repeat the digits in order
+            </div>
+          </div>
+          <a href="#" class="app-btn-link">play -&gt;</a>
+        </div>
+      </div>
+
+      <div class="demo" id="s-7-2">
+        <p class="demo-title">[7.2] friend row</p>
+        <p class="demo-desc">Avatar + identity left, action buttons right. Top + bottom border, full-width hover affordance.</p>
+        <ul style="list-style: none; padding: 0; margin: 0;">
+          <li class="app-friend-row">
+            <a href="#" style="display: inline-flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none;">
+              <span class="app-avatar" style="width: 28px; height: 28px; font-size: 14px; background: #6366f1;">D</span>
+              <span style="display: flex; flex-direction: column;">
+                <span style="font-size: 14px;">Duke</span>
+                <span style="font-size: 12px; color: var(--muted);">@duke</span>
+              </span>
+            </a>
+            <div style="display: inline-flex; gap: 8px;">
+              <button class="app-btn" type="button">accept</button>
+              <button class="app-btn-danger" type="button">decline</button>
+            </div>
+          </li>
+          <li class="app-friend-row">
+            <a href="#" style="display: inline-flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none;">
+              <span class="app-avatar" style="width: 28px; height: 28px; font-size: 14px; background: #f97316;">N</span>
+              <span style="display: flex; flex-direction: column;">
+                <span style="font-size: 14px;">neuralnomad</span>
+                <span style="font-size: 12px; color: var(--muted);">@neuralnomad</span>
+              </span>
+            </a>
+            <div style="display: inline-flex; gap: 8px;">
+              <button class="app-btn-danger" type="button">remove</button>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="demo" id="s-7-3">
+        <p class="demo-title">[7.3] empty state</p>
+        <p class="demo-desc">Centered muted text + optional accent CTA. Top + bottom border.</p>
+        <div class="app-empty-state">
+          <p class="app-empty-state-msg">No submissions in this window yet. Be the first.</p>
+          <a href="#" class="app-empty-state-cta">play math -&gt;</a>
+        </div>
+      </div>
+
+      <div class="demo" id="s-7-4">
+        <p class="demo-title">[7.4] summary trio</p>
+        <p class="demo-desc">3-column stat block, top + bottom border. Used on /profile.</p>
+        <div class="app-summary">
+          <div><span class="label">streak</span><span class="value">12</span></div>
+          <div><span class="label">level</span><span class="value">7</span></div>
+          <div><span class="label">total plays</span><span class="value numeric">847</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         8. TABLES
+         ==================================================================== -->
+    <section class="section">
+      <p class="section-title">[8] tables</p>
+      <h2 class="section-h">data tables</h2>
+
+      <div class="demo" id="s-8-1">
+        <p class="demo-title">[8.1] leaderboard table</p>
+        <p class="demo-desc">Hover any row. "You" highlight uses accent + weight 700. (Note: bold here violates the strict spec; defended as semantic emphasis.)</p>
+        <table class="app-table">
+          <thead>
+            <tr><th style="width: 32px;">#</th><th>player</th><th style="text-align: right;">score</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td><span class="app-avatar" style="width: 22px; height: 22px; font-size: 11px; background: #4a90e2; margin-right: 8px;">N</span>neuralnomad</td><td style="text-align: right;">8421</td></tr>
+            <tr><td>2</td><td><span class="app-avatar" style="width: 22px; height: 22px; font-size: 11px; background: #6b7280; margin-right: 8px;">A</span>axonflux</td><td style="text-align: right;">7892</td></tr>
+            <tr><td>3</td><td><span class="app-avatar" style="width: 22px; height: 22px; font-size: 11px; background: #10b981; margin-right: 8px;">S</span>synaptik</td><td style="text-align: right;">7104</td></tr>
+            <tr style="color: var(--accent); font-weight: 700;"><td>4</td><td><span class="app-avatar" style="width: 22px; height: 22px; font-size: 11px; background: #6366f1; margin-right: 8px;">D</span>duke</td><td style="text-align: right;">6580</td></tr>
+            <tr><td>5</td><td><span class="app-avatar" style="width: 22px; height: 22px; font-size: 11px; background: #ec4899; margin-right: 8px;">D</span>dendrite42</td><td style="text-align: right;">6122</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         9. TOOLTIPS
+         ==================================================================== -->
+    <section class="section">
+      <p class="section-title">[9] tooltips</p>
+      <h2 class="section-h">two systems, identical visuals</h2>
+      <p class="section-note">Keep both: wrapped for one-offs, delegated for high-density (heatmap has 91 cells).</p>
+
+      <div class="demo" id="s-9-1">
+        <p class="demo-title">[9.1] wrapped (Tooltip component)</p>
+        <p class="demo-desc">Hover or focus the host. The bubble fades in via opacity only.</p>
+        <div class="demo-row">
+          <span class="app-tooltip-host" tabindex="0">
+            <span style="color: var(--accent); cursor: help;">*</span>
+            <span class="app-tooltip">cognitively core game</span>
+          </span>
+          <span class="app-tooltip-host" tabindex="0">
+            <span style="border-bottom: 1px dashed var(--muted); cursor: help;">hover me</span>
+            <span class="app-tooltip">delegated tooltips run on data-tip</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="demo" id="s-9-2">
+        <p class="demo-title">[9.2] delegated (DelegatedTooltips)</p>
+        <p class="demo-desc">Single mounted bubble follows pointer over any <code>data-tip</code> element. Identical look. Demo'd interactively in JS below.</p>
+        <div class="demo-row">
+          <span data-tip="this would show via the delegated tooltip" style="border-bottom: 1px dashed var(--muted); cursor: help;">hover me (live demo)</span>
+          <span data-tip="9 plays on 2026-04-30" style="border-bottom: 1px dashed var(--muted); cursor: help;">heatmap cell hover example</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         10. MODAL
+         ==================================================================== -->
+    <section class="section">
+      <p class="section-title">[10] overlays</p>
+      <h2 class="section-h">modals</h2>
+
+      <div class="demo" id="s-10-1">
+        <p class="demo-title">[10.1] modal primitive</p>
+        <p class="demo-desc">1px line border, no shadow, no radius. Backdrop is rgba(0,0,0,0.55). Click button to open. Esc or backdrop click closes.</p>
+        <button class="app-btn" type="button" id="openModal1">open simple modal</button>
+      </div>
+
+      <div class="demo" id="s-10-2">
+        <p class="demo-title">[10.2] confirm dialog (destructive)</p>
+        <p class="demo-desc">Modal + danger heading + cancel/confirm buttons. <code>danger=true</code> swaps confirm to btn-danger.</p>
+        <button class="app-btn" type="button" id="openModal2">open confirm dialog</button>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         11. TOASTS
+         ==================================================================== -->
+    <section class="section">
+      <p class="section-title">[11] toasts</p>
+      <h2 class="section-h">transient notifications</h2>
+
+      <div class="demo" id="s-11-1">
+        <p class="demo-title">[11.1] info toast (accent border)</p>
+        <p class="demo-desc">Default. Auto-dismisses after 4s in real app. Click × to dismiss now.</p>
+        <div class="app-toast" role="status">
+          <span>Avatar updated.</span>
+          <button class="app-btn-icon" type="button" aria-label="dismiss" style="margin-left: auto;">×</button>
+        </div>
+      </div>
+
+      <div class="demo" id="s-11-2">
+        <p class="demo-title">[11.2] error toast (danger border)</p>
+        <p class="demo-desc">Red border + red text via --danger.</p>
+        <div class="app-toast is-error" role="alert">
+          <span>Failed to send friend request.</span>
+          <button class="app-btn-icon" type="button" aria-label="dismiss" style="margin-left: auto; color: inherit;">×</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         12. AVATARS
+         ==================================================================== -->
+    <section class="section">
+      <p class="section-title">[12] identity</p>
+      <h2 class="section-h">avatars</h2>
+
+      <div class="demo" id="s-12-1">
+        <p class="demo-title">[12.1] avatar sizes (22 / 28 / 48 / 64)</p>
+        <p class="demo-desc">22 = leaderboard rows, 28 = topbar/friend rows (default), 48 = settings, 64 = avatar editor preview.</p>
+        <div class="demo-row" style="align-items: flex-end;">
+          <span class="app-avatar" style="width: 22px; height: 22px; font-size: 11px; background: #6366f1;">D</span>
+          <span class="app-avatar" style="width: 28px; height: 28px; font-size: 14px; background: #6366f1;">D</span>
+          <span class="app-avatar" style="width: 48px; height: 48px; font-size: 24px; background: #6366f1;">D</span>
+          <span class="app-avatar" style="width: 64px; height: 64px; font-size: 32px; background: #6366f1;">D</span>
+          <span style="display: inline-block; width: 24px;"></span>
+          <span class="app-avatar is-emoji" style="width: 28px; height: 28px; font-size: 17px; background: #f97316;">🧠</span>
+          <span class="app-avatar is-emoji" style="width: 48px; height: 48px; font-size: 29px; background: #f97316;">🧠</span>
+          <span class="app-avatar is-emoji" style="width: 64px; height: 64px; font-size: 38px; background: #f97316;">🧠</span>
+        </div>
+        <p class="code-hint">Real Avatar component does SVG bbox-centering for glyph alignment; this preview uses CSS grid centering.</p>
+      </div>
+
+      <div class="demo" id="s-12-2">
+        <p class="demo-title">[12.2] avatar editor trigger (hover blur)</p>
+        <p class="demo-desc">Hover or focus the avatar to see the blur + "edit" overlay.</p>
+        <button class="app-avatar-trigger" type="button" aria-label="edit avatar">
+          <span class="app-avatar" style="width: 64px; height: 64px; font-size: 32px; background: #6366f1;">D</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         13. XP BAR
+         ==================================================================== -->
+    <section class="section">
+      <p class="section-title">[13] xp bar</p>
+      <h2 class="section-h">level + progress indicator</h2>
+
+      <div class="demo" id="s-13-1">
+        <p class="demo-title">[13.1] xp bar at 4 fill levels</p>
+        <p class="demo-desc">96px track, 1px line border, fills accent. Width transitions 220ms ease-out when xp changes.</p>
+        <div class="demo-row col">
+          <div class="app-xp">
+            <span class="app-xp-label">Lv 1</span>
+            <span class="app-xp-track"><span class="app-xp-fill" style="width: 0%;"></span></span>
+            <span class="app-xp-num">0/100</span>
+          </div>
+          <div class="app-xp">
+            <span class="app-xp-label">Lv 3</span>
+            <span class="app-xp-track"><span class="app-xp-fill" style="width: 33%;"></span></span>
+            <span class="app-xp-num">100/300</span>
+          </div>
+          <div class="app-xp">
+            <span class="app-xp-label">Lv 7</span>
+            <span class="app-xp-track"><span class="app-xp-fill" style="width: 66%;"></span></span>
+            <span class="app-xp-num">847/1300</span>
+          </div>
+          <div class="app-xp">
+            <span class="app-xp-label">Lv 9</span>
+            <span class="app-xp-track"><span class="app-xp-fill" style="width: 100%;"></span></span>
+            <span class="app-xp-num">1700/1700</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         14. STREAK RIBBON
+         ==================================================================== -->
+    <section class="section">
+      <p class="section-title">[14] streak ribbon</p>
+      <h2 class="section-h">streak tier colors</h2>
+
+      <div class="demo" id="s-14-1">
+        <p class="demo-title">[14.1] all 6 tiers</p>
+        <p class="demo-desc">Tier color from <code>lib/tier-colors.ts</code>. Flame pulses opacity 1 → 0.55 → 1 every 2s. The signature animation.</p>
+        <div class="demo-row col">
+          <span class="muted">no streak (--muted)</span>
+          <span class="app-streak" style="color: var(--ink);"><span class="flame">🔥</span><span>1</span><span class="units">day</span></span>
+          <span class="app-streak" style="color: #f59e0b;"><span class="flame">🔥</span><span>5</span><span class="units">days</span> &nbsp;<span class="muted">/ warm</span></span>
+          <span class="app-streak" style="color: #f97316;"><span class="flame">🔥</span><span>14</span><span class="units">days</span> &nbsp;<span class="muted">/ hot</span></span>
+          <span class="app-streak" style="color: #dc2626;"><span class="flame">🔥</span><span>45</span><span class="units">days</span> &nbsp;<span class="muted">/ red-hot</span></span>
+          <span class="app-streak" style="color: #a855f7;"><span class="flame">🔥</span><span>120</span><span class="units">days</span> &nbsp;<span class="muted">/ epic</span></span>
+        </div>
+        <p class="code-hint">DECISION NEEDED: tier hexes don't theme to dark mode. Acceptable as semantic colors? Or token-ize?</p>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         15. HEATMAP + LB PREVIEW
+         ==================================================================== -->
+    <section class="section">
+      <p class="section-title">[15] data viz</p>
+      <h2 class="section-h">heatmap + leaderboard preview</h2>
+
+      <div class="demo" id="s-15-1">
+        <p class="demo-title">[15.1] heatmap (90-day plays)</p>
+        <p class="demo-desc">13 cols × 7 rows of 11px cells. 4 intensity levels. Hover any cell to see the (mocked) tooltip.</p>
+        <div class="app-heatmap-grid" id="heatmapDemo"></div>
+        <div class="app-heat-legend" style="margin-top: 8px;">
+          <span>less</span>
+          <span class="app-heat-cell"></span>
+          <span class="app-heat-cell" data-i="1"></span>
+          <span class="app-heat-cell" data-i="2"></span>
+          <span class="app-heat-cell" data-i="3"></span>
+          <span>more</span>
+        </div>
+      </div>
+
+      <div class="demo" id="s-15-2">
+        <p class="demo-title">[15.2] lb preview rows</p>
+        <p class="demo-desc">Compact, no chrome. Used inside game cards on /today.</p>
+        <div class="app-lb-preview">
+          <div class="app-lb-preview-row"><span>1</span><span>neuralnomad</span><span class="numeric">82</span></div>
+          <div class="app-lb-preview-row"><span>2</span><span>axonflux</span><span class="numeric">71</span></div>
+          <div class="app-lb-preview-row is-you"><span>3</span><span>you</span><span class="numeric">47</span></div>
+          <div class="app-lb-preview-row" style="color: var(--line);"><span style="letter-spacing: 2px;">...</span><span></span><span></span></div>
+          <div class="app-lb-preview-row is-you"><span>12</span><span>you</span><span class="numeric">47</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         16. MILESTONE BANNER
+         ==================================================================== -->
+    <section class="section">
+      <p class="section-title">[16] banners</p>
+      <h2 class="section-h">milestone banner</h2>
+
+      <div class="demo" id="s-16-1">
+        <p class="demo-title">[16.1] today milestone banner</p>
+        <p class="demo-desc">Single accent-bordered banner at the top of /today. Priority order: clean-sweep, new-PB, streak, plays-today.</p>
+        <div class="demo-row col">
+          <div class="app-milestone"><span aria-hidden>🎯</span><span class="app-milestone-text">all 7 games today — clean sweep</span></div>
+          <div class="app-milestone"><span aria-hidden>🏆</span><span class="app-milestone-text">new personal best earned today</span></div>
+          <div class="app-milestone"><span aria-hidden>🔥</span><span class="app-milestone-text">day 12 streak — keep it going</span></div>
+          <div class="app-milestone"><span aria-hidden>•</span><span class="app-milestone-text">3 / 7 games today</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         17. GAME-SPECIFIC
+         ==================================================================== -->
+    <section class="section">
+      <p class="section-title">[17] game-specific</p>
+      <h2 class="section-h">game cells, buttons, type scales</h2>
+
+      <div class="demo" id="s-17-1">
+        <p class="demo-title">[17.1] mine cells (10×10 grid; 4×4 sample)</p>
+        <p class="demo-desc">All 11 states: covered (hover), revealed empty, revealed 1-8, mine, flag.</p>
+        <div style="display: inline-grid; grid-template-columns: repeat(4, 32px); border: 1px solid var(--line); margin-bottom: 8px;">
+          <button class="app-mine" type="button"></button>
+          <button class="app-mine is-flagged" type="button">⚑</button>
+          <button class="app-mine is-revealed" type="button"></button>
+          <button class="app-mine is-revealed" type="button" data-n="1">1</button>
+          <button class="app-mine is-revealed" type="button" data-n="2">2</button>
+          <button class="app-mine is-revealed" type="button" data-n="3">3</button>
+          <button class="app-mine is-revealed" type="button" data-n="4">4</button>
+          <button class="app-mine is-revealed" type="button" data-n="5">5</button>
+          <button class="app-mine is-revealed" type="button" data-n="6">6</button>
+          <button class="app-mine is-revealed" type="button" data-n="7">7</button>
+          <button class="app-mine is-revealed" type="button" data-n="8">8</button>
+          <button class="app-mine is-mine" type="button">✱</button>
+          <button class="app-mine" type="button"></button>
+          <button class="app-mine" type="button"></button>
+          <button class="app-mine" type="button"></button>
+          <button class="app-mine" type="button"></button>
+        </div>
+        <p class="code-hint">Numbers 1-6 use Material-style colors (legacy). 7 and 8 use ink/muted. The mine fill now uses --danger.</p>
+      </div>
+
+      <div class="demo" id="s-17-2">
+        <p class="demo-title">[17.2] stroop buttons (4 colors)</p>
+        <p class="demo-desc">Each button's text color matches its label. Border color matches text. Hover brightens.</p>
+        <div class="demo-row" style="gap: 12px;">
+          <button class="app-stroop-btn" type="button" style="color: #e53935; border-color: #e53935;">red</button>
+          <button class="app-stroop-btn" type="button" style="color: #1e88e5; border-color: #1e88e5;">blue</button>
+          <button class="app-stroop-btn" type="button" style="color: #43a047; border-color: #43a047;">green</button>
+          <button class="app-stroop-btn" type="button" style="color: #fdd835; border-color: #fdd835;">yellow</button>
+        </div>
+      </div>
+
+      <div class="demo" id="s-17-3">
+        <p class="demo-title">[17.3] word grid</p>
+        <p class="demo-desc">2-column word recall display. 22px cells, bottom-border lines.</p>
+        <div class="app-word-grid" style="max-width: 420px;">
+          <div class="app-word-cell">circle</div>
+          <div class="app-word-cell">harbor</div>
+          <div class="app-word-cell">whisper</div>
+          <div class="app-word-cell">candle</div>
+          <div class="app-word-cell">marble</div>
+          <div class="app-word-cell">window</div>
+        </div>
+      </div>
+
+      <div class="demo" id="s-17-4">
+        <p class="demo-title">[17.4] in-game type scales</p>
+        <p class="demo-desc">Each game has a locked display size. The result screen shares 96px with nback.</p>
+        <div class="demo-row col" style="gap: 24px;">
+          <span class="gt-math">7 × 9</span>
+          <span class="gt-digit">3 8 1 5 7</span>
+          <span class="gt-nback">K</span>
+          <span class="gt-stroop" style="color: #1e88e5;">red</span>
+          <span class="gt-result">47</span>
+          <span class="gt-reaction">click when green</span>
+        </div>
+      </div>
+
+      <div class="demo" id="s-17-5">
+        <p class="demo-title">[17.5] game HUD (timer + score)</p>
+        <p class="demo-desc">Above the game stage. Timer 18px, score 14px muted.</p>
+        <div class="app-hud" style="max-width: 420px;">
+          <span class="app-timer">0:42</span>
+          <span class="app-score">score: 12</span>
+        </div>
+        <div class="app-hud" style="max-width: 420px; margin-top: 12px;">
+          <span class="app-timer is-penalty">0:09</span>
+          <span class="app-score">score: 12</span>
+        </div>
+        <p class="code-hint">is-penalty fires when the player wrong-answers. Color now uses --danger.</p>
+      </div>
+
+      <div class="demo" id="s-17-6">
+        <p class="demo-title">[17.6] countdown</p>
+        <p class="demo-desc">240ms opacity fade per step. Click to replay.</p>
+        <div class="demo-row">
+          <button class="app-btn" type="button" id="countdownReplay">replay countdown</button>
+          <span class="app-countdown" id="countdownDemo" style="display: inline-block; min-width: 60px; text-align: center;">3</span>
+        </div>
+      </div>
+
+      <div class="demo" id="s-17-7">
+        <p class="demo-title">[17.7] result saved (xp + new pb)</p>
+        <p class="demo-desc">Below the result number. Fades in 320ms.</p>
+        <div class="app-result-saved" role="status">
+          <span class="app-result-pb">[new PB]</span>
+          <span class="app-result-xp">+45 xp</span>
+          <span class="app-tag">saved. streak ticked, leaderboard updated.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         18. SHELL
+         ==================================================================== -->
+    <section class="section">
+      <p class="section-title">[18] app shell</p>
+      <h2 class="section-h">topbar + sidebar nav</h2>
+
+      <div class="demo" id="s-18-1">
+        <p class="demo-title">[18.1] sidebar (active / inactive / disabled)</p>
+        <p class="demo-desc">Active items get the &gt; glyph in accent. Disabled items get the SOON tag. Hover any.</p>
+        <aside class="app-shell-sidebar" style="max-width: 220px;">
+          <ul>
+            <li><a class="app-shell-link is-active" href="#">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
+              <span>Today</span></a></li>
+            <li><a class="app-shell-link" href="#">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h4V10H4zM10 20h4V4h-4zM16 20h4v-7h-4z"/></svg>
+              <span>Leaderboards</span></a></li>
+            <li><a class="app-shell-link" href="#">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+              <span>Profile</span></a></li>
+            <li><span class="app-shell-link is-disabled">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/></svg>
+              <span>Groups</span><span class="app-shell-soon">soon</span></span></li>
+          </ul>
+        </aside>
+      </div>
+
+      <div class="demo" id="s-18-2">
+        <p class="demo-title">[18.2] topbar (logo + streak + xp + avatar)</p>
+        <p class="demo-desc">All four right-side elements at full fidelity. The avatar is a real AvatarEditTrigger — hover it.</p>
+        <div class="app-shell-topbar" style="border: 1px solid var(--line);">
+          <div class="app-shell-logo"><a href="#">mindlap</a></div>
+          <div class="app-shell-topright">
+            <span class="app-streak" style="color: #f97316;"><span class="flame">🔥</span><span>14</span><span class="units">days</span></span>
+            <div class="app-xp">
+              <span class="app-xp-label">Lv 7</span>
+              <span class="app-xp-track"><span class="app-xp-fill" style="width: 66%;"></span></span>
+              <span class="app-xp-num">847/1300</span>
+            </div>
+            <button class="app-avatar-trigger" type="button" aria-label="edit avatar">
+              <span class="app-avatar" style="width: 28px; height: 28px; font-size: 14px; background: #6366f1;">D</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         19. ANIMATIONS
+         ==================================================================== -->
+    <section class="section">
+      <p class="section-title">[19] animations</p>
+      <h2 class="section-h">all motion in the app</h2>
+      <p class="section-note">Locked rule: "opacity + color transitions only; no transforms; durations ≤ 320ms ease-out." Single transform exception is the checkmark glyph in .app-check:checked. All listed motion conforms.</p>
+
+      <div class="demo" id="s-19-1">
+        <p class="demo-title">[19.1] every animation, side-by-side</p>
+        <p class="demo-desc">Click "replay" to retrigger one-shot fades.</p>
+        <table class="app-table" style="font-size: 13px;">
+          <thead>
+            <tr><th style="width: 200px;">name</th><th>duration</th><th>property</th><th>where</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>streak-pulse</td><td>2000ms loop</td><td>opacity 1 ↔ 0.55</td><td>flame in StreakRibbon</td></tr>
+            <tr><td>countdown-fade</td><td>240ms</td><td>opacity 0.2 → 1</td><td>each countdown digit</td></tr>
+            <tr><td>tooltip-fade-in</td><td>160ms</td><td>opacity 0 → 1</td><td>Tooltip + DelegatedTooltips</td></tr>
+            <tr><td>toast-fade-in</td><td>200ms</td><td>opacity 0 → 1</td><td>Toast on mount</td></tr>
+            <tr><td>result-fade</td><td>320ms</td><td>opacity 0 → 1</td><td>result-saved on submit</td></tr>
+            <tr><td>border transition</td><td>120ms</td><td>border-color</td><td>cards, rows, tabs, scope</td></tr>
+            <tr><td>color transition</td><td>120ms</td><td>color</td><td>tabs, scope, direction-badge</td></tr>
+            <tr><td>xp-bar fill</td><td>220ms</td><td>width</td><td>xp-bar-fill on xp change</td></tr>
+            <tr><td>reaction-stage</td><td>80ms</td><td>background</td><td>reaction game state flip</td></tr>
+            <tr><td>avatar blur</td><td>160ms</td><td>filter, opacity</td><td>AvatarEditTrigger hover/focus</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <hr class="app-hr">
+    <p class="muted" style="font-size: 12px;">end of style page // [{section count: 19}] // {component count: ~50}</p>
+  </main>
+</div>
+
+<!-- Modal mountpoint -->
+<div id="modalMount"></div>
+<!-- Delegated tooltip mountpoint -->
+<div id="delegatedTip" style="position: fixed; pointer-events: none; background: var(--bg); color: var(--accent); border: 1px solid var(--accent); font-size: 11px; padding: 4px 8px; z-index: 70; white-space: nowrap; display: none;"></div>
+
+<script>
+// THEME TOGGLE
+const html = document.documentElement;
+document.getElementById("themeToggle").addEventListener("click", () => {
+  const next = html.dataset.theme === "dark" ? "light" : "dark";
+  html.dataset.theme = next;
+  // Update hex labels for the live theme
+  const cs = getComputedStyle(html);
+  const v = (n) => cs.getPropertyValue(n).trim();
+  document.getElementById("hex-bg").textContent = v("--bg");
+  document.getElementById("hex-ink").textContent = v("--ink");
+  document.getElementById("hex-muted").textContent = v("--muted");
+  document.getElementById("hex-line").textContent = v("--line");
+  document.getElementById("hex-accent").textContent = v("--accent");
+  document.getElementById("hex-danger").textContent = v("--danger");
+  document.getElementById("hex-on-accent").textContent = v("--on-accent");
+});
+
+// MODAL DEMOS
+function openModal(content) {
+  const mount = document.getElementById("modalMount");
+  mount.innerHTML = `
+    <div class="app-modal-backdrop">
+      <div class="app-modal-card" role="dialog" aria-modal="true">${content}</div>
+    </div>`;
+  const backdrop = mount.querySelector(".app-modal-backdrop");
+  backdrop.addEventListener("click", (e) => {
+    if (e.target === backdrop) closeModal();
+  });
+  document.addEventListener("keydown", escClose);
+}
+function closeModal() {
+  document.getElementById("modalMount").innerHTML = "";
+  document.removeEventListener("keydown", escClose);
+}
+function escClose(e) { if (e.key === "Escape") closeModal(); }
+
+document.getElementById("openModal1").addEventListener("click", () => {
+  openModal(`
+    <h2 style="margin-top: 0;">edit avatar</h2>
+    <p style="color: var(--muted); font-size: 13px; margin-bottom: 24px;">
+      Pick a color and an emoji or initial.
+    </p>
+    <input class="app-input" type="text" placeholder="emoji or letter" style="width: 100%; margin-bottom: 16px;">
+    <div style="display: flex; gap: 12px; justify-content: flex-end;">
+      <button class="app-btn" type="button" onclick="closeModal()">cancel</button>
+      <button class="app-btn" type="button" onclick="closeModal()">save</button>
+    </div>`);
+});
+
+document.getElementById("openModal2").addEventListener("click", () => {
+  openModal(`
+    <h2 style="margin-top: 0; color: var(--danger);">delete account</h2>
+    <p style="color: var(--muted); font-size: 13px; margin-bottom: 24px;">
+      This permanently removes your mindlap account, every score, every badge, and every friendship. There is no undo.
+    </p>
+    <div style="display: flex; gap: 12px; justify-content: flex-end;">
+      <button class="app-btn" type="button" onclick="closeModal()">cancel</button>
+      <button class="app-btn-danger" type="button" onclick="closeModal()">yes, delete forever</button>
+    </div>`);
+});
+
+// HEATMAP DEMO — 13 cols × 7 rows of cells with random intensity
+(function buildHeatmap() {
+  const grid = document.getElementById("heatmapDemo");
+  const counts = [];
+  for (let i = 0; i < 91; i++) counts.push(Math.floor(Math.random() * 4));
+  for (const c of counts) {
+    const cell = document.createElement("span");
+    cell.className = "app-heat-cell";
+    if (c > 0) cell.dataset.i = c;
+    cell.dataset.tip = `${c} plays`;
+    grid.appendChild(cell);
+  }
+})();
+
+// DELEGATED TOOLTIP
+(function delegatedTooltip() {
+  const tip = document.getElementById("delegatedTip");
+  function findHost(el) {
+    let node = el;
+    while (node && node.nodeType === 1) {
+      if (node.dataset && typeof node.dataset.tip === "string") return node;
+      node = node.parentElement;
+    }
+    return null;
+  }
+  document.addEventListener("pointermove", (e) => {
+    const host = findHost(e.target);
+    if (!host) { tip.style.display = "none"; return; }
+    const r = host.getBoundingClientRect();
+    tip.textContent = host.dataset.tip;
+    tip.style.left = Math.round(r.left) + "px";
+    tip.style.top = Math.round(r.bottom + 6) + "px";
+    tip.style.display = "block";
+  });
+  document.addEventListener("pointerleave", () => { tip.style.display = "none"; });
+})();
+
+// COUNTDOWN REPLAY
+document.getElementById("countdownReplay").addEventListener("click", () => {
+  const el = document.getElementById("countdownDemo");
+  const seq = ["3", "2", "1", "go"];
+  let i = 0;
+  function tick() {
+    el.textContent = seq[i];
+    el.style.animation = "none";
+    el.offsetHeight; // force reflow
+    el.style.animation = "countdown-fade 240ms ease-out";
+    i++;
+    if (i < seq.length) setTimeout(tick, 320);
+  }
+  tick();
+});
+</script>
+</body>
+</html>

@@ -1,11 +1,14 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useId, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { FormField } from "@/components/ui/FormField";
 import { setNewPasswordAction } from "@/actions/auth";
 
 export function SetPasswordForm() {
   const router = useRouter();
+  const passwordId = useId();
+  const confirmId = useId();
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -30,11 +33,9 @@ export function SetPasswordForm() {
 
   return (
     <form action={onSubmit}>
-      <label style={{ display: "block", marginBottom: 16 }}>
-        <span style={{ display: "block", fontSize: 12, color: "var(--muted)", marginBottom: 4 }}>
-          new password (10+ chars, 1 number or symbol)
-        </span>
+      <FormField label="new password (10+ chars, 1 number or symbol)" htmlFor={passwordId}>
         <input
+          id={passwordId}
           type="password"
           name="password"
           required
@@ -43,12 +44,10 @@ export function SetPasswordForm() {
           autoFocus
           style={{ width: "100%" }}
         />
-      </label>
-      <label style={{ display: "block", marginBottom: 16 }}>
-        <span style={{ display: "block", fontSize: 12, color: "var(--muted)", marginBottom: 4 }}>
-          confirm new password
-        </span>
+      </FormField>
+      <FormField label="confirm new password" htmlFor={confirmId}>
         <input
+          id={confirmId}
           type="password"
           name="confirm_password"
           required
@@ -56,13 +55,13 @@ export function SetPasswordForm() {
           autoComplete="new-password"
           style={{ width: "100%" }}
         />
-      </label>
+      </FormField>
       <button type="submit" disabled={pending} style={{ width: "100%" }}>
         {pending ? "..." : "save password ->"}
       </button>
       {error && (
-        <p style={{ color: "var(--accent)", marginTop: 16, fontSize: 13 }} role="alert">
-          [{error}]
+        <p className="tag-error" style={{ marginTop: 16 }} role="alert">
+          {error}
         </p>
       )}
     </form>

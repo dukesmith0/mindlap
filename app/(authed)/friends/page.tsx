@@ -80,7 +80,7 @@ export default async function FriendsPage() {
 
       <h2>incoming{incoming.length > 0 ? ` (${incoming.length})` : ""}</h2>
       {incoming.length === 0 ? (
-        <p style={{ color: "var(--muted)", fontSize: 13 }}>[no incoming requests]</p>
+        <p className="tag">no incoming requests</p>
       ) : (
         <ul className="friend-list">
           {incoming.map((r) => <FriendRow key={r.user_id} row={r} mode="incoming" />)}
@@ -89,7 +89,7 @@ export default async function FriendsPage() {
 
       <h2 style={{ marginTop: 32 }}>outgoing{outgoing.length > 0 ? ` (${outgoing.length})` : ""}</h2>
       {outgoing.length === 0 ? (
-        <p style={{ color: "var(--muted)", fontSize: 13 }}>[no outgoing requests]</p>
+        <p className="tag">no outgoing requests</p>
       ) : (
         <ul className="friend-list">
           {outgoing.map((r) => <FriendRow key={r.user_id} row={r} mode="outgoing" />)}
@@ -98,7 +98,7 @@ export default async function FriendsPage() {
 
       <h2 style={{ marginTop: 32 }}>friends{active.length > 0 ? ` (${active.length})` : ""}</h2>
       {active.length === 0 ? (
-        <p style={{ color: "var(--muted)", fontSize: 13 }}>[no friends yet]</p>
+        <p className="tag">no friends yet</p>
       ) : (
         <ul className="friend-list">
           {active.map((r) => <FriendRow key={r.user_id} row={r} mode="active" />)}

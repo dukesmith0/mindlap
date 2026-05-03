@@ -42,10 +42,10 @@ export function ConfirmDialog({
       <h2 id={titleId} className={danger ? "danger-h2" : undefined} style={{ marginTop: 0 }}>
         {title}
       </h2>
-      <p style={{ color: "var(--muted)", fontSize: 13, marginBottom: 24 }}>{message}</p>
+      <p className="text-muted-sm" style={{ marginBottom: 24 }}>{message}</p>
       {error && (
-        <p style={{ color: "var(--accent)", fontSize: 13, marginBottom: 12 }} role="alert">
-          [{error}]
+        <p className="tag-error" style={{ marginBottom: 12 }} role="alert">
+          {error}
         </p>
       )}
       <div style={{ display: "flex", gap: 12, justifyContent: "flex-end" }}>

@@ -296,7 +296,7 @@ export default async function ProfilePage({
 
       <h2>badges</h2>
       {(badges ?? []).length === 0 ? (
-        <p style={{ color: "var(--muted)", fontSize: 13 }}>[no badges yet]</p>
+        <p className="tag">no badges yet</p>
       ) : (
         <ul className="badge-wall">
           {(badges ?? []).map((b) => (

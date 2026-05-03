@@ -95,11 +95,11 @@ export function ReactionGame({ onComplete }: { onComplete: (score: number) => vo
 
   const bg =
     phase === "go"
-      ? "var(--reaction-go, #2e7d32)"
+      ? "var(--reaction-go)"
       : phase === "waiting"
-      ? "var(--reaction-wait, #c62828)"
+      ? "var(--reaction-wait)"
       : phase === "early"
-      ? "var(--reaction-early, #f57c00)"
+      ? "var(--reaction-early)"
       : "transparent";
 
   return (

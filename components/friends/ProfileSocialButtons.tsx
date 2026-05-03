@@ -61,7 +61,7 @@ export function ProfileSocialButtons({
   if (rel.kind === "anon") return null;
 
   if (rel.kind === "blocked") {
-    return <p style={{ color: "var(--muted)", fontSize: 13 }}>[unavailable]</p>;
+    return <p className="tag">unavailable</p>;
   }
 
   if (rel.kind === "accepted") {
@@ -114,8 +114,8 @@ export function ProfileSocialButtons({
   // rel.kind === "none"
   if (!acceptsRequests) {
     return (
-      <p style={{ color: "var(--muted)", fontSize: 13, margin: 0 }}>
-        [{targetUsername} is not accepting requests]
+      <p className="tag" style={{ margin: 0 }}>
+        {targetUsername} is not accepting requests
       </p>
     );
   }

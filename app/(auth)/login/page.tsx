@@ -17,7 +17,7 @@ export default async function LoginPage({
       </p>
       <LoginForm next={params.next ?? "/today"} initialError={params.error} />
       <hr />
-      <p style={{ fontSize: 13, color: "var(--muted)" }}>
+      <p className="text-muted-sm">
         New here?{" "}
         <Link href="/signup" style={{ color: "var(--accent)" }}>
           Create an account

@@ -3,6 +3,7 @@
 import { useId, useState, useTransition } from "react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Modal } from "@/components/ui/Modal";
+import { FormField } from "@/components/ui/FormField";
 import { useToast } from "@/components/ui/Toast";
 import { AVATAR_PALETTE, isValidAvatarColor } from "@/lib/auth/avatar-palette";
 import { trimAvatarEmoji, validateAvatarEmoji } from "@/lib/auth/avatar-emoji";
@@ -32,6 +33,7 @@ function AvatarEditorBody({
   onClose,
 }: Props) {
   const titleId = useId();
+  const emojiInputId = useId();
   const toast = useToast();
   const [color, setColor] = useState(initialColor);
   const [emoji, setEmoji] = useState(initialEmoji ?? "");
@@ -82,11 +84,11 @@ function AvatarEditorBody({
           emoji={hasPreviewEmoji ? trimmedEmoji : null}
           size={64}
         />
-        <span style={{ color: "var(--muted)", fontSize: 13 }}>preview</span>
+        <span className="text-muted-sm">preview</span>
       </div>
 
       <div style={{ marginBottom: 20 }}>
-        <p style={{ fontSize: 12, color: "var(--muted)", marginBottom: 8 }}>color</p>
+        <p className="text-muted-xs" style={{ marginBottom: 8 }}>color</p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {AVATAR_PALETTE.map((swatch) => {
             const selected = swatch === color;
@@ -117,7 +119,7 @@ function AvatarEditorBody({
       </div>
 
       <div style={{ marginBottom: 20 }}>
-        <p style={{ fontSize: 12, color: "var(--muted)", marginBottom: 8 }}>emoji</p>
+        <p className="text-muted-xs" style={{ marginBottom: 8 }}>emoji</p>
         <div className="avatar-emoji-grid">
           {AVATAR_EMOJI_PALETTE.map((g) => {
             const selected = trimmedEmoji === g;
@@ -136,28 +138,29 @@ function AvatarEditorBody({
             );
           })}
         </div>
-        <label style={{ display: "block", marginTop: 12 }}>
-          <span style={{ display: "block", fontSize: 12, color: "var(--muted)", marginBottom: 4 }}>
-            or type any single emoji or letter (leave blank for initial)
-          </span>
-          <input
-            type="text"
-            value={emoji}
-            maxLength={32}
-            onChange={(e) => setEmoji(e.target.value)}
-            placeholder="e.g. 🧠 or A"
-            style={{ width: "100%" }}
-            disabled={pending}
-          />
-          <span style={{ display: "block", fontSize: 11, color: "var(--muted)", marginTop: 4 }}>
-            tip: Win + . on Windows, Cmd + Ctrl + Space on Mac opens the system emoji picker
-          </span>
-        </label>
+        <div style={{ marginTop: 12 }}>
+          <FormField
+            label="or type any single emoji or letter (leave blank for initial)"
+            htmlFor={emojiInputId}
+            hint="tip: Win + . on Windows, Cmd + Ctrl + Space on Mac opens the system emoji picker"
+          >
+            <input
+              id={emojiInputId}
+              type="text"
+              value={emoji}
+              maxLength={32}
+              onChange={(e) => setEmoji(e.target.value)}
+              placeholder="e.g. 🧠 or A"
+              style={{ width: "100%" }}
+              disabled={pending}
+            />
+          </FormField>
+        </div>
       </div>
 
       {error && (
-        <p style={{ color: "var(--accent)", fontSize: 13, marginBottom: 12 }} role="alert">
-          [{error}]
+        <p className="tag-error" style={{ marginBottom: 12 }} role="alert">
+          {error}
         </p>
       )}
 

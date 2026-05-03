@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useId, useState, useTransition } from "react";
+import { FormField } from "@/components/ui/FormField";
 import {
   signInAction,
   signInWithGoogleAction,
@@ -14,6 +15,8 @@ export function LoginForm({
   next: string;
   initialError?: string;
 }) {
+  const emailId = useId();
+  const passwordId = useId();
   const [error, setError] = useState<string | null>(initialError ?? null);
   const [info, setInfo] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -52,11 +55,9 @@ export function LoginForm({
     <>
       <form action={onSubmit}>
         <input type="hidden" name="next" value={next} />
-        <label style={{ display: "block", marginBottom: 16 }}>
-          <span style={{ display: "block", fontSize: 12, color: "var(--muted)", marginBottom: 4 }}>
-            email
-          </span>
+        <FormField label="email" htmlFor={emailId}>
           <input
+            id={emailId}
             type="email"
             name="email"
             required
@@ -65,13 +66,17 @@ export function LoginForm({
             onChange={(e) => setResetEmail(e.target.value)}
             style={{ width: "100%" }}
           />
-        </label>
-        <label style={{ display: "block", marginBottom: 16 }}>
-          <span style={{ display: "block", fontSize: 12, color: "var(--muted)", marginBottom: 4 }}>
-            password
-          </span>
-          <input type="password" name="password" required autoComplete="current-password" style={{ width: "100%" }} />
-        </label>
+        </FormField>
+        <FormField label="password" htmlFor={passwordId}>
+          <input
+            id={passwordId}
+            type="password"
+            name="password"
+            required
+            autoComplete="current-password"
+            style={{ width: "100%" }}
+          />
+        </FormField>
         <button type="submit" disabled={pending} style={{ width: "100%" }}>
           {pending ? "..." : "sign in ->"}
         </button>
@@ -95,13 +100,13 @@ export function LoginForm({
       </form>
 
       {error && (
-        <p style={{ color: "var(--accent)", marginTop: 16, fontSize: 13 }} role="alert">
-          [{error}]
+        <p className="tag-error" style={{ marginTop: 16 }} role="alert">
+          {error}
         </p>
       )}
       {info && (
-        <p style={{ color: "var(--muted)", marginTop: 16, fontSize: 13 }} role="status">
-          [{info}]
+        <p className="tag" role="status" style={{ marginTop: 16 }}>
+          {info}
         </p>
       )}
     </>

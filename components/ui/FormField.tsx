@@ -1,8 +1,8 @@
 import type React from "react";
 
 // Lightweight wrapper for label + hint + error. Children render the actual
-// input. Keeps Zetamac Pure: muted hint + accent error, 1px input borders
-// inherited from globals.css.
+// input. Hint uses .text-muted-xs; errors use .tag-error (var(--danger)) so
+// they don't read as clickable links.
 export function FormField({
   label,
   hint,
@@ -20,17 +20,20 @@ export function FormField({
     <div style={{ display: "block", marginBottom: 12 }}>
       <label
         htmlFor={htmlFor}
-        style={{ display: "block", fontSize: 12, color: "var(--muted)", marginBottom: 4 }}
+        className="text-muted-xs"
+        style={{ display: "block", marginBottom: 4 }}
       >
         {label}
       </label>
       {children}
       {hint && !error && (
-        <p style={{ fontSize: 12, color: "var(--muted)", marginTop: 4 }}>{hint}</p>
+        <p className="text-muted-xs" style={{ marginTop: 4 }}>
+          {hint}
+        </p>
       )}
       {error && (
-        <p style={{ fontSize: 12, color: "var(--accent)", marginTop: 4 }} role="alert">
-          [{error}]
+        <p className="tag-error" style={{ fontSize: 12, marginTop: 4 }} role="alert">
+          {error}
         </p>
       )}
     </div>

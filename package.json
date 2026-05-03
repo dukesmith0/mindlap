@@ -10,7 +10,11 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "db:migrate": "node scripts/db-migrate.mjs",
+    "db:doctor": "node scripts/db-doctor.mjs",
+    "db:seed": "node scripts/db-seed.mjs",
+    "user:create": "node scripts/user-create.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",

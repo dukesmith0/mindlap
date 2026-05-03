@@ -286,7 +286,7 @@ export default async function LeaderboardsPage({
           </tbody>
         </table>
       )}
-      <p style={{ color: "var(--muted)", fontSize: 11, marginTop: 24 }}>
+      <p className="text-muted-xs" style={{ marginTop: 24 }}>
         scores are user-reported; replay-token verification ships post-launch.
       </p>
     </AppShell>

@@ -63,7 +63,7 @@ export function TodayCard({
           {authed && (
             <button
               type="button"
-              className={`game-card-pin${isPinned ? " is-pinned" : ""}`}
+              className={`btn-icon${isPinned ? " is-active" : ""}`}
               onClick={togglePin}
               disabled={pending}
               aria-label={isPinned ? "unpin" : "pin"}
@@ -78,7 +78,7 @@ export function TodayCard({
               <span className="game-card-star">*</span>
             </Tooltip>
           )}
-          {isBonus && <span className="game-card-pill">[2x xp]</span>}
+          {isBonus && <span className="tag-accent">2x xp</span>}
           <DirectionBadge gameKey={gameKey} />
         </div>
         <div className="game-card-meta">

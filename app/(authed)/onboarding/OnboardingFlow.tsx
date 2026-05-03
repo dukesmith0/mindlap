@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useId, useState, useTransition } from "react";
 import { Avatar } from "@/components/ui/Avatar";
 import { validateUsername } from "@/lib/auth/username";
 import type { ThemePref } from "@/lib/theme/cookie";
@@ -27,6 +27,7 @@ export function OnboardingFlow({
   friendCode: string;
 }) {
   const router = useRouter();
+  const usernameId = useId();
   const [step, setStep] = useState<Step>(1);
   const [username, setUsername] = useState(suggestedUsername);
   const [theme, setTheme] = useState<ThemePref>(initialTheme);
@@ -84,14 +85,15 @@ export function OnboardingFlow({
       {step === 1 && (
         <section>
           <h2>step 1 of 3 - username</h2>
-          <p style={{ color: "var(--muted)", fontSize: 13, marginBottom: 6 }}>
+          <p className="text-muted-sm" style={{ marginBottom: 6 }}>
             3-24 chars. Lowercase letters, digits, underscores, hyphens.
           </p>
-          <p style={{ color: "var(--muted)", fontSize: 13, marginBottom: 12 }}>
+          <p className="text-muted-sm" style={{ marginBottom: 12 }}>
             Pick carefully - you can change this once per 30 days.
           </p>
-          <label style={{ display: "block", marginBottom: 16 }}>
+          <label htmlFor={usernameId} style={{ display: "block", marginBottom: 16 }}>
             <input
+              id={usernameId}
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -102,16 +104,14 @@ export function OnboardingFlow({
           </label>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
             <Avatar color={avatarColor} name={username} size={36} />
-            <span style={{ color: "var(--muted)", fontSize: 13 }}>
-              your avatar (change anytime in settings)
-            </span>
+            <span className="text-muted-sm">your avatar (change anytime in settings)</span>
           </div>
           <button type="button" onClick={next1to2}>
             next -&gt;
           </button>
           {error && (
-            <p style={{ color: "var(--accent)", marginTop: 12, fontSize: 13 }} role="alert">
-              [{error}]
+            <p className="tag-error" style={{ marginTop: 12 }} role="alert">
+              {error}
             </p>
           )}
         </section>
@@ -120,7 +120,7 @@ export function OnboardingFlow({
       {step === 2 && (
         <section>
           <h2>step 2 of 3 - theme</h2>
-          <p style={{ color: "var(--muted)", fontSize: 13, marginBottom: 16 }}>
+          <p className="text-muted-sm" style={{ marginBottom: 16 }}>
             Pick a default. You can switch anytime in settings.
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
@@ -144,7 +144,7 @@ export function OnboardingFlow({
                   onChange={() => setTheme(t.value)}
                 />
                 <span>{t.label}</span>
-                <span style={{ color: "var(--muted)", fontSize: 13 }}>{t.description}</span>
+                <span className="text-muted-sm">{t.description}</span>
               </label>
             ))}
           </div>
@@ -157,8 +157,8 @@ export function OnboardingFlow({
             </button>
           </div>
           {error && (
-            <p style={{ color: "var(--accent)", marginTop: 12, fontSize: 13 }} role="alert">
-              [{error}]
+            <p className="tag-error" style={{ marginTop: 12 }} role="alert">
+              {error}
             </p>
           )}
         </section>
@@ -167,12 +167,12 @@ export function OnboardingFlow({
       {step === 3 && (
         <section>
           <h2>step 3 of 3 - bring a friend</h2>
-          <p style={{ color: "var(--muted)", fontSize: 13, marginBottom: 16 }}>
+          <p className="text-muted-sm" style={{ marginBottom: 16 }}>
             Mindlap is more fun with someone to chase. Share your friend code so a friend can add you.
           </p>
           {friendCode ? (
             <>
-              <p style={{ color: "var(--muted)", fontSize: 12, marginBottom: 4 }}>
+              <p className="text-muted-xs" style={{ marginBottom: 4 }}>
                 your friend code
               </p>
               <div
@@ -199,12 +199,12 @@ export function OnboardingFlow({
                   {copied ? "copied!" : "copy"}
                 </button>
               </div>
-              <p style={{ color: "var(--muted)", fontSize: 12, marginBottom: 24 }}>
+              <p className="text-muted-xs" style={{ marginBottom: 24 }}>
                 Friends can also add you by username. You can find more friends from the Friends tab anytime.
               </p>
             </>
           ) : (
-            <p style={{ color: "var(--muted)", fontSize: 13, marginBottom: 24 }}>
+            <p className="text-muted-sm" style={{ marginBottom: 24 }}>
               You can find your friend code on /settings later.
             </p>
           )}
@@ -217,8 +217,8 @@ export function OnboardingFlow({
             </button>
           </div>
           {error && (
-            <p style={{ color: "var(--accent)", marginTop: 12, fontSize: 13 }} role="alert">
-              [{error}]
+            <p className="tag-error" style={{ marginTop: 12 }} role="alert">
+              {error}
             </p>
           )}
         </section>

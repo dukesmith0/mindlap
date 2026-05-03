@@ -60,7 +60,8 @@ function ToastItem({ entry, onDismiss }: { entry: ToastEntry; onDismiss: (id: nu
         type="button"
         aria-label="dismiss"
         onClick={() => onDismiss(entry.id)}
-        className="toast-dismiss"
+        className="btn-icon"
+        style={{ marginLeft: "auto" }}
       >
         ×
       </button>

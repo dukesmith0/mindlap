@@ -122,8 +122,8 @@ export function ResultScreen({
         </div>
       )}
       {error && (
-        <p style={{ color: "var(--accent)", marginTop: 12, fontSize: 13 }} role="alert">
-          [{error}]
+        <p className="tag-error" style={{ marginTop: 12 }} role="alert">
+          {error}
         </p>
       )}
       {submitted && !error && (
@@ -132,9 +132,7 @@ export function ResultScreen({
           {xpAwarded > 0 && (
             <span className="result-xp">+{xpAwarded} xp</span>
           )}
-          <span style={{ color: "var(--muted)", fontSize: 13 }}>
-            [saved. streak ticked, leaderboard updated.]
-          </span>
+          <span className="tag">saved. streak ticked, leaderboard updated.</span>
         </div>
       )}
     </section>

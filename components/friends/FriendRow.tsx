@@ -56,7 +56,7 @@ export function FriendRow({ row, mode }: { row: FriendRowData; mode: Mode }) {
         />
         <div style={{ display: "flex", flexDirection: "column" }}>
           <span style={{ fontSize: 14 }}>{row.display_name ?? row.username}</span>
-          <span style={{ fontSize: 12, color: "var(--muted)" }}>@{row.username}</span>
+          <span className="text-muted-xs">@{row.username}</span>
         </div>
       </Link>
       <div className="friend-row-actions">

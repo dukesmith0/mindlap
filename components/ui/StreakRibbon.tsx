@@ -6,7 +6,7 @@ import { streakColor } from "@/lib/tier-colors";
 export function StreakRibbon({ days }: { days: number }) {
   if (days <= 0) {
     return (
-      <span style={{ color: "var(--muted)", fontSize: 13 }} title="no streak yet">
+      <span className="text-muted-sm" title="no streak yet">
         no streak
       </span>
     );
@@ -35,7 +35,7 @@ export function StreakRibbon({ days }: { days: number }) {
         🔥
       </span>
       <span>{days}</span>
-      <span style={{ color: "var(--muted)", fontSize: 12 }}>day{days === 1 ? "" : "s"}</span>
+      <span className="text-muted-xs">day{days === 1 ? "" : "s"}</span>
     </span>
   );
 }

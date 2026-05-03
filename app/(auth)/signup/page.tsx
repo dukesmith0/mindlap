@@ -12,7 +12,7 @@ export default function SignupPage() {
       </p>
       <SignupForm />
       <hr />
-      <p style={{ fontSize: 13, color: "var(--muted)" }}>
+      <p className="text-muted-sm">
         Already have an account?{" "}
         <Link href="/login" style={{ color: "var(--accent)" }}>
           Sign in

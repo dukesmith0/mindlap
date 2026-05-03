@@ -1,9 +1,13 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useId, useState, useTransition } from "react";
+import { FormField } from "@/components/ui/FormField";
 import { signUpAction, signInWithGoogleAction } from "@/actions/auth";
 
 export function SignupForm() {
+  const emailId = useId();
+  const passwordId = useId();
+  const confirmId = useId();
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -44,24 +48,38 @@ export function SignupForm() {
   return (
     <>
       <form action={onSubmit}>
-        <label style={{ display: "block", marginBottom: 16 }}>
-          <span style={{ display: "block", fontSize: 12, color: "var(--muted)", marginBottom: 4 }}>
-            email
-          </span>
-          <input type="email" name="email" required autoComplete="email" style={{ width: "100%" }} />
-        </label>
-        <label style={{ display: "block", marginBottom: 16 }}>
-          <span style={{ display: "block", fontSize: 12, color: "var(--muted)", marginBottom: 4 }}>
-            password (10+ chars, 1 number or symbol)
-          </span>
-          <input type="password" name="password" required minLength={10} autoComplete="new-password" style={{ width: "100%" }} />
-        </label>
-        <label style={{ display: "block", marginBottom: 16 }}>
-          <span style={{ display: "block", fontSize: 12, color: "var(--muted)", marginBottom: 4 }}>
-            confirm password
-          </span>
-          <input type="password" name="confirm_password" required minLength={10} autoComplete="new-password" style={{ width: "100%" }} />
-        </label>
+        <FormField label="email" htmlFor={emailId}>
+          <input
+            id={emailId}
+            type="email"
+            name="email"
+            required
+            autoComplete="email"
+            style={{ width: "100%" }}
+          />
+        </FormField>
+        <FormField label="password (10+ chars, 1 number or symbol)" htmlFor={passwordId}>
+          <input
+            id={passwordId}
+            type="password"
+            name="password"
+            required
+            minLength={10}
+            autoComplete="new-password"
+            style={{ width: "100%" }}
+          />
+        </FormField>
+        <FormField label="confirm password" htmlFor={confirmId}>
+          <input
+            id={confirmId}
+            type="password"
+            name="confirm_password"
+            required
+            minLength={10}
+            autoComplete="new-password"
+            style={{ width: "100%" }}
+          />
+        </FormField>
         <button type="submit" disabled={pending} style={{ width: "100%" }}>
           {pending ? "..." : "create account ->"}
         </button>
@@ -74,8 +92,8 @@ export function SignupForm() {
       </form>
 
       {error && (
-        <p style={{ color: "var(--accent)", marginTop: 16, fontSize: 13 }} role="alert">
-          [{error}]
+        <p className="tag-error" style={{ marginTop: 16 }} role="alert">
+          {error}
         </p>
       )}
     </>

@@ -60,11 +60,8 @@ logs
 .cache
 .parcel-cache
 
-# Per-developer Claude Code instructions (user-local, not shared)
-CLAUDE.md
-
 # Local-only dev scripts (require service-role key; never commit)
-scripts/create-dev-user.mjs
+scripts/user-create.mjs
 
 # Playwright MCP visual-check artifacts (per-developer)
 .playwright-mcp/

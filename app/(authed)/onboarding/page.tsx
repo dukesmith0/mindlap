@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { DEFAULT_AVATAR_COLOR } from "@/lib/auth/avatar-palette";
 import { OnboardingFlow } from "./OnboardingFlow";
 
 export const metadata = { title: "Welcome - mindlap" };
@@ -37,7 +38,7 @@ export default async function OnboardingPage() {
       <OnboardingFlow
         suggestedUsername={profile?.username ?? ""}
         initialTheme={(profile?.theme_pref as "light" | "dark" | "system") ?? "system"}
-        avatarColor={profile?.avatar_color ?? "#64748b"}
+        avatarColor={profile?.avatar_color ?? DEFAULT_AVATAR_COLOR}
         friendCode={secret?.friend_code ?? ""}
       />
     </main>

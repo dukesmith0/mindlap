@@ -39,7 +39,7 @@ export function TodayHeader({
           <button
             type="button"
             onClick={() => update("")}
-            className="today-search-clear"
+            className="btn-sm"
             aria-label="clear search"
           >
             x

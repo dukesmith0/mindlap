@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useId, useState, useTransition } from "react";
 import { AvatarEditTrigger } from "@/components/ui/AvatarEditTrigger";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { FormField } from "@/components/ui/FormField";
 import {
   changeUsernameAction,
   deleteAccountAction,
@@ -70,6 +71,8 @@ function ProfileSection({
   avatarEmoji: string | null;
   username: string;
 }) {
+  const nameId = useId();
+  const bioId = useId();
   const [name, setName] = useState(displayName);
   const [bioVal, setBio] = useState(bio);
   const [info, setInfo] = useState<string | null>(null);
@@ -100,39 +103,33 @@ function ProfileSection({
           size={48}
           ariaLabel="edit avatar"
         />
-        <span style={{ color: "var(--muted)", fontSize: 13 }}>
-          click avatar to change color or emoji
-        </span>
+        <span className="text-muted-sm">click avatar to change color or emoji</span>
       </div>
-      <label style={{ display: "block", marginBottom: 12 }}>
-        <span style={{ display: "block", fontSize: 12, color: "var(--muted)", marginBottom: 4 }}>
-          display name (optional, max 40)
-        </span>
+      <FormField label="display name (optional, max 40)" htmlFor={nameId}>
         <input
+          id={nameId}
           type="text"
           value={name}
           maxLength={40}
           onChange={(e) => setName(e.target.value)}
           style={{ width: "100%" }}
         />
-      </label>
-      <label style={{ display: "block", marginBottom: 12 }}>
-        <span style={{ display: "block", fontSize: 12, color: "var(--muted)", marginBottom: 4 }}>
-          bio (optional, max 280)
-        </span>
+      </FormField>
+      <FormField label="bio (optional, max 280)" htmlFor={bioId}>
         <textarea
+          id={bioId}
           value={bioVal}
           maxLength={280}
           rows={3}
           onChange={(e) => setBio(e.target.value)}
           style={{ width: "100%" }}
         />
-      </label>
+      </FormField>
       <button onClick={save} disabled={pending}>
         save profile
       </button>
-      {info && <p style={{ color: "var(--muted)", fontSize: 13, marginTop: 8 }}>[{info}]</p>}
-      {error && <p style={{ color: "var(--accent)", fontSize: 13, marginTop: 8 }}>[{error}]</p>}
+      {info && <p className="tag" style={{ marginTop: 8 }}>{info}</p>}
+      {error && <p className="tag-error" style={{ marginTop: 8 }}>{error}</p>}
     </section>
   );
 }
@@ -192,7 +189,7 @@ function PreferencesSection({
       <h2>preferences</h2>
 
       <div style={{ marginBottom: 24 }}>
-        <p style={{ fontSize: 12, color: "var(--muted)", marginBottom: 8 }}>theme</p>
+        <p className="text-muted-xs" style={{ marginBottom: 8 }}>theme</p>
         <div style={{ display: "flex", gap: 16 }}>
           {(["light", "dark", "system"] as ThemePref[]).map((t) => (
             <label key={t} style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
@@ -233,6 +230,7 @@ function AccountSection({
   isPublic: boolean;
   acceptsFriendRequests: boolean;
 }) {
+  const usernameId = useId();
   const [u, setU] = useState(username);
   const [pub, setPub] = useState(isPublic);
   const [acceptsReqs, setAcceptsReqs] = useState(acceptsFriendRequests);
@@ -287,11 +285,9 @@ function AccountSection({
         email: <span style={{ color: "var(--muted)" }}>{email}</span>
       </p>
 
-      <label style={{ display: "block", marginBottom: 12 }}>
-        <span style={{ display: "block", fontSize: 12, color: "var(--muted)", marginBottom: 4 }}>
-          username (changes allowed once per 30 days)
-        </span>
+      <FormField label="username (changes allowed once per 30 days)" htmlFor={usernameId}>
         <input
+          id={usernameId}
           type="text"
           value={u}
           maxLength={24}
@@ -299,13 +295,13 @@ function AccountSection({
           disabled={!canChangeUsername || pending}
           style={{ width: "100%" }}
         />
-      </label>
+      </FormField>
       <button onClick={saveUsername} disabled={!canChangeUsername || pending || u === username}>
         save username
       </button>
       {!canChangeUsername && nextAllowed && (
-        <p style={{ color: "var(--muted)", fontSize: 12, marginTop: 6 }}>
-          [next change allowed: {nextAllowed.toLocaleDateString()}]
+        <p className="tag" style={{ marginTop: 6 }}>
+          next change allowed: {nextAllowed.toLocaleDateString()}
         </p>
       )}
 
@@ -320,21 +316,21 @@ function AccountSection({
       <label style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 8, marginTop: 16 }}>
         <input type="checkbox" checked={pub} onChange={togglePublic} disabled={pending} />
         <span>public profile</span>
-        <span style={{ color: "var(--muted)", fontSize: 12 }}>
-          [{pub ? "your profile page is visible" : "profile is hidden, scores still appear on leaderboards"}]
+        <span className="tag">
+          {pub ? "your profile page is visible" : "profile is hidden, scores still appear on leaderboards"}
         </span>
       </label>
 
       <label style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 8, marginTop: 12 }}>
         <input type="checkbox" checked={acceptsReqs} onChange={toggleAcceptsRequests} disabled={pending} />
         <span>accept friend requests</span>
-        <span style={{ color: "var(--muted)", fontSize: 12 }}>
-          [{acceptsReqs ? "anyone can send you a friend request" : "your profile shows 'not accepting requests'"}]
+        <span className="tag">
+          {acceptsReqs ? "anyone can send you a friend request" : "your profile shows 'not accepting requests'"}
         </span>
       </label>
 
-      {info && <p style={{ color: "var(--muted)", fontSize: 13, marginTop: 8 }}>[{info}]</p>}
-      {error && <p style={{ color: "var(--accent)", fontSize: 13, marginTop: 8 }}>[{error}]</p>}
+      {info && <p className="tag" style={{ marginTop: 8 }}>{info}</p>}
+      {error && <p className="tag-error" style={{ marginTop: 8 }}>{error}</p>}
 
       <p style={{ marginTop: 24 }}>
         <button onClick={() => signOutAction()}>sign out</button>
@@ -345,6 +341,9 @@ function AccountSection({
 
 // ----------------------------------------------------------------------------
 function PasswordSection() {
+  const currentId = useId();
+  const newId = useId();
+  const confirmId = useId();
   const [current, setCurrent] = useState("");
   const [next, setNext] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -379,23 +378,19 @@ function PasswordSection() {
   return (
     <section>
       <h2>password</h2>
-      <label style={{ display: "block", marginBottom: 12 }}>
-        <span style={{ display: "block", fontSize: 12, color: "var(--muted)", marginBottom: 4 }}>
-          current password
-        </span>
+      <FormField label="current password" htmlFor={currentId}>
         <input
+          id={currentId}
           type="password"
           value={current}
           onChange={(e) => setCurrent(e.target.value)}
           autoComplete="current-password"
           style={{ width: "100%" }}
         />
-      </label>
-      <label style={{ display: "block", marginBottom: 12 }}>
-        <span style={{ display: "block", fontSize: 12, color: "var(--muted)", marginBottom: 4 }}>
-          new password (10+ chars, 1 number or symbol)
-        </span>
+      </FormField>
+      <FormField label="new password (10+ chars, 1 number or symbol)" htmlFor={newId}>
         <input
+          id={newId}
           type="password"
           value={next}
           onChange={(e) => setNext(e.target.value)}
@@ -403,12 +398,10 @@ function PasswordSection() {
           autoComplete="new-password"
           style={{ width: "100%" }}
         />
-      </label>
-      <label style={{ display: "block", marginBottom: 12 }}>
-        <span style={{ display: "block", fontSize: 12, color: "var(--muted)", marginBottom: 4 }}>
-          confirm new password
-        </span>
+      </FormField>
+      <FormField label="confirm new password" htmlFor={confirmId}>
         <input
+          id={confirmId}
           type="password"
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
@@ -416,18 +409,19 @@ function PasswordSection() {
           autoComplete="new-password"
           style={{ width: "100%" }}
         />
-      </label>
+      </FormField>
       <button onClick={save} disabled={pending || !current || !next || !confirm}>
         {pending ? "..." : "update password"}
       </button>
-      {info && <p style={{ color: "var(--muted)", fontSize: 13, marginTop: 8 }}>[{info}]</p>}
-      {error && <p style={{ color: "var(--accent)", fontSize: 13, marginTop: 8 }}>[{error}]</p>}
+      {info && <p className="tag" style={{ marginTop: 8 }}>{info}</p>}
+      {error && <p className="tag-error" style={{ marginTop: 8 }}>{error}</p>}
     </section>
   );
 }
 
 // ----------------------------------------------------------------------------
 function DangerZone({ username }: { username: string }) {
+  const confirmId = useId();
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -447,24 +441,25 @@ function DangerZone({ username }: { username: string }) {
       <p className="danger-h2" style={{ fontSize: 13, marginBottom: 8, textTransform: "none", letterSpacing: 0 }}>
         Deleting your account is permanent. All scores, badges, and friendships are removed.
       </p>
-      <p style={{ fontSize: 13, color: "var(--muted)", marginBottom: 12 }}>
+      <p className="text-muted-sm" style={{ marginBottom: 12 }}>
         Cascades through every score, badge, friendship, group membership. There is no undo.
       </p>
-      <label style={{ display: "block", marginBottom: 12 }}>
-        <span style={{ display: "block", fontSize: 12, color: "var(--muted)", marginBottom: 4 }}>
-          type your username (<b style={{ color: "var(--ink)", fontWeight: 400 }}>{username}</b>) to confirm
-        </span>
+      <FormField
+        label={`type your username (${username}) to confirm`}
+        htmlFor={confirmId}
+      >
         <input
+          id={confirmId}
           type="text"
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
           style={{ width: "100%" }}
         />
-      </label>
+      </FormField>
       <button onClick={open} disabled={!confirm} className="btn-danger">
         delete my account
       </button>
-      {error && <p style={{ color: "var(--accent)", fontSize: 13, marginTop: 8 }} role="alert">[{error}]</p>}
+      {error && <p className="tag-error" style={{ marginTop: 8 }} role="alert">{error}</p>}
       <ConfirmDialog
         open={dialogOpen}
         title="delete account"

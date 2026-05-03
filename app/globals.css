@@ -4,6 +4,21 @@
 
 /* ============================================================================
    Zetamac Pure design tokens
+
+   Documented hardcoded-color exceptions (intentional, do NOT theme):
+   - Mine cell number colors (#1e88e5..#00897b in .mine-cell) — Material
+     minesweeper convention.
+   - Mine cell mine background (#c62828) — same convention.
+   - Stroop game palette (in components/games/StroopGame.tsx) — game data,
+     must look identical light + dark.
+   - Avatar palette colors (lib/auth/avatar-palette.ts) — user-facing swatches.
+   - Streak / rank tier colors (lib/tier-colors.ts) — semantic tiers.
+   - Avatar SVG glyph fill #ffffff (components/ui/Avatar.tsx) — sits on a
+     user-chosen palette color, not on --accent, so the contrast pair is
+     "white on saturated mid-tone" not "on-accent".
+   - Reaction phase text #fff (components/games/ReactionGame.tsx) — text
+     overlaid on green/red/orange phase backgrounds, same reasoning.
+   - app/icon.svg favicon white.
    ============================================================================ */
 
 :root {
@@ -12,6 +27,11 @@
   --muted: #666666;
   --line: #e5e5e5;
   --accent: #0066cc;
+  --danger: #d62828;
+  --on-accent: #ffffff;
+  --reaction-go: #2e7d32;
+  --reaction-wait: #c62828;
+  --reaction-early: #f57c00;
   /* --font-mono is set by next/font/local in app/layout.tsx */
 }
 
@@ -23,6 +43,11 @@
   --muted: #9aa0a6;
   --line: #353c44;
   --accent: #5aa3ff;
+  --danger: #ef4444;
+  --on-accent: #0f1419;
+  --reaction-go: #4caf50;
+  --reaction-wait: #ef4444;
+  --reaction-early: #ffa726;
 }
 
 /* ============================================================================
@@ -67,7 +92,7 @@ button {
 
 button:hover {
   background: var(--accent);
-  color: #ffffff;
+  color: var(--on-accent);
 }
 
 button:focus-visible {
@@ -106,6 +131,63 @@ textarea:focus,
 select:focus {
   outline: none;
   border-color: var(--accent);
+}
+
+/* Native checkbox + radio styled to match the rest of the system. The
+   checkmark glyph uses transform:rotate — the only transform allowed
+   anywhere in the design system. */
+input[type="checkbox"],
+input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  cursor: pointer;
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+input[type="checkbox"] { border-radius: 0; }
+input[type="radio"] { border-radius: 50%; }
+input[type="checkbox"]:hover,
+input[type="radio"]:hover { border-color: var(--accent); }
+input[type="checkbox"]:focus-visible,
+input[type="radio"]:focus-visible {
+  box-shadow: 0 0 0 1px var(--accent);
+  outline: none;
+}
+input[type="checkbox"]:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 0;
+  width: 5px;
+  height: 10px;
+  border: solid var(--on-accent);
+  border-width: 0 2px 2px 0;
+  /* Single allowed transform exception in the system (checkmark glyph). */
+  transform: rotate(45deg);
+}
+input[type="radio"]:checked { border-color: var(--accent); }
+input[type="radio"]:checked::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  background: var(--accent);
+  border-radius: 50%;
+}
+input[type="checkbox"]:disabled,
+input[type="radio"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 table {
@@ -147,6 +229,13 @@ h2 {
   margin: 0 0 16px;
 }
 
+h3 {
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: -0.2px;
+  margin: 0 0 8px;
+}
+
 .subtitle {
   color: var(--muted);
   font-size: 13px;
@@ -161,8 +250,137 @@ hr {
 
 ::selection {
   background: var(--accent);
-  color: #ffffff;
+  color: var(--on-accent);
 }
+
+/* ============================================================================
+   Utility classes for repeated inline patterns. Use these instead of
+   `style={{ color: "var(--muted)", fontSize: 13 }}` etc.
+   ============================================================================ */
+
+.text-muted-sm { color: var(--muted); font-size: 13px; }
+.text-muted-xs { color: var(--muted); font-size: 12px; }
+.numeric { font-variant-numeric: tabular-nums; }
+
+/* ============================================================================
+   Tag / bracketed status — single convention. Brackets live in pseudo-
+   elements; do not include them in JSX content.
+   .tag         — neutral status (no streak, saved, info messages, unavailable)
+   .tag-accent  — bonus / notable chip (2x XP, new PB)
+   .tag-error   — form errors and inline alerts
+   ============================================================================ */
+
+.tag { color: var(--muted); font-size: 13px; }
+.tag::before { content: "["; }
+.tag::after { content: "]"; }
+
+.tag-accent {
+  color: var(--accent);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.tag-accent::before { content: "["; }
+.tag-accent::after { content: "]"; }
+
+.tag-error { color: var(--danger); font-size: 13px; }
+.tag-error::before { content: "["; }
+.tag-error::after { content: "]"; }
+
+/* ============================================================================
+   Button family. The canonical six are:
+   - <button>          : primary outlined accent
+   - .btn-link         : <a> styled identically to <button>
+   - .btn-danger       : outlined danger variant
+   - .btn-sm           : small modifier (chips, search-clear)
+   - .btn-icon         : borderless single-glyph button (toast dismiss, pin)
+   - .btn-ghost        : aliased to .game-tappable for discoverability
+   ============================================================================ */
+
+/* Anchor styled as a button. Use when navigation must be a real <a>
+   (server components, semantically a link, etc) but should render
+   visually as the standard outlined button. Avoids invalid <a><button>. */
+.btn-link {
+  display: inline-block;
+  background: none;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  padding: 8px 24px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn-link:hover {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+/* Inline back-nav link with affordance (#17 fix) */
+.nav-back {
+  color: var(--muted);
+  font-size: 13px;
+  text-decoration: none;
+  border-bottom: 1px dashed transparent;
+}
+.nav-back:hover {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* Destructive headings + buttons (settings DangerZone). 1px borders, square
+   corners, instant fill on hover. Same shape as the default button. */
+.danger-h2 { color: var(--danger); }
+.btn-danger {
+  background: none;
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  padding: 8px 24px;
+  border-radius: 0;
+  cursor: pointer;
+}
+.btn-danger:hover {
+  background: var(--danger);
+  color: var(--on-accent);
+}
+.btn-danger:disabled {
+  border-color: var(--line);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+.btn-danger:disabled:hover {
+  background: none;
+  color: var(--muted);
+}
+
+/* Small modifier — compose with <button> or .btn-link for chip-sized actions. */
+.btn-sm {
+  padding: 4px 10px;
+  font-size: 12px;
+  border-color: var(--line);
+  color: var(--muted);
+}
+.btn-sm:hover {
+  background: var(--line);
+  color: var(--ink);
+}
+
+/* Borderless single-glyph button. */
+.btn-icon {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0 6px;
+  font-family: var(--font-mono);
+  line-height: 1;
+}
+.btn-icon:hover { color: var(--accent); }
+.btn-icon.is-active { color: var(--accent); }
 
 /* ============================================================================
    Signature animation: streak ribbon pulse (the only animation in the app)
@@ -225,6 +443,9 @@ hr {
   padding: 24px 0;
 }
 
+/* .btn-ghost is the canonical name; .game-tappable kept as an alias for the
+   in-game NBack target to avoid a JSX rename across game components. */
+.btn-ghost,
 .game-tappable {
   background: none;
   border: 1px solid var(--line);
@@ -233,8 +454,11 @@ hr {
   width: 100%;
   font-family: var(--font-mono);
   color: var(--ink);
+  border-radius: 0;
+  font-size: 15px;
 }
 
+.btn-ghost:hover,
 .game-tappable:hover {
   background: none;
   color: var(--ink);
@@ -256,7 +480,7 @@ hr {
 }
 
 .game-timer.is-penalty {
-  color: #d62828;
+  color: var(--danger);
 }
 
 .game-score {
@@ -342,65 +566,6 @@ hr {
   animation: countdown-fade 240ms ease-out;
 }
 
-/* Anchor styled as a button. Use when navigation must be a real <a>
-   (server components, semantically a link, etc) but should render
-   visually as the standard outlined button. Avoids invalid <a><button>. */
-.btn-link {
-  display: inline-block;
-  background: none;
-  border: 1px solid var(--accent);
-  color: var(--accent);
-  font-family: var(--font-mono);
-  font-size: 14px;
-  padding: 8px 24px;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.btn-link:hover {
-  background: var(--accent);
-  color: #ffffff;
-}
-
-/* Inline back-nav link with affordance (#17 fix) */
-.nav-back {
-  color: var(--muted);
-  font-size: 13px;
-  text-decoration: none;
-  border-bottom: 1px dashed transparent;
-}
-.nav-back:hover {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
-}
-
-/* Destructive headings + buttons (settings DangerZone). 1px borders, square
-   corners, instant fill on hover. Same shape as the default button. */
-.danger-h2 { color: #d62828; }
-.btn-danger {
-  background: none;
-  border: 1px solid #d62828;
-  color: #d62828;
-  font-family: var(--font-mono);
-  font-size: 14px;
-  padding: 8px 24px;
-  border-radius: 0;
-  cursor: pointer;
-}
-.btn-danger:hover {
-  background: #d62828;
-  color: #ffffff;
-}
-.btn-danger:disabled {
-  border-color: var(--line);
-  color: var(--muted);
-  cursor: not-allowed;
-}
-.btn-danger:disabled:hover {
-  background: none;
-  color: var(--muted);
-}
-
 /* /today header: title-block left + search right, baseline-aligned. */
 .today-header {
   display: flex;
@@ -413,17 +578,6 @@ hr {
 .today-header > div:first-child .subtitle { margin: 0 0 0; }
 .today-search { display: inline-flex; align-items: center; gap: 6px; }
 .today-search-input { width: 220px; }
-.today-search-clear {
-  background: none;
-  border: 1px solid var(--line);
-  color: var(--muted);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  padding: 4px 8px;
-  cursor: pointer;
-  border-radius: 0;
-}
-.today-search-clear:hover { background: var(--line); color: var(--ink); }
 
 @media (max-width: 640px) {
   .today-header { flex-direction: column; align-items: stretch; }
@@ -478,7 +632,8 @@ hr {
   transition: background 80ms ease-out;
 }
 
-/* Minesweeper grid: 10x10 square cells; no shadow, 1px borders */
+/* Minesweeper grid: 10x10 square cells; no shadow, 1px borders. Material
+   number colors stay hardcoded by design (see top-of-file exceptions). */
 .mine-grid {
   display: inline-grid;
   grid-template-rows: repeat(10, auto);
@@ -515,7 +670,7 @@ hr {
 .mine-cell.is-revealed[data-n="7"] { color: var(--ink); }
 .mine-cell.is-revealed[data-n="8"] { color: var(--muted); }
 .mine-cell.is-flagged { color: var(--accent); }
-.mine-cell.is-mine { background: #c62828; color: #fff; }
+.mine-cell.is-mine { background: #c62828; color: var(--on-accent); }
 
 @media (max-width: 640px) {
   .mine-cell { width: 28px; height: 28px; font-size: 12px; }
@@ -544,26 +699,6 @@ hr {
 @media (max-width: 640px) {
   .word-grid { grid-template-columns: 1fr; }
   .word-cell { font-size: 18px; }
-}
-
-/* Today game card extras: pin star + 2x pill */
-.game-card-pin {
-  background: none;
-  border: none;
-  color: var(--muted);
-  cursor: pointer;
-  font-size: 16px;
-  padding: 0 6px;
-  font-family: var(--font-mono);
-}
-.game-card-pin.is-pinned { color: var(--accent); }
-.game-card-pin:hover { color: var(--accent); }
-.game-card-pill {
-  color: var(--accent);
-  font-size: 11px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  margin-left: 8px;
 }
 
 /* Leaderboard preview rows (compact, no chrome) */
@@ -1010,6 +1145,8 @@ hr {
   inset: 0;
   display: grid;
   place-items: center;
+  /* Always-white overlay text: sits on a darkened user-color avatar disc, not
+     on var(--accent), so it intentionally stays #ffffff in both themes. */
   color: #ffffff;
   font-size: 11px;
   font-weight: 700;
@@ -1088,22 +1225,11 @@ hr {
   max-width: 360px;
   animation: toast-fade-in 200ms ease-out;
 }
-.toast-error { border-color: #d62828; color: #d62828; }
+.toast-error { border-color: var(--danger); color: var(--danger); }
 @keyframes toast-fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
 }
-.toast-dismiss {
-  background: none;
-  border: none;
-  color: inherit;
-  font-size: 16px;
-  line-height: 1;
-  padding: 0 4px;
-  cursor: pointer;
-  margin-left: auto;
-}
-.toast-dismiss:hover { opacity: 0.7; }
 
 /* ============================================================================
    EmptyState
@@ -1267,7 +1393,7 @@ table tbody tr:hover {
   letter-spacing: 0.3px;
 }
 .profile-stat-context.is-up { color: var(--accent); }
-.profile-stat-context.is-down { color: #d62828; }
+.profile-stat-context.is-down { color: var(--danger); }
 
 /* ============================================================================
    Digit Span step-fn breakpoints (#14)

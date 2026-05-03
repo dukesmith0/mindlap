@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Avatar } from "@/components/ui/Avatar";
 import { StreakRibbon } from "@/components/ui/StreakRibbon";
 import { XpBar, levelFromXp } from "@/components/ui/XpBar";
+import { DEFAULT_AVATAR_COLOR } from "@/lib/auth/avatar-palette";
 
 type ProfileSummary = {
   username: string | null;
@@ -33,7 +34,7 @@ export function TopBar({ profile }: { profile: ProfileSummary | null }) {
               style={{ display: "inline-block", lineHeight: 0 }}
             >
               <Avatar
-                color={profile.avatar_color ?? "#64748b"}
+                color={profile.avatar_color ?? DEFAULT_AVATAR_COLOR}
                 name={profile.display_name ?? profile.username ?? "?"}
                 emoji={profile.avatar_emoji}
               />

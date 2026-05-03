@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useId, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { FormField } from "@/components/ui/FormField";
 import { addFriendAction } from "@/actions/friendships";
 import { useToast } from "@/components/ui/Toast";
 
@@ -11,6 +12,8 @@ import { useToast } from "@/components/ui/Toast";
 export function AddFriendForm() {
   const router = useRouter();
   const toast = useToast();
+  const usernameId = useId();
+  const codeId = useId();
   const [username, setUsername] = useState("");
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -46,11 +49,9 @@ export function AddFriendForm() {
   return (
     <form onSubmit={submit} style={{ display: "grid", gap: 12, marginBottom: 24 }}>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-        <label>
-          <span style={{ display: "block", fontSize: 12, color: "var(--muted)", marginBottom: 4 }}>
-            @username
-          </span>
+        <FormField label="@username" htmlFor={usernameId}>
           <input
+            id={usernameId}
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
@@ -60,12 +61,10 @@ export function AddFriendForm() {
             style={{ width: "100%" }}
             autoComplete="off"
           />
-        </label>
-        <label>
-          <span style={{ display: "block", fontSize: 12, color: "var(--muted)", marginBottom: 4 }}>
-            friend code
-          </span>
+        </FormField>
+        <FormField label="friend code" htmlFor={codeId}>
           <input
+            id={codeId}
             type="text"
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
@@ -75,14 +74,14 @@ export function AddFriendForm() {
             style={{ width: "100%", letterSpacing: 1 }}
             autoComplete="off"
           />
-        </label>
+        </FormField>
       </div>
       <div>
         <button type="submit" disabled={pending}>
           {pending ? "..." : "send request"}
         </button>
       </div>
-      {error && <p style={{ color: "var(--accent)", fontSize: 13, margin: 0 }} role="alert">[{error}]</p>}
+      {error && <p className="tag-error" style={{ margin: 0 }} role="alert">{error}</p>}
     </form>
   );
 }
